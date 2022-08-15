@@ -1,0 +1,241 @@
+<!--suppress ALL -->
+<!DOCTYPE html >
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${'Ktor Chat - ' + room.name}"></title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href="css/styles.css">
+</head>
+<body x-data="chat" th:classappend="${domain.theme}" class="">
+<div class="main h-screen flex flex-col justify-between overflow-hidden relative">
+    <div th:replace="client/fragments/header.html"></div>
+    <div class="flex w-full flex-1 justify-between ">
+        <div th:replace="client/fragments/left-side.html"></div>
+        <div class="flex h-full w-full ">
+            <div class="flex flex-grow">
+                <div th:replace="client/fragments/chat-lobby.html"></div>
+                <div th:replace="client/fragments/right-side.html"></div>
+            </div>
+        </div>
+    </div>
+    <div x-cloak x-show="showLoader" class="loader-wrap">
+        <div class="loader" x-transition x-show="showLoader">
+            <svg class="text-skin-primary h-full w-full p-2" xmlns="http://www.w3.org/2000/svg"
+                 xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100"
+                 enable-background="new 0 0 100 100" xml:space="preserve">
+                    <path fill="currentColor"
+                          d="M31.6,3.5C5.9,13.6-6.6,42.7,3.5,68.4c10.1,25.7,39.2,38.3,64.9,28.1l-3.1-7.9c-21.3,8.4-45.4-2-53.8-23.3 c-8.4-21.3,2-45.4,23.3-53.8L31.6,3.5z">
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="2s"
+                                      from="0 50 50" to="360 50 50" repeatCount="indefinite"/>
+                    </path>
+                <path fill="currentColor"
+                      d="M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7 c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z">
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s"
+                                      from="0 50 50" to="-360 50 50" repeatCount="indefinite"/>
+                    </path>
+                <path fill="currentColor"
+                      d="M82,35.7C74.1,18,53.4,10.1,35.7,18S10.1,46.6,18,64.3l7.6-3.4c-6-13.5,0-29.3,13.5-35.3s29.3,0,35.3,13.5 L82,35.7z">
+                    <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="2s"
+                                      from="0 50 50" to="360 50 50" repeatCount="indefinite"/>
+                    </path>
+            </svg>
+        </div>
+    </div>
+    <div x-cloak x-show="showFulModal"
+         x-transition:enter="transition ease-in-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-x-0 translate-x-1/2"
+         x-transition:enter-end="opacity-100 transform scale-x-100 -translate-x-0"
+         x-transition:leave="transition ease-in-out duration-200"
+         x-transition:leave-start="opacity-100 transform scale-x-100 -translate-x-0"
+         x-transition:leave-end="opacity-0 transform scale-x-0 translate-x-1/2"
+         class="fixed bg-white z-[60] h-screen right-0 w-full md:w-[350px] lg:h-full shadow-xl shadow-black/50">
+        <div x-ref="fullModalContent" class="w-full h-full">
+        </div>
+    </div>
+    <div x-cloak x-show="showModal" class="z-[90] fixed bg-black/30 w-full h-full ">
+        <div x-ref="modalContent" x-show="showModal" x-transition
+             class="w-11/12 max-w-[350px] mx-auto rounded-lg bg-white mt-20 "></div>
+    </div>
+    <div x-cloak x-show="showImage" class="z-[90] fixed bg-white/30 w-full h-full ">
+        <div x-ref="imgModalContent" x-show="showImage" x-transition
+             class="h-full w-11/12 max-w-[600px] rounded-lg flex items-center justify-center mx-auto">
+        </div>
+    </div>
+    <div class="pvt-wrap">
+        <div class="h-auto w-full flex flex-col">
+            <template x-for="pvtUser in pvtUsers" :key="pvtUser.id">
+                <template x-if="pvtUser.added">
+                    <div class="w-full flex flex-col">
+                        <div class="flex justify-end w-full cursor-pointer">
+                            <div x-show="pvtUser.minimize" class=" w-12 h-12 relative rounded-full text-white">
+                                <p x-cloak x-show="pvtUser.unReadCount > 0" x-transition
+                                   class="absolute top-0 right-0 bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20"
+                                   x-text="pvtUser.unReadCount"></p>
+                                <img @click="maximize(pvtUser.id)" :src="pvtUser.avatar"
+                                     class="w-full h-full rounded-full shadow-lg shadow-black/20">
+                            </div>
+                        </div>
+                        <div @click.outside="makeItBehind($el)" @click="makeItBefore($el)"
+                             :id="'draggable-'+pvtUser.id" class="pvt-modal"
+                             x-data="{ pvtEmoTab:0, showPvtEmo:false, showPvtOption: false}"
+                             x-init="$nextTick(() => {getPvtEmojis($refs.pvtEmojis)})"
+                             x-show="!pvtUser.minimize;$nextTick(()=>$refs.pvtInput.focus())">
+                            <div class="flex flex-col justify-end h-full w-full">
+                                <div :id="'pvt-header-'+pvtUser.id" class="pvt-header">
+                                    <div class="flex gap-2 items-center ml-2 h-full">
+                                        <img class="avatar" :src="pvtUser.avatar" alt="">
+                                        <p x-text="pvtUser.name" class="pvtUsername"></p>
+                                    </div>
+                                    <div class="flex gap-2 items-center mr-2 h-full">
+                                        <i @click="pvtUser.minimize = true" class="fa-solid fa-minus icon-white"></i>
+                                        <i @click="closePvtModal(pvtUser.id)"
+                                           class="fas fa-times-circle icon-white"></i>
+                                    </div>
+                                </div>
+                                <div class="h-full w-full">
+                                    <div class="z-10 relative h-full">
+                                        <ul x-cloak class="chat-container">
+                                            <template x-for="message in pvtUser.messages" :key="message.id">
+                                                <li :id="'pvt-chat-'+message.id" class="chat-wrap">
+                                                    <div class="flex py-1 px-2 w-full"
+                                                         :class="message.sender.id !== userId ? 'flex-row-reverse' : ''">
+                                                        <img @click="getUserProfile(message.sender.id)"
+                                                             class="avatar flex-none cursor-pointer"
+                                                             :class="message.sender.gender === 'Male' ? 'male' : 'female'"
+                                                             :src="message.sender.avatar">
+                                                        <div class="flex flex-col mt-1 max-w-[80%]"
+                                                             :class="message.sender.id !== userId ? 'mr-2 ' : 'ml-2'">
+                                                            <div class="flex-1 rounded-b-md px-2 py-1 flex flex-col"
+                                                                 :class="message.sender.id !== userId ? 'rounded-tl-md b-zinc-3' : 'rounded-tr-md bg-skin-primary'">
+                                                                <template x-if="message.audio">
+                                                                    <audio preload="auto" controls class="w-[250px]"
+                                                                           controlslist="nodownload noplaybackrate">
+                                                                        <source :src="message.audio" type="audio/mpeg">
+                                                                    </audio>
+                                                                </template>
+                                                                <template x-if="message.image">
+                                                                    <img @click="showImageDialog($el)"
+                                                                         :src="message.image" alt=""
+                                                                         class="lobby-image">
+                                                                </template>
+                                                                <p class="chat text-skin-on-primary font-normal"
+                                                                   x-html="message.content"></p>
+                                                            </div>
+                                                            <div class="flex items-center gap-2 mt-1"
+                                                                 :class="message.sender.id !== userId ? 'justify-end' : 'justify-start'">
+                                                                <p class="date" x-text="message.createdAt"></p>
+                                                                <template x-if="message.sender.id !== userId">
+                                                                    <i @click="reportPvtChat(message.id)"
+                                                                       class="fa-solid fa-font-awesome icon-sm"></i>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="main-input-wrap flex-none">
+                                    <div x-transition x-cloak x-show="showPvtOption" class="options">
+                                        <div class="inline-flex p-2 gap-4">
+                                            <i @click="showDrawPad" class="fa-solid fa-paintbrush icon-skin"></i>
+                                            <div class="relative flex-none">
+                                                <input x-ref="pvtUpload"
+                                                       @change="uploadPvtImage(pvtUser.id, $event, $refs.pvtInput)"
+                                                       class="input-image" type="file" accept="image/*">
+                                                <i @click="$refs.pvtUpload.click(); showPvtOption=false"
+                                                   class="fa-solid fa-image icon-skin"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div x-transition x-cloak x-show="pvtUser.isRecording"
+                                         class="z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1">
+                                        <div class="bg-white rounded-full w-[10px] h-[10px] animate-pulse mx-auto"></div>
+                                        <p class="text-white font-bold text-[12px] mx-auto"
+                                           x-text="'Rec '+ pvtUser.remainingTime"></p>
+                                    </div>
+                                    <div x-ref="pvtEmojis" x-transition x-show="showPvtEmo" class="pvt-emo-wrap">
+                                    </div>
+                                    <div class="w-full h-full gap-2 ">
+                                        <div class="flex items-center h-full px-2 w-full">
+                                            <i @click="showPvtOption=!showPvtOption;showPvtEmo=false"
+                                               class="mx-1 fa-solid fa-square-plus icon-skin"></i>
+                                            <i @click="showPvtEmo=!showPvtEmo;showPvtOption=false"
+                                               class="ml-1 fa-solid fa-face-grin-hearts icon-skin"></i>
+                                            <i @click="$nextTick(() => {recordPvtAudio(pvtUser.id)})"
+                                               class="mx-2 fa-solid fa-microphone-lines icon-skin"></i>
+                                            <div class="flex items-center flex-1">
+                                                <label class="h-10 flex w-full">
+                                                    <input x-ref="pvtInput"
+                                                           @keyup.enter="sendPvtMessage(pvtUser.id , $refs.pvtInput)"
+                                                           class="input-message" type="text" spellcheck="false"
+                                                           placeholder="Write something here..." autocomplete="off">
+                                                    <button @click="sendPvtMessage(pvtUser.id, $refs.pvtInput)"
+                                                            class="send"><i
+                                                            class="fa-solid fa-paper-plane"></i>
+                                                    </button>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+    <div x-cloak x-show="showProfile" class="z-[80] fixed bg-black/30 w-full h-full">
+        <div x-ref="profileContent" x-transition x-show="showProfile"
+             class=" w-11/12 max-w-[350px] mx-auto rounded bg-white shadow-lg shadow-skin-primary/20 mt-12">
+        </div>
+    </div>
+    <div x-cloak x-show="showUserProfile" class="z-[80] fixed bg-black/30 w-full h-full">
+        <div x-ref="userProfileContent" x-transition x-show="showUserProfile"
+             class=" w-11/12 max-w-[350px] mx-auto rounded bg-white shadow-lg shadow-skin-primary/20 mt-12">
+        </div>
+    </div>
+    <div x-cloak x-transition x-show="showAlert" x-ref="alertMsg" class="alert"></div>
+</div>
+<script th:inline="javascript">
+    const domainId = [[${domain.id}]]
+    const offlineLimit = [[${domain.offlineLimit}]]
+    var name = [[${user.name}]]
+    var nameColor = [[${user.nameColor}]]
+    var nameFont = [[${user.nameFont}]]
+    var mood = [[${user.mood}]]
+    var about = [[${user.about}]]
+    var textBold = [[${user.textBold}]]
+    var textColor = [[${user.textColor}]]
+    var textFont = [[${user.textFont}]]
+    const gender = [[${user.gender}]]
+    const avatar = [[${user.avatar}]]
+    const level = [[${user.level}]]
+    const userId = [[${user.id}]]
+    const status = [[${user.status}]]
+    const joined = [[${user.createdAt}]]
+    const dob = [[${user.dob}]]
+    const points = [[${user.points}]]
+    const rankCode = [[${user.rank.code}]]
+    const rankName = [[${user.rank.name}]]
+    const rankIcon = [[${user.rank.icon}]]
+    const roomId = [[${room.id}]];
+    const roomName = [[${room.name}]];
+    const roomTopic = [[${room.topic}]];
+    const showJoin = [[${room.showJoin}]];
+    const showLeave = [[${room.showLeave}]];
+
+    const permission = [[${permission}]]
+    const canDelMsg = [[${permission.delMsg}]]
+    const canSeeReports = [[${permission.delMsg}]] /*TODO: change appropriate permission*/
+</script>
+<script src="js/emojis.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>

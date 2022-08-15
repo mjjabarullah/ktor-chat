@@ -1,0 +1,58 @@
+<!--suppress ALL -->
+<!DOCTYPE html >
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>WebSocket Chat - User Login</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href="css/styles.css">
+</head>
+<body th:classappend="${domain.theme}" class="">
+<div class="flex-col flex pt-4 lg:p-10 pb-14 w-full px-2">
+    <div class="w-36 mx-auto">
+        <img class="w-36 " src="images/registration.webp" alt="">
+    </div>
+    <div class="card">
+        <div class="flex flex-col items-start py-2 px-4">
+            <h3 class="heading">Login</h3>
+            <div th:if="${errors['default']}" th:text="${errors['default']}" class="error-default"></div>
+            <form class="w-full" action="/login" method="post">
+                <div class="mb-4">
+                    <div class="h-10">
+                        <label class="h-full">
+                            <input name="name" onkeypress="return /^[a-zA-Z\d_-]*$/i.test(event.key)"
+                                   class="input-text" maxlength="12" type="text" placeholder="Username"
+                                   autocomplete="off" required minlength="4" autofocus>
+                        </label>
+                    </div>
+                    <div th:if="${errors['name']}" th:text="${errors['name']}" class="error-text"></div>
+                </div>
+                <div class="mb-4">
+                    <div class="h-10">
+                        <label class="h-full">
+                            <input name="password" class="input-text" type="password" placeholder="Password"
+                                   autocomplete="off" required minlength="8">
+                        </label>
+                    </div>
+                    <div th:if="${errors['password']}" th:text="${errors['password']}" class="error-text"></div>
+                </div>
+                <div class="text-center mb-4">
+                    <button type="submit" class="w-36 btn btn-skin"><i class="fa-solid fa-comments"></i>
+                        &nbsp;&nbsp;Login
+                    </button>
+
+                    <p class="disc">Forgot Password?
+                        <a href="/forgot-password" class="link-text">Recover Account</a>
+                    </p>
+                    <p class="disc">Don't have an account?
+                        <a href="/register" class="link-text">Register</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="js/auth.js"></script>
+</body>
+</html>

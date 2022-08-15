@@ -1,0 +1,86 @@
+<!--suppress ALL -->
+<div class="bg-white hidden z-[60] lg:z-0 border-l border-gray-200 lg:block absolute h-screen right-0 inset-y-0 lg:relative w-[280px] md:w-[320px] lg:h-full rounded-tl-xl rounded-bl-xl lg:rounded-none drop-shadow-lg lg:drop-shadow-none">
+    <div class="h-full w-full flex flex-col rounded-tl-xl lg:rounded-none absolute">
+        <div x-cloak x-show="showMessages"
+             class="shadow-lg shadow-primary-800/30 lg:shadow-none top-0 flex flex-col overflow-y-auto scrollbar overflow-x-hidden h-full w-full rounded-tl-xl rounded-bl-xl lg:rounded-none">
+            <div class="p-2 border-b border-gray-200">
+                <div class="label"><i class="fa-brands fa-firefox-browser mr-1"></i>
+                    <span x-text="'Online (' + onlineUsers.length + ')'"></span>
+                </div>
+            </div>
+            <ul>
+                <template x-for="user in onlineUsers" :key="user.id">
+                    <li :id="'user-'+ user.id" class="user-wrap" @click="getUserProfile(user.id)">
+                        <div class="w-full h-8 gap-2">
+                            <div class="flex h-full w-full items-center">
+                                <img class="avatar flex-none mx-1" :src="user.avatar">
+                                <div class="flex-1 px-1 whitespace-nowrap overflow-hidden">
+                                    <p class="ellipsis">
+                                        <span x-text="user.name" class="username clip"
+                                              :class="[user.nameColor, user.nameFont]"></span>
+                                        <span x-text="'Lv.' + user.level" class="level"></span>
+                                    </p>
+                                    <p x-text="user.mood" class="mood ellipsis clip"
+                                       :class="[user.nameColor, user.nameFont]"></p>
+                                </div>
+                                <img class="gender flex-none"
+                                     :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
+                                <img class="rank-icon" :src="user.rank.icon">
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+            <template x-if="offlineUsers.length > 0">
+                <div class="p-2 border-b border-gray-200">
+                    <div class="label"><i class="fa-solid fa-hashtag mr-1"></i>Offline</div>
+                </div>
+            </template>
+            <ul>
+                <template x-for="user in offlineUsers" :key="user.id">
+                    <li :id="'user-'+ user.id" class="user-wrap relative group" @click="getUserProfile(user.id)">
+                        <div class="absolute top-0 left-0 h-full w-full bg-white/30 group-hover:hidden"></div>
+                        <div class="w-full h-8 gap-2">
+                            <div class="flex h-full w-full items-center">
+                                <img class="avatar flex-none mx-1" :src="user.avatar">
+                                <div class="flex-1 px-1 whitespace-nowrap overflow-hidden">
+                                    <p class="ellipsis">
+                                            <span x-text="user.name" class="username clip"
+                                                  :class="[user.nameColor, user.nameFont]"></span>
+                                        <span x-text="'Lv.' + user.level" class="level"></span>
+                                    </p>
+                                    <p x-text="user.mood" class="mood ellipsis clip"
+                                       :class="[user.nameColor, user.nameFont]"></p>
+                                </div>
+                                <img class="gender flex-none"
+                                     :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
+                                <img class="rank-icon" :src="user.rank.icon">
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!--
+<li th:id="'user-'+${user.id}" class="user-wrap" th:object="${user}"
+    th:@click="'getUserProfile('+${user.id}+')'">
+    <div class="w-full h-8 gap-2">
+        <div class="flex h-full w-full items-center">
+            <img class="avatar flex-none mx-1" th:src="*{avatar}">
+            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden">
+                <p class="username ellipsis" th:classappend="*{nameColor}">
+                    [[*{name}]]<span th:text="*{'Lv. '+ level }" class="level"></span>
+                </p>
+                <p th:text="*{mood}" class="mood ellipsis" th:classappend="*{nameColor}"></p>
+            </div>
+            <img class="gender flex-none"
+                 th:src="*{(gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp')}">
+            <img class="rank-icon" th:src="*{rank.icon}">
+        </div>
+    </div>
+</li>
+
+-->

@@ -1,0 +1,51 @@
+<!--suppress ALL -->
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>WebSocket Chat</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link rel='stylesheet' href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+</head>
+<body >
+<div class="w-full bg-blue-100">
+    <header id="header" class="sticky top-0 w-full bg-white shadow-lg shadow-blue/30">
+        <div class="h-16 mx-auto container flex justify-between h-full items-center py-2">
+            <p class="text-2xl font-bold"><a href="">Ktor Chat</a></p>
+            <nav class="flex relative">
+                <ul class="flex space-x-10 ">
+                    <li class="text-blue-700 font-bold hover:text-blue-700 text-sm">
+                        <a href="#home">Home</a>
+                    </li>
+                    <li class="text-gray-700 font-bold text-sm hover:text-blue-700">
+                        <a href="#footer">Contact</a>
+                    </li>
+                    <li>
+                        <a href="/register" class="mt-8 text-white font-bold rounded-md shadow-lg shadow-blue-500/30 bg-blue-700 hover:bg-blue-600 text-sm py-2 px-5">
+                            <i class="fa-solid fa-right-to-bracket"></i> Register</a>
+                    </li>
+                </ul>
+                <i class="bi bi-list mobile-nav-toggle"></i>
+            </nav>
+        </div>
+    </header>
+    <div id="home" class="mx-auto container flex justify-items-stretch">
+        <div class="pt-24 flex w-4/5 flex-col justify-center items-center">
+            <h2 class="font-bold text-gray-700 text-4xl">
+                Lets<br>Meet New People In<br>
+                <span class="text-blue-700">Chat Rooms!</span>
+            </h2>
+            <button id="register" class="outline-none mt-4 mx-auto text-white font-bold rounded-md hover:shadow-lg hover:shadow-blue-500/30 bg-blue-700 hover:bg-blue-800 text-sm py-2 px-5">
+                <i class="fa-solid fa-comments"></i> Login Chat Room
+            </button>
+        </div>
+        <div class="flex-grow flex h-full">
+            <img class="max-w-full h-auto" src="images/chatting.webp" alt="">
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

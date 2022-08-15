@@ -1,0 +1,82 @@
+<!--suppress ALL -->
+<div class="relative flex justify-end flex-grow flex-col h-full bg-white">
+    <div class="flex flex-col justify-end h-full w-full">
+        <div class="h-full relative w-full">
+            <div class="z-10 relative h-full">
+                <ul x-cloak x-ref="chatMessages" x-show="showMessages" class="chat-container">
+                    <li th:each="message: ${messages}" th:id="'chat-'+ ${message.id}" class="chat-wrap">
+                        <div class="flex py-1 px-2 w-full" th:object="${message}">
+                            <img th:@click="'getUserProfile('+*{user.id}+')'"
+                                 class="avatar flex-none cursor-pointer" th:src="*{user.avatar}"
+                                 th:classappend="*{(user.gender eq 'Male'? 'male' : 'female')}">
+                            <div class="ml-2 flex-1 ">
+                                <div class="flex justify-between">
+                                    <div class="inline-flex items-center gap-0.5">
+                                        <img class="rank-icon-sm" th:src="*{user.rank.icon}" alt=""
+                                             th:title="*{user.rank.name}">
+                                        <p @click="appendUserName($el)" th:text="*{user.name}"
+                                           th:class="*{'username clip ' + user.nameColor +' ' + user.nameFont}"></p>
+                                    </div>
+                                    <div class="flex items-center gap-2 mr-2">
+                                        <p th:text="*{createdAt}" class="date"></p>
+                                        <i th:@click="'reportChat('+*{id}+')'"
+                                           class="fa-solid fa-font-awesome icon-sm"></i>
+                                        <i th:@click="'deleteChat('+*{id}+')'"
+                                           class="fa-solid fa-trash-can icon-sm"></i>
+                                    </div>
+                                </div>
+                                <div class=" px-1 pr-2">
+                                    <img @click="showImageDialog($el)" th:if="*{image}" th:src="*{image}" alt=""
+                                         class="lobby-image">
+                                    <audio th:if="*{audio}" preload="auto">
+                                        <source th:src="*{audio}">
+                                    </audio>
+                                    <p th:utext="*{content}" class="chat clip"
+                                       th:classappend="*{user.textColor + (user.textBold ? ' font-bold':' font-normal') +' '+ user.textFont  }"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="main-input-wrap flex-none" @click.outside="closeCustomizeText">
+            <div x-transition x-cloak x-show="showOption" class="options">
+                <div class="inline-flex p-2 gap-4">
+                    <i @click="showDrawPad" class="fa-solid fa-paintbrush icon-skin"></i>
+                    <i @click="customizeTextDialog;showOption=false" class="fa-solid fa-palette icon-skin"></i>
+                    <div class="relative flex-none">
+                        <input x-ref='upload' @change="uploadImage($event)" class="input-image" type="file"
+                               accept="image/*">
+                        <i @click="$refs.upload.click(); showOption=false" class="fa-solid fa-image icon-skin"></i>
+                    </div>
+                </div>
+            </div>
+            <div x-transition x-cloak x-show="isRecording"
+                 class="z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1">
+                <div class="bg-white rounded-full w-[10px] h-[10px] animate-pulse mx-auto"></div>
+                <p class="text-white font-bold text-[12px] mx-auto" x-text="'Rec '+ remainingTime"></p>
+            </div>
+            <div x-ref="mainEmojis" x-transition x-cloak x-show="showEmo" class="emo-wrap"></div>
+            <div class="w-full h-full gap-2 ">
+                <div class="flex items-center h-full px-2 w-full">
+                    <i @click="showOption=!showOption;showEmo=false" class="mx-1 fa-solid fa-square-plus icon-skin"></i>
+                    <i @click="showEmo=!showEmo;showOption=false"
+                       class="ml-1 fa-solid fa-face-grin-hearts icon-skin"></i>
+                    <i @click="recordMainAudio" class="mx-2 fa-solid fa-microphone-lines icon-skin"></i>
+                    <div class="flex items-center flex-1">
+                        <label class="h-10 flex w-full">
+                            <input x-ref="mainInput" @keyup.enter="sendMessage" class="input-message"
+                                   type="text" spellcheck="false" placeholder="Write something here..."
+                                   autocomplete="off">
+                            <button @click="sendMessage" class="send"><i class="fa-solid fa-paper-plane"></i></button>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

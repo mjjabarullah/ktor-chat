@@ -1,0 +1,1229 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Grandstander:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lemonada:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merienda:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amita:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Averia+Libre:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Turret+Road:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sansita:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Charm:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+    :root {
+        --color-primary: 30, 41, 59;
+        --color-on-primary: 255, 255, 255;
+        --color-primary-hover: 15, 23, 42;
+    }
+}
+body {
+    @apply antialiased font-lato bg-skin-primary/5 w-screen
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+.success {
+    @apply bg-green-700
+}
+
+.error {
+    @apply bg-red-700
+}
+
+.theme-sky {
+    --color-primary: 14, 165, 233;
+    --color-primary-hover: 3, 105, 161;
+    --color-on-primary: 255, 255, 255;
+}
+
+.theme-red {
+    --color-primary: 239, 68, 68;
+    --color-primary-hover: 185, 28, 28;
+    --color-on-primary: 255, 255, 255;
+}
+
+.theme-orange {
+    --color-primary: 249, 115, 22;
+    --color-primary-hover: 194, 65, 12;
+    --color-on-primary: 255, 255, 255;
+}
+
+
+.red {
+    @apply text-red-500;
+}
+
+.red-1 {
+    @apply text-red-600;
+}
+
+.red-2 {
+    @apply text-red-700;
+}
+
+.red-3 {
+    @apply text-red-800;
+}
+
+.orange {
+    @apply text-orange-500;
+}
+
+.orange-1 {
+    @apply text-orange-600;
+}
+
+.orange-2 {
+    @apply text-orange-700;
+}
+
+.orange-3 {
+    @apply text-orange-800;
+}
+
+.amber {
+    @apply text-amber-500;
+}
+
+.amber-1 {
+    @apply text-amber-600;
+}
+
+.amber-2 {
+    @apply text-amber-700;
+}
+
+.amber-3 {
+    @apply text-amber-800;
+}
+
+.yellow {
+    @apply text-yellow-500;
+}
+
+.yellow-1 {
+    @apply text-yellow-600;
+}
+
+.yellow-2 {
+    @apply text-yellow-700;
+}
+
+.yellow-3 {
+    @apply text-yellow-800;
+}
+
+.lime {
+    @apply text-lime-500;
+}
+
+.lime-1 {
+    @apply text-lime-600;
+}
+
+.lime-2 {
+    @apply text-lime-700;
+}
+
+.lime-3 {
+    @apply text-lime-800;
+}
+
+.green {
+    @apply text-green-500;
+}
+
+.green-1 {
+    @apply text-green-600;
+}
+
+.green-2 {
+    @apply text-green-700;
+}
+
+.green-3 {
+    @apply text-green-800;
+}
+
+.emerald {
+    @apply text-emerald-500;
+}
+
+.emerald-1 {
+    @apply text-emerald-600;
+}
+
+.emerald-2 {
+    @apply text-emerald-700;
+}
+
+.emerald-3 {
+    @apply text-emerald-800;
+}
+
+.teal {
+    @apply text-teal-500;
+}
+
+.teal-1 {
+    @apply text-teal-600;
+}
+
+.teal-2 {
+    @apply text-teal-700;
+}
+
+.teal-3 {
+    @apply text-teal-800;
+}
+
+.cyan {
+    @apply text-cyan-500;
+}
+
+.cyan-1 {
+    @apply text-cyan-600;
+}
+
+.cyan-2 {
+    @apply text-cyan-700;
+}
+
+.cyan-3 {
+    @apply text-cyan-800;
+}
+
+.sky {
+    @apply text-sky-500;
+}
+
+.sky-1 {
+    @apply text-sky-600;
+}
+
+.sky-2 {
+    @apply text-sky-700;
+}
+
+.sky-3 {
+    @apply text-sky-800;
+}
+
+.blue {
+    @apply text-blue-500;
+}
+
+.blue-1 {
+    @apply text-blue-600;
+}
+
+.blue-2 {
+    @apply text-blue-700;
+}
+
+.blue-3 {
+    @apply text-blue-800;
+}
+
+.indigo {
+    @apply text-indigo-500;
+}
+
+.indigo-1 {
+    @apply text-indigo-600;
+}
+
+.indigo-2 {
+    @apply text-indigo-700;
+}
+
+.indigo-3 {
+    @apply text-indigo-800;
+}
+
+.violet {
+    @apply text-violet-500;
+}
+
+.violet-1 {
+    @apply text-violet-600;
+}
+
+.violet-2 {
+    @apply text-violet-700;
+}
+
+.violet-3 {
+    @apply text-violet-800;
+}
+
+.purple {
+    @apply text-purple-500;
+}
+
+.purple-1 {
+    @apply text-purple-600;
+}
+
+.purple-2 {
+    @apply text-purple-700;
+}
+
+.purple-3 {
+    @apply text-purple-800;
+}
+
+.fuchsia {
+    @apply text-fuchsia-500;
+}
+
+.fuchsia-1 {
+    @apply text-fuchsia-600;
+}
+
+.fuchsia-2 {
+    @apply text-fuchsia-700;
+}
+
+.fuchsia-3 {
+    @apply text-fuchsia-800;
+}
+
+.pink {
+    @apply text-pink-500;
+}
+
+.pink-1 {
+    @apply text-pink-600;
+}
+
+.pink-2 {
+    @apply text-pink-700;
+}
+
+.pink-3 {
+    @apply text-pink-800;
+}
+
+.rose {
+    @apply text-rose-500;
+}
+
+.rose-1 {
+    @apply text-rose-600;
+}
+
+.rose-2 {
+    @apply text-rose-700;
+}
+
+.rose-3 {
+    @apply text-rose-800;
+}
+
+.slate {
+    @apply text-slate-500;
+}
+
+.slate-1 {
+    @apply text-slate-600;
+}
+
+.slate-2 {
+    @apply text-slate-700;
+}
+
+.slate-3 {
+    @apply text-amber-800;
+}
+
+.gray {
+    @apply text-gray-500;
+}
+
+.gray-1 {
+    @apply text-gray-600;
+}
+
+.gray-2 {
+    @apply text-gray-700;
+}
+
+.gray-3 {
+    @apply text-gray-800;
+}
+
+.zinc {
+    @apply text-zinc-500;
+}
+
+.zinc-1 {
+    @apply text-zinc-600;
+}
+
+.zinc-2 {
+    @apply text-zinc-700;
+}
+
+.zinc-3 {
+    @apply text-zinc-800;
+}
+
+.stone {
+    @apply text-stone-500;
+}
+
+.stone-1 {
+    @apply text-stone-600;
+}
+
+.stone-2 {
+    @apply text-stone-700;
+}
+
+.stone-3 {
+    @apply text-stone-800;
+}
+
+.black {
+    @apply text-black;
+}
+
+
+.b-red {
+    @apply bg-red-500;
+}
+
+.b-red-1 {
+    @apply bg-red-600;
+}
+
+.b-red-2 {
+    @apply bg-red-700;
+}
+
+.b-red-3 {
+    @apply bg-red-800;
+}
+
+.b-orange {
+    @apply bg-orange-500;
+}
+
+.b-orange-1 {
+    @apply bg-orange-600;
+}
+
+.b-orange-2 {
+    @apply bg-orange-700;
+}
+
+.b-orange-3 {
+    @apply bg-orange-800;
+}
+
+.b-amber {
+    @apply bg-amber-500;
+}
+
+.b-amber-1 {
+    @apply bg-amber-600;
+}
+
+.b-amber-2 {
+    @apply bg-amber-700;
+}
+
+.b-amber-3 {
+    @apply bg-amber-800;
+}
+
+.b-yellow {
+    @apply bg-yellow-500;
+}
+
+.b-yellow-1 {
+    @apply bg-yellow-600;
+}
+
+.b-yellow-2 {
+    @apply bg-yellow-700;
+}
+
+.b-yellow-3 {
+    @apply bg-yellow-800;
+}
+
+.b-lime {
+    @apply bg-lime-500;
+}
+
+.b-lime-1 {
+    @apply bg-lime-600;
+}
+
+.b-lime-2 {
+    @apply bg-lime-700;
+}
+
+.b-lime-3 {
+    @apply bg-lime-800;
+}
+
+.b-green {
+    @apply bg-green-500;
+}
+
+.b-green-1 {
+    @apply bg-green-600;
+}
+
+.b-green-2 {
+    @apply bg-green-700;
+}
+
+.b-green-3 {
+    @apply bg-green-800;
+}
+
+.b-emerald {
+    @apply bg-emerald-500;
+}
+
+.b-emerald-1 {
+    @apply bg-emerald-600;
+}
+
+.b-emerald-2 {
+    @apply bg-emerald-700;
+}
+
+.b-emerald-3 {
+    @apply bg-emerald-800;
+}
+
+.b-teal {
+    @apply bg-teal-500;
+}
+
+.b-teal-1 {
+    @apply bg-teal-600;
+}
+
+.b-teal-2 {
+    @apply bg-teal-700;
+}
+
+.b-teal-3 {
+    @apply bg-teal-800;
+}
+
+.b-cyan {
+    @apply bg-cyan-500;
+}
+
+.b-cyan-1 {
+    @apply bg-cyan-600;
+}
+
+.b-cyan-2 {
+    @apply bg-cyan-700;
+}
+
+.b-cyan-3 {
+    @apply bg-cyan-800;
+}
+
+.b-sky {
+    @apply bg-sky-500;
+}
+
+.b-sky-1 {
+    @apply bg-sky-600;
+}
+
+.b-sky-2 {
+    @apply bg-sky-700;
+}
+
+.b-sky-3 {
+    @apply bg-sky-800;
+}
+
+.b-blue {
+    @apply bg-blue-500;
+}
+
+.b-blue-1 {
+    @apply bg-blue-600;
+}
+
+.b-blue-2 {
+    @apply bg-blue-700;
+}
+
+.b-blue-3 {
+    @apply bg-blue-800;
+}
+
+.b-indigo {
+    @apply bg-indigo-500;
+}
+
+.b-indigo-1 {
+    @apply bg-indigo-600;
+}
+
+.b-indigo-2 {
+    @apply bg-indigo-700;
+}
+
+.b-indigo-3 {
+    @apply bg-indigo-800;
+}
+
+.b-violet {
+    @apply bg-violet-500;
+}
+
+.b-violet-1 {
+    @apply bg-violet-600;
+}
+
+.b-violet-2 {
+    @apply bg-violet-700;
+}
+
+.b-violet-3 {
+    @apply bg-violet-800;
+}
+
+.b-purple {
+    @apply bg-purple-500;
+}
+
+.b-purple-1 {
+    @apply bg-purple-600;
+}
+
+.b-purple-2 {
+    @apply bg-purple-700;
+}
+
+.b-purple-3 {
+    @apply bg-purple-800;
+}
+
+.b-fuchsia {
+    @apply bg-fuchsia-500;
+}
+
+.b-fuchsia-1 {
+    @apply bg-fuchsia-600;
+}
+
+.b-fuchsia-2 {
+    @apply bg-fuchsia-700;
+}
+
+.b-fuchsia-3 {
+    @apply bg-fuchsia-800;
+}
+
+.b-pink {
+    @apply bg-pink-500;
+}
+
+.b-pink-1 {
+    @apply bg-pink-600;
+}
+
+.b-pink-2 {
+    @apply bg-pink-700;
+}
+
+.b-pink-3 {
+    @apply bg-pink-800;
+}
+
+.b-rose {
+    @apply bg-rose-500;
+}
+
+.b-rose-1 {
+    @apply bg-rose-600;
+}
+
+.b-rose-2 {
+    @apply bg-rose-700;
+}
+
+.b-rose-3 {
+    @apply bg-rose-800;
+}
+
+.b-slate {
+    @apply bg-slate-500;
+}
+
+.b-slate-1 {
+    @apply bg-slate-600;
+}
+
+.b-slate-2 {
+    @apply bg-slate-700;
+}
+
+.b-slate-3 {
+    @apply bg-slate-800;
+}
+
+.b-gray {
+    @apply bg-gray-500;
+}
+
+.b-gray-1 {
+    @apply bg-gray-600;
+}
+
+.b-gray-2 {
+    @apply bg-gray-700;
+}
+
+.b-gray-3 {
+    @apply bg-gray-800;
+}
+
+.b-zinc {
+    @apply bg-zinc-500;
+}
+
+.b-zinc-1 {
+    @apply bg-zinc-600;
+}
+
+.b-zinc-2 {
+    @apply bg-zinc-700;
+}
+
+.b-zinc-3 {
+    @apply bg-zinc-800;
+}
+
+.b-stone {
+    @apply bg-stone-500;
+}
+
+.b-stone-1 {
+    @apply bg-stone-600;
+}
+
+.b-stone-2 {
+    @apply bg-stone-700;
+}
+
+.b-stone-3 {
+    @apply bg-stone-800;
+}
+
+.b-black {
+    @apply bg-black;
+}
+
+.b-gradient {
+    @apply text-transparent bg-gradient-to-r from-purple-400 to-pink-600
+}
+
+.clip {
+    @apply bg-clip-text
+}
+
+.signika {
+    @apply font-signika
+}
+
+.grandstander {
+    @apply font-grandstander
+}
+
+.comic {
+    @apply font-comic
+}
+
+.orbitron {
+    @apply font-orbitron
+}
+
+.quicksand {
+    @apply font-quicksand
+}
+
+.lemonada {
+    @apply font-lemonada
+}
+
+.grenze {
+    @apply font-grenze
+}
+
+.kalam {
+    @apply font-kalam
+}
+
+.merienda {
+    @apply font-merienda
+}
+
+.amita {
+    @apply font-amita
+}
+
+.averia {
+    @apply font-averia
+}
+
+.turret {
+    @apply font-turret
+}
+
+.sansita {
+    @apply font-sansita
+}
+
+.comfortaa {
+    @apply font-comfortaa
+}
+
+.charm {
+    @apply font-charm
+}
+
+.lobster {
+    @apply font-lobster
+}
+
+.error-text {
+    @apply w-full font-medium px-2 py-1 text-[12px] text-red-700
+}
+
+.heading {
+    @apply my-4 mx-auto text-xl lg:text-2xl font-bold text-gray-700
+}
+
+.error-default {
+    @apply w-full font-medium p-4 text-[12px] text-red-700 mb-4 bg-red-100
+}
+
+.card {
+    @apply w-full mx-auto max-w-[350px] rounded-lg bg-white shadow-lg shadow-black/10
+}
+
+.card-room {
+    @apply w-full mx-auto max-w-[500px] rounded-lg bg-white shadow-lg shadow-black/10
+}
+
+.icon-sm {
+    @apply text-[10px] text-gray-400 cursor-pointer
+}
+
+.icon-white {
+    @apply text-xl text-white cursor-pointer
+}
+
+.h-m-icon {
+    @apply text-base text-skin-hover
+}
+
+.avatar {
+    @apply w-[32px] h-[32px] mt-0.5 rounded-full ring-[3px]
+}
+
+.male {
+    @apply ring-sky-500
+}
+
+.female {
+    @apply ring-pink-500
+}
+
+.either {
+    @apply ring-gray-500
+}
+
+.rank-icon-sm {
+    @apply w-[14px] h-[14px]
+}
+
+.gender {
+    @apply w-[14px] h-[14px] mr-1
+}
+
+.rank-icon {
+    @apply w-[25px] h-[25px]
+}
+
+.username {
+    @apply text-[13.5px] font-bold cursor-pointer
+}
+
+.date {
+    @apply text-[9px] lg:text-[10px] italic font-light text-gray-400 whitespace-pre
+}
+
+.input-text {
+    @apply bg-skin-primary/5 rounded-md h-full w-full px-2 text-[12px] lg:text-[14px] border focus:ring-skin-primary focus:border-skin-primary block outline-none
+}
+
+.input-message {
+    @apply rounded-none rounded-l-lg bg-gray-50 border border-gray-300 ml-1 w-full px-2 md:px-3 outline-none text-[12px] lg:text-[14px]
+}
+
+.input-image {
+    @apply absolute top-0 left-0 hidden w-full h-full
+}
+
+.send {
+    @apply inline-flex items-center px-3 text-sm text-skin-on-primary rounded-r-md bg-gradient-to-r from-skin-primary to-skin-hover
+}
+
+.btn {
+    @apply text-center outline-none text-skin-on-primary font-bold rounded-md text-sm py-2 px-5
+}
+
+.btn-skin {
+    @apply bg-gradient-to-r from-skin-primary to-skin-hover
+}
+
+.btn-disabled {
+    @apply bg-gradient-to-r from-slate-500 to-slate-800
+}
+
+.btn-green {
+    @apply bg-gradient-to-r from-green-500 to-green-700
+}
+
+.btn-gray {
+    @apply bg-gradient-to-r from-gray-500 to-gray-700
+}
+
+.link-text {
+    @apply font-bold underline text-skin-primary hover:text-skin-hover
+}
+
+.disc {
+    @apply pt-2 text-[12px] lg:text-[13px]
+}
+
+.label {
+    @apply px-2 py-1 inline-block bg-gradient-to-r from-skin-primary to-skin-hover text-skin-on-primary justify-center items-center rounded text-center text-[12px]
+}
+
+.mood {
+    @apply text-[11px]
+}
+
+.user-wrap {
+    @apply w-full bg-white border-b border-gray-200 p-2 lg:hover:bg-skin-primary/5 cursor-pointer
+}
+
+.ellipsis {
+    @apply text-ellipsis overflow-hidden
+}
+
+.chat {
+    @apply text-[13px] leading-[18px] flex items-center justify-start
+}
+
+.lobby-image {
+    @apply object-fill max-w-full h-20 my-1 rounded-md cursor-pointer
+}
+
+.chat-container {
+    @apply absolute bottom-0 flex flex-col-reverse overflow-y-auto overflow-x-hidden h-full w-full scrollbar
+}
+
+/*.chat-container li:nth-child(even) {
+    @apply bg-gray-50
+}*/
+
+.pvt-wrap {
+    @apply z-50 fixed bg-transparent top-20 right-2 lg:right-[330px]
+}
+
+.pvt-modal{
+    @apply rounded-md mx-auto md:mx-0 z-50 fixed left-0 right-0 top-[60px] md:left-[50%] md:-translate-x-1/2 flex justify-end flex-grow flex-col h-[320px] bg-white w-[90%] md:w-[350px] shadow-lg shadow-black/20
+}
+
+.pvt-header{
+    @apply py-1 flex justify-between items-center bg-skin-hover w-full text-white text-left font-bold flex-none rounded-t-md cursor-move
+}
+
+.pvt-header p.username {
+    @apply text-skin-on-primary text-[18px]
+}
+
+.pvt-header img.avatar {
+    @apply w-[36px] h-[36px] border-none bg-white ring-0 mt-0
+}
+
+.chat-wrap {
+    @apply w-full flex border-t border-gray-200
+}
+
+.pvt-modal li.chat-wrap{
+    @apply border-none
+}
+
+.header p.username {
+    @apply px-2 py-0.5 bg-white text-skin-hover rounded text-[12px]
+}
+
+.header img.avatar {
+    @apply w-[32px] h-[32px] border-[3px] border-white bg-white ring-0 mt-0
+}
+
+.h-menu-wrap {
+    @apply z-[60] rounded ease-in-out transition duration-1000 border border-gray-200 absolute top-10 lg:left-4 left-8 flex flex-col bg-white w-44 lg:w-52 drop-shadow-lg
+}
+
+.h-menu-text {
+    @apply text-[13px] lg:text-[14px]
+}
+
+.h-menu {
+    @apply items-center border-b border-gray-200 flex gap-2 px-4 py-1 cursor-pointer lg:hover:bg-skin-primary/5
+}
+
+.header-wrap {
+    @apply h-10 flex bg-skin-hover w-full items-center shadow-md shadow-skin-primary/20
+}
+
+.header {
+    @apply flex w-full items-center flex-1 h-full justify-between text-white
+}
+
+.count {
+    @apply absolute -top-[1px] -right-[8px] bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20
+}
+
+.loader-wrap {
+    @apply z-[100] absolute top-0 left-0 h-full w-full flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent
+}
+
+.loader {
+    @apply shadow-skin-primary/50 shadow-md h-12 w-12 rounded-md bg-white
+}
+
+
+.user-wrap img.avatar {
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
+}
+
+.tag {
+    @apply px-2 inline-block bg-gradient-to-r from-skin-primary to-skin-hover text-skin-on-primary justify-center items-center rounded text-center text-[12px]
+}
+
+.level {
+    @apply rounded ml-1 bg-yellow-500 text-white text-[10px] px-1
+}
+
+.icon-skin {
+    @apply cursor-pointer text-xl text-skin-hover flex-none
+}
+
+.options {
+    @apply z-30 absolute bottom-[54px] bg-white rounded border border-gray-200
+}
+
+.emo-wrap {
+    @apply z-30 absolute bottom-[54px] bg-white rounded-lg border-[2px] border-gray-200 w-full max-w-[450px] h-[250px]
+}
+
+.pvt-emo-wrap {
+    @apply z-30 absolute bottom-[54px] bg-white rounded-lg border-[2px] border-gray-200 w-full max-w-[450px] h-[200px]
+}
+
+.emo-head {
+    @apply flex rounded-t-lg border-b-[2px] border-gray-200 w-full overflow-x-auto items-center scrollbar
+}
+
+.emo-head::-webkit-scrollbar {
+    @apply hidden
+}
+
+.emo-head img {
+    @apply h-[36px] w-[36px] cursor-pointer p-[4px]
+}
+
+.emo-head img.active {
+    @apply bg-skin-hover/20 rounded-md
+}
+
+.emojis {
+    @apply scrollbar overflow-y-auto h-[200px] p-2
+}
+
+.pvt-emojis {
+    @apply scrollbar overflow-y-auto h-[150px] p-2
+}
+
+.emoticon {
+    @apply h-[24px] float-left m-[5px] cursor-pointer
+}
+
+.main-input-wrap {
+    @apply h-14 w-full bg-white bg-white border-t border-skin-primary relative
+}
+
+.menu-wrap {
+    @apply border-x border-b border-gray-200 rounded cursor-pointer lg:hover:bg-skin-primary/5
+}
+
+.menu {
+    @apply flex justify-start items-center border-t-[3px] rounded shadow-md py-2 px-1
+}
+
+.menu-img {
+    @apply w-[30px] h-[30px] flex-none
+}
+
+.menu-text {
+    @apply text-skin-hover pl-2 text-[13px] font-bold
+}
+
+.profile img.avatar {
+    @apply w-[70px] h-[70px] border-[7px] border-white bg-white ring-0 p-0 mt-0
+}
+
+.profile span.username {
+    @apply text-[20px] font-bold cursor-pointer text-skin-on-primary
+}
+
+.profile i.icon-sm {
+    @apply text-skin-on-primary
+}
+
+.profile img.rank-icon {
+    @apply w-[40px] h-[40px]
+}
+
+.profile td, th {
+    @apply border-t border-gray-200 py-1
+}
+
+.profile i.icon-white {
+    @apply text-2xl absolute top-1 right-2
+}
+
+.profile i.upload-icon {
+    @apply w-8 h-8 bg-skin-hover rounded-full absolute ml-[45px] z-10 text-xl text-skin-on-primary cursor-pointer
+}
+
+.profile button.btn {
+    @apply text-skin-hover bg-skin-hover/20 text-[12px] py-1 px-2
+}
+
+.profile div.actions {
+    @apply absolute top-1 right-2 flex gap-4
+}
+
+.actions i.icon-white {
+    @apply text-2xl relative
+}
+
+.alert {
+    @apply z-[100] h-10 fixed top-0 w-full text-white shadow-lg shadow-black/30
+}
+
+.pvt-user-wrap {
+    @apply w-full bg-white p-2 my-2 lg:hover:bg-skin-primary/5 cursor-pointer rounded-md shadow-md shadow-black/5 border border-gray-200
+}
+
+.pvt-user-wrap img.avatar {
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
+}
+
+.report-user-wrap {
+    @apply w-full bg-white p-2 my-2 lg:hover:bg-skin-primary/5 cursor-pointer rounded-md shadow-md shadow-black/5 border border-gray-200
+}
+
+.report-user-wrap img.avatar {
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
+}
+
+
+@layer utilities {
+
+    .scrollbar::-webkit-scrollbar {
+        width: .4rem;
+        height: .4rem;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(203, 213, 225, 0.8);
+        border-radius: 1rem;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb:active {
+        background-color: rgba(203, 213, 225, 0.8);
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        background: rgba(203, 213, 225, 0.3);
+        border-radius: 4px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    /*audio::-webkit-media-controls-panel {
+        background-color: rgba(var(--color-primary), 1);
+    }
+
+    audio::-webkit-media-controls-mute-button {
+        background-color: #FFFFFF;
+        border-radius: 50%;
+    }
+
+    audio::-webkit-media-controls-play-button {
+        background-color: #FFFFFF;
+        border-radius: 50%;
+    }
+
+    audio::-webkit-media-controls-current-time-display {
+        color: #FFFFFF;
+    }
+
+    audio::-webkit-media-controls-time-remaining-display {
+        color: #FFFFFF;
+    }
+
+    audio::-webkit-media-controls-timeline {
+        background-color: #FFFFFF;
+        border-radius: 25px;
+        margin-left: 5px;
+        margin-right: 5px;
+        padding: 5px 8px;
+    }
+
+    audio::-webkit-media-controls-volume-slider {
+        background-color: #FFFFFF;
+        border-radius: 25px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }*/
+
+}

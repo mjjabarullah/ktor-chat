@@ -1,0 +1,39 @@
+<!--suppress ALL -->
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${domain.name}"></title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href="css/styles.css">
+</head>
+<body th:classappend="${domain.theme}" class="">
+<div class="flex-col flex pt-4 lg:p-10 pb-14 w-full px-2">
+    <div class="w-36 mx-auto">
+        <img class="w-36 " src="images/registration.webp" alt="">
+    </div>
+    <div class="card">
+        <p class="py-4 px-2 text-center  text-[13px] md:text-[14px] ">Our chat community gives you the opportunity of
+            making new friends and sharing good moments with other people.</p>
+        <div class="flex flex-col items-center py-2 px-4 gap-4">
+            <a href="/login"
+               class="w-36 btn btn-green">
+                <i class="fa-solid fa-comments"></i>&nbsp;&nbsp;Login
+            </a>
+            <a href="/guest"
+               class="w-36 btn btn-gray">
+                <i class="fa-solid fa-right-to-bracket"></i>&nbsp;&nbsp;Guest login
+            </a>
+            <div class="pt-2 pb-4 flex flex-col items-center">
+                <p class="pb-2">Don't have an account?</p>
+                <a href="/register"
+                   class="w-36 btn btn-skin">
+                    <i class="fa-solid fa-right-to-bracket"></i>&nbsp;&nbsp;Register
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

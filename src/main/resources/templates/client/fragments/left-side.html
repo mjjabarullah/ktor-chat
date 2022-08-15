@@ -1,0 +1,30 @@
+<!--suppress ALL -->
+<div id="left-side"
+     class="hidden z-[60] lg:z-0 border-r border-gray-200 lg:block h-screen absolute top-0 inset-y-0 lg:relative w-52 lg:w-80 lg:h-full rounded-tr-xl rounded-br-xl lg:rounded-none drop-shadow-lg lg:drop-shadow-none bg-white">
+    <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none absolute">
+        <div class="left top-0 flex flex-col overflow-y-auto overflow-x-hidden h-full w-full">
+            <ul class="flex flex-col ">
+                <li class="pt-4 px-1">
+                    <div @click="openRoomsModal" class="menu-wrap">
+                        <div class="menu border-red-600">
+                            <img class="menu-img" src="images/defaults/chatrooms.webp" alt="">
+                            <p class="menu-text">
+                                Room List
+                            </p>
+                        </div>
+                    </div>
+                </li>
+                <li class="pt-4 px-1">
+                    <div class="menu-wrap">
+                        <div class="menu border-green-600">
+                            <img class="menu-img" src="images/defaults/announcement.webp" alt="">
+                            <p class="menu-text">
+                                Announcement
+                            </p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+<!--suppress ALL -->
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${domain.name}"></title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href="css/styles.css">
+</head>
+<body th:classappend="${domain.theme}" class="">
+<div class="flex flex-col justify-between items-center overflow-y-auto justify-center gap-4 pt-10 pb-4 px-2">
+    <div th:each="room: ${rooms}" class="card-room flex flex-col items-center py-4 px-2">
+        <h2 th:text="${room.name}" class="text-black font-bold text-base"></h2>
+        <div>
+            <i class="fa-solid fa-user-group"></i>&nbsp;&nbsp;<span th:text="${room.id}"></span>
+        </div>
+        <p class="p-2 text-center  text-[13px] md:text-[14px] ">Our chat community gives you the opportunity of
+            making new friends and sharing good moments with other people.</p>
+        <form action="room/join" method="post">
+            <input type="hidden" name="id" th:value="${room.onlineUsers}">
+            <button type="submit" class="w-36 btn btn-skin">
+                Join&nbsp;&nbsp;<i class="fa-solid fa-angles-right"></i>
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
