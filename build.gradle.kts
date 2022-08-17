@@ -49,7 +49,7 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages:$ktor")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor")
     implementation("io.ktor:ktor-server-sessions-jvm:$ktor")
-    implementation("io.ktor:ktor-network-tls-certificates:$ktor")
+    implementation("io.ktor:ktor-network-tls-certificates-jvm:$ktor")
     implementation("ch.qos.logback:logback-classic:$logback")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor")

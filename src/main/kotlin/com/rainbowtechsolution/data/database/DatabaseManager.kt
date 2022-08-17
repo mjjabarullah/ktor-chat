@@ -19,7 +19,16 @@ fun Application.configureDatabase() {
     TransactionManager.defaultDatabase = db
 
     transaction {
-        SchemaUtils.createMissingTablesAndColumns(Domains, Rooms, Users, Ranks, Permissions, Messages, PvtMessages, Reports)
+        SchemaUtils.createMissingTablesAndColumns(
+            Domains,
+            Rooms,
+            Users,
+            Ranks,
+            Permissions,
+            Messages,
+            PvtMessages,
+            Reports
+        )
     }
 
 }

@@ -70,7 +70,6 @@ fun ResultRow.toUserModel(): User {
         deviceId = this[Users.deviceId],
         country = this[Users.country],
         private = this[Users.private],
-        online = this[Users.online],
         muted = this[Users.muted],
         kicked = this[Users.kicked],
         banned = this[Users.banned],

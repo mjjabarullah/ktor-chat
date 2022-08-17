@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.common.Validation
 import com.rainbowtechsolution.data.entity.Gender
+import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.*
@@ -16,7 +17,7 @@ data class User(
     var email: String? = null,
     var password: String? = null,
     var gender: String? = null,
-    var avatar: String = ChatDefaults.USER_AVATAR,
+    var avatar: String? = null,
     var dob: String? = null,
     var about: String? = null,
     var mood: String? = null,
@@ -37,7 +38,6 @@ data class User(
     var deviceId: String? = null,
     var country: String? = null,
     var private: Boolean = false,
-    var online: Boolean = false,
     var muted: Boolean = false,
     var kicked: Boolean = false,
     var banned: Boolean = false,

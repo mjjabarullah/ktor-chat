@@ -28,7 +28,7 @@ class UserController : UserRepository {
             it[name] = user.name!!
             it[email] = user.email!!
             it[password] = user.password!!
-            it[avatar] = user.avatar
+            it[avatar] = user.avatar!!
             it[gender] = if (user.gender == Gender.Male.name) Gender.Male else Gender.Female
             it[Users.domainId] = domainId
             it[Users.rankId] = rankId
@@ -47,7 +47,7 @@ class UserController : UserRepository {
             it[name] = user.name!!
             it[email] = user.email!!
             it[password] = user.password!!
-            it[avatar] = user.avatar
+            it[avatar] = user.avatar!!
             it[Users.rankId] = rankId
         }
     }

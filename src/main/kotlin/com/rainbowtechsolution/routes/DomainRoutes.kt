@@ -14,6 +14,7 @@ import com.rainbowtechsolution.exceptions.*
 import com.rainbowtechsolution.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.server.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -264,7 +265,6 @@ fun Route.domainRoutes(
                 post("/create") {
                     try {
                         val userId = call.sessions.get<ChatSession>()?.id!!
-                        val slug = call.request.host().getDomain()
                         val params = call.receiveParameters()
                         val targetId = params["targetId"]?.toLong()!!
                         val domainId = params["domainId"]?.toInt()!!
@@ -652,7 +652,7 @@ fun Route.domainRoutes(
                 post("/customize-text") {
                     try {
                         val chatSession = call.sessions.get<ChatSession>()
-                        val isTextBold = call.receiveParameters()["textBold"].toBoolean() ?: false
+                        val isTextBold = call.receiveParameters()["textBold"].toBoolean()
                         val textColor = call.receiveParameters()["textColor"]
                         val textFont = call.receiveParameters()["textFont"]
                         userRepository.customizeText(chatSession?.id!!, isTextBold, textColor, textFont)

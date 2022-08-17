@@ -53,7 +53,7 @@ class MessageController : MessageRepository {
     }
 
     override suspend fun insertPrivateMessage(message: PvtMessage): PvtMessage = dbQuery {
-        var insertedMessage = message
+        var insertedMessage: PvtMessage
         PvtMessages.insert {
             it[content] = message.content
             it[image] = message.image

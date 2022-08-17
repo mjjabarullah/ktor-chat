@@ -33,7 +33,6 @@ object Users : LongIdTable("users") {
     val deviceId = varchar("device_id", 100).nullable()
     val country = varchar("country", 100).nullable()
     val private = bool("private").default(true)
-    val online = bool("online").default(false)
     val muted = bool("muted").default(false)
     val kicked = bool("kicked").default(false)
     val banned = bool("banned").default(false)

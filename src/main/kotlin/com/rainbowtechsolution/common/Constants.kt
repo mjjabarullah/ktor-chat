@@ -38,7 +38,7 @@ object RankIcons {
 }
 
 object Validation {
-    val BAD_CHARS = listOf("{", "}", ">", "<",)
+    val BAD_CHARS = listOf("{", "}", ">", "<")
 }
 
 object ChatDefaults {

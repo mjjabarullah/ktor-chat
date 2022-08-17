@@ -11,6 +11,7 @@ import com.rainbowtechsolution.domain.model.User
 import com.rainbowtechsolution.utils.clean
 import com.rainbowtechsolution.utils.encodeToString
 import com.rainbowtechsolution.utils.getLogger
+import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
 import java.util.concurrent.ConcurrentHashMap

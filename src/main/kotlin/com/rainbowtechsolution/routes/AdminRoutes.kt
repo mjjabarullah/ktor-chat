@@ -117,7 +117,7 @@ fun Route.adminRotes(
                         val params = call.receiveParameters()
                         val domainId = params["domainId"]?.toInt()!!
                         val staffIds = userRepository.getStaffIdsByDomainId(domainId)
-                        when (val type = ReportType.valueOf(params["type"].toString())) {
+                        when (ReportType.valueOf(params["type"].toString())) {
                             ReportType.Chat -> reportRepository.deleteReportById(id)
                             ReportType.PvtChat -> Unit/*TODO*/
                             ReportType.NewsFeed -> Unit/*TODO*/
