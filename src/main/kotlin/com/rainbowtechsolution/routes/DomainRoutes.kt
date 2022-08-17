@@ -171,19 +171,20 @@ fun Route.domainRoutes(
                     }
                 }
 
-                get("/{roomId}/messages") {
+                get("/{id}/messages") {
                     try {
-                        val roomId = call.parameters["roomId"]?.toInt()
+                        val roomId = call.parameters["id"]?.toInt()
                         val messages = messageRepository.getRoomMessages(roomId!!)
                         call.respond(HttpStatusCode.OK, messages)
                     } catch (e: Exception) {
+                        e.printStackTrace()
                         call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
                     }
                 }
 
-                get("/{roomId}/users") {
+                get("/{id}/users") {
                     try {
-                        val roomId = call.parameters["roomId"].toString().toInt()
+                        val roomId = call.parameters["id"].toString().toInt()
                         val limit = call.request.queryParameters["limit"].toString().toInt()
                         val users = userRepository.getUsersByRoom(roomId, limit)
                         call.respond(HttpStatusCode.OK, users)
@@ -208,13 +209,9 @@ fun Route.domainRoutes(
                         filePath += imageName
                         parts.forEachPart { part ->
                             when (part) {
-                                is PartData.FormItem -> {
-                                    content = part.value
-                                }
-                                is PartData.FileItem -> {
-                                    part.saveImage(filePath, renderFormat)
-                                }
-                                else -> {}
+                                is PartData.FormItem -> content = part.value
+                                is PartData.FileItem -> part.saveImage(filePath, renderFormat)
+                                else -> Unit
                             }
                         }
                         val message = Message(content = content, image = filePath, type = MessageType.Chat)
@@ -241,13 +238,9 @@ fun Route.domainRoutes(
                         filePath += audioName
                         parts.forEachPart { part ->
                             when (part) {
-                                is PartData.FormItem -> {
-                                    content = part.value
-                                }
-                                is PartData.FileItem -> {
-                                    part.saveAudio(filePath)
-                                }
-                                else -> {}
+                                is PartData.FormItem -> content = part.value
+                                is PartData.FileItem -> part.saveAudio(filePath)
+                                else -> Unit
                             }
                         }
                         val message = Message(content = content, audio = filePath, type = MessageType.Chat)
@@ -357,7 +350,7 @@ fun Route.domainRoutes(
                         }
                     }
 
-                    post("/{id}/allseen") {
+                    post("/{id}/all-seen") {
                         try {
                             val chatSession = call.sessions.get<ChatSession>()
                             val receiver = chatSession?.id!!
@@ -397,13 +390,9 @@ fun Route.domainRoutes(
                             filePath += audioName
                             parts.forEachPart { part ->
                                 when (part) {
-                                    is PartData.FormItem -> {
-                                        content = part.value
-                                    }
-                                    is PartData.FileItem -> {
-                                        part.saveAudio(filePath)
-                                    }
-                                    else -> {}
+                                    is PartData.FormItem -> content = part.value
+                                    is PartData.FileItem -> part.saveAudio(filePath)
+                                    else -> Unit
                                 }
                             }
                             val message = PvtMessage(
@@ -436,13 +425,9 @@ fun Route.domainRoutes(
                             filePath += imageName
                             parts.forEachPart { part ->
                                 when (part) {
-                                    is PartData.FormItem -> {
-                                        content = part.value
-                                    }
-                                    is PartData.FileItem -> {
-                                        part.saveImage(filePath, renderFormat)
-                                    }
-                                    else -> {}
+                                    is PartData.FormItem -> content = part.value
+                                    is PartData.FileItem -> part.saveImage(filePath, renderFormat)
+                                    else -> Unit
                                 }
                             }
                             val message = PvtMessage(

@@ -7,7 +7,6 @@ import com.rainbowtechsolution.data.entity.Gender
 import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.entity.Users
-import com.rainbowtechsolution.data.repository.DomainRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.domain.mappers.toUserModel
 import com.rainbowtechsolution.domain.model.Rank
@@ -19,9 +18,7 @@ import java.time.LocalDateTime
 
 class UserController : UserRepository {
 
-    private var userCache: Cache<Long, User> = Caffeine.newBuilder()
-        .maximumSize(10_000)
-        .build()
+    private var userCache: Cache<Long, User> = Caffeine.newBuilder().maximumSize(10_000).build()
 
     override suspend fun register(user: User, domainId: Int, rankId: Int): Long = dbQuery {
         Users.insertAndGetId {
@@ -113,18 +110,29 @@ class UserController : UserRepository {
     }
 
     override suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User> = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Users.id, Users.name, Users.avatar, Users.gender, Users.mood, Users.level, Users.status, Users.roomId,
+            Users.sessions, Users.nameColor, Users.nameFont, Ranks.name, Ranks.icon, Ranks.order
+        )
         val online = Users
             .innerJoin(Ranks)
-            .select { (Users.roomId eq roomId) and (Users.sessions greater 0) }
+            .slice(expressions)
+            .select { (Users.roomId eq roomId) and ((Users.sessions greater 0) or (Users.status eq Status.Stay)) }
             .orderBy(Ranks.order)
-            .orderBy(Users.level)
         val offline = Users
             .innerJoin(Ranks)
-            .select { (Users.roomId eq roomId) and ((Users.sessions eq 0)) }
+            .slice(expressions)
+            .select { (Users.roomId eq roomId) and ((Users.sessions eq 0) and (Users.status neq Status.Stay)) }
             .limit(limit)
             .orderBy(Ranks.order)
-            .orderBy(Users.level)
-        online.unionAll(offline).map { it.toUserModel() }
+        online.unionAll(offline).map {
+            User(
+                id = it[Users.id].value, name = it[Users.name], avatar = it[Users.avatar], mood = it[Users.mood],
+                gender = it[Users.gender].name, nameColor = it[Users.nameColor], nameFont = it[Users.nameFont],
+                level = it[Users.level], sessions = it[Users.sessions], status = it[Users.status].name,
+                rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
+            )
+        }
     }
 
     override suspend fun increasePoints(id: Long): Unit = dbQuery {
@@ -136,18 +144,21 @@ class UserController : UserRepository {
     }
 
     override suspend fun updateAvatar(id: Long, avatar: String): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.avatar] = avatar
         }
     }
 
     override suspend fun updateName(id: Long, name: String): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.name] = name
         }
     }
 
     override suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.nameColor] = nameColor
             it[Users.nameFont] = nameFont
@@ -161,30 +172,35 @@ class UserController : UserRepository {
     }
 
     override suspend fun updateMood(id: Long, mood: String?): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.mood] = mood
         }
     }
 
     override suspend fun updateAbout(id: Long, about: String?): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.about] = about
         }
     }
 
     override suspend fun updateStatus(id: Long, status: Status): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.status] = status
         }
     }
 
     override suspend fun updateGender(id: Long, gender: Gender): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.gender] = gender
         }
     }
 
     override suspend fun updateDob(id: Long, dob: String?): Unit = dbQuery {
+        userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.dob] = dob
         }
@@ -192,6 +208,7 @@ class UserController : UserRepository {
 
     override suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?): Unit =
         dbQuery {
+            userCache.invalidate(id)
             Users.update({ Users.id eq id }) {
                 it[Users.textBold] = textBold
                 it[Users.textColor] = textColor
@@ -207,6 +224,7 @@ class UserController : UserRepository {
     }
 
     override suspend fun delete(id: Long): Int = dbQuery {
+        userCache.invalidate(id)
         Users.deleteWhere { Users.id eq id }
     }
 }

@@ -1,14 +1,12 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.data.entity.Messages
-import com.rainbowtechsolution.data.entity.PvtMessages
-import com.rainbowtechsolution.data.entity.Ranks
-import com.rainbowtechsolution.data.entity.Users
+import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.repository.MessageRepository
 import com.rainbowtechsolution.domain.mappers.toMessageModel
 import com.rainbowtechsolution.domain.mappers.toPvtMessageModel
 import com.rainbowtechsolution.domain.model.Message
 import com.rainbowtechsolution.domain.model.PvtMessage
+import com.rainbowtechsolution.domain.model.Rank
 import com.rainbowtechsolution.domain.model.User
 import com.rainbowtechsolution.utils.dbQuery
 import com.rainbowtechsolution.utils.format
@@ -33,25 +31,6 @@ class MessageController : MessageRepository {
         resultMsg
     }
 
-    override suspend fun findMessageById(id: Long): Message? = dbQuery {
-        Messages
-            .innerJoin(Users)
-            .slice(
-                Users.id, Users.name, Users.avatar, Messages.id, Messages.content, Messages.createdAt,
-                Messages.audio, Messages.image, Messages.type
-            )
-            .select { Messages.id eq id }
-            .firstOrNull()
-            ?.let {
-                val user = User(id = it[Users.id].value, avatar = it[Users.avatar], name = it[Users.name])
-                Message(
-                    id = it[Messages.id].value, content = it[Messages.content], audio = it[Messages.audio],
-                    image = it[Messages.image], createdAt = it[Messages.createdAt].format(), type = it[Messages.type],
-                    user = user
-                )
-            }
-    }
-
     override suspend fun insertPrivateMessage(message: PvtMessage): PvtMessage = dbQuery {
         var insertedMessage: PvtMessage
         PvtMessages.insert {
@@ -69,14 +48,52 @@ class MessageController : MessageRepository {
         insertedMessage
     }
 
+    override suspend fun findMessageById(id: Long): Message? = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Users.id, Users.name, Users.avatar, Messages.id, Messages.content, Messages.createdAt,
+            Messages.audio, Messages.image, Messages.type
+        )
+        Messages
+            .innerJoin(Users)
+            .slice(expressions)
+            .select { Messages.id eq id }
+            .firstOrNull()
+            ?.let {
+                val user = User(id = it[Users.id].value, avatar = it[Users.avatar], name = it[Users.name])
+                Message(
+                    id = it[Messages.id].value, content = it[Messages.content], audio = it[Messages.audio],
+                    image = it[Messages.image], createdAt = it[Messages.createdAt].format(), type = it[Messages.type],
+                    user = user
+                )
+            }
+    }
+
     override suspend fun getRoomMessages(id: Int): List<Message> = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Messages.id, Messages.content, Messages.image, Messages.audio, Messages.type, Messages.roomId,
+            Messages.createdAt, Users.id, Users.name, Users.gender, Users.avatar, Users.nameFont, Users.nameColor,
+            Users.textFont, Users.textColor, Users.textBold, Ranks.icon
+        )
         Messages
             .innerJoin(Users)
             .innerJoin(Ranks)
+            .slice(expressions)
             .select { Messages.roomId eq id }
             .limit(20)
             .orderBy(Messages.id to SortOrder.DESC)
-            .map { it.toMessageModel() }
+            .map {
+                val user = User(
+                    id = it[Users.id].value, avatar = it[Users.avatar], name = it[Users.name],
+                    gender = it[Users.gender].name, nameFont = it[Users.nameFont], nameColor = it[Users.nameColor],
+                    textColor = it[Users.textColor], textFont = it[Users.textFont], textBold = it[Users.textBold],
+                    rank = Rank(icon = it[Ranks.icon])
+                )
+                Message(
+                    id = it[Messages.id].value, content = it[Messages.content], audio = it[Messages.audio],
+                    image = it[Messages.image], createdAt = it[Messages.createdAt].format(), type = it[Messages.type],
+                    user = user
+                )
+            }
             .reversed()
 
     }

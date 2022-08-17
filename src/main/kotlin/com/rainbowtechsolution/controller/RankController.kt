@@ -16,10 +16,10 @@ class RankController : RankRepository {
 
     override suspend fun createRank(rank: Rank): Int = dbQuery {
         Ranks.insertAndGetId {
-            it[name] = rank.name
-            it[code] = rank.code
-            it[icon] = rank.icon
-            it[order] = rank.order
+            it[name] = rank.name!!
+            it[code] = rank.code!!
+            it[icon] = rank.icon!!
+            it[order] = rank.order!!
             it[domainId] = rank.domainId!!
         }.value
     }

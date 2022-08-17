@@ -25,7 +25,7 @@
                                 </div>
                                 <img class="gender flex-none"
                                      :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
-                                <img class="rank-icon" :src="user.rank.icon">
+                                <img class="rank-icon" :src="user.rank.icon" :title="user.rank.name">
                             </div>
                         </div>
                     </li>
@@ -54,7 +54,7 @@
                                 </div>
                                 <img class="gender flex-none"
                                      :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
-                                <img class="rank-icon" :src="user.rank.icon">
+                                <img class="rank-icon" :src="user.rank.icon" :title="user.rank.name">
                             </div>
                         </div>
                     </li>
@@ -63,24 +63,3 @@
         </div>
     </div>
 </div>
-
-<!--
-<li th:id="'user-'+${user.id}" class="user-wrap" th:object="${user}"
-    th:@click="'getUserProfile('+${user.id}+')'">
-    <div class="w-full h-8 gap-2">
-        <div class="flex h-full w-full items-center">
-            <img class="avatar flex-none mx-1" th:src="*{avatar}">
-            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden">
-                <p class="username ellipsis" th:classappend="*{nameColor}">
-                    [[*{name}]]<span th:text="*{'Lv. '+ level }" class="level"></span>
-                </p>
-                <p th:text="*{mood}" class="mood ellipsis" th:classappend="*{nameColor}"></p>
-            </div>
-            <img class="gender flex-none"
-                 th:src="*{(gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp')}">
-            <img class="rank-icon" th:src="*{rank.icon}">
-        </div>
-    </div>
-</li>
-
--->

@@ -26,7 +26,7 @@ interface UserRepository {
 
     suspend fun joinRoom(roomId: Int, userId: Long)
 
-    suspend fun getUsersByRoom(roomId: Int, limit:Int): List<User>
+    suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User>
 
     suspend fun increasePoints(id: Long)
 
@@ -50,7 +50,7 @@ interface UserRepository {
 
     suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?)
 
-    suspend fun getStaffIdsByDomainId(domainId: Int):List<Long>
+    suspend fun getStaffIdsByDomainId(domainId: Int): List<Long>
 
     suspend fun delete(id: Long): Int
 

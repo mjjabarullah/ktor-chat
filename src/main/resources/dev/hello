@@ -1,7 +1,16 @@
-com.rainbowtechsolution.data.entity.PvtMessages.sender=3,
-com.rainbowtechsolution.data.entity.PvtMessages.receiver=1,
-com.rainbowtechsolution.data.entity.PvtMessages.content=hello machi,
-COUNT(CASE  WHEN (pvt_messages.sender = 1) AND (pvt_messages.seen = FALSE) THEN 1 ELSE 0 END) unread_messages=1,
-org.jetbrains.exposed.sql.Alias.id=1,
-org.jetbrains.exposed.sql.Alias.name=Jarvis,
-org.jetbrains.exposed.sql.Alias.avatar=uploads/avatars/f5c6933e-d96e-4924-9d1c-860abce1ab97.webp
+    <option valuse="signika">Signika</option>
+    <option valuse="grandstander">Grandstander</option>
+    <option valuse="comic">Comic</option>
+    <option valuse="orbitron">Orbitron</option>
+    <option valuse="quicksand">Quicksand</option>
+    <option valuse="lemonada">Lemonada</option>
+    <option valuse="grenze">Grenze</option>
+    <option valuse="kalam">Kalam</option>
+    <option valuse="merienda">Merienda</option>
+    <option valuse="amita">Amita</option>
+    <option valuse="averia">Averia</option>
+    <option valuse="turret">Turret</option>
+    <option valuse="sansita">Sansita</option>
+    <option valuse="comfortaa">Comfortaa</option>
+    <option valuse="charm">Charm</option>
+    <option valuse="lobste">Lobster</option>

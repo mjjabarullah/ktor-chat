@@ -11,24 +11,6 @@ const MessageType = {
 }
 const Status = {Stay: 'Stay', Online: 'Online', Away: 'Away', Busy: 'Busy'}
 const ReportType = {Chat: 'Chat', PvtChat: 'PvtChat', NewsFeed: 'NewsFeed'}
-const fonts = [
-    {name: 'Signika', code: 'signika'},
-    {name: 'Grandstander', code: 'grandstander'},
-    {name: 'Comic', code: 'comic'},
-    {name: 'Orbitron', code: 'orbitron'},
-    {name: 'Quicksand', code: 'quicksand'},
-    {name: 'Lemonada', code: 'lemonada'},
-    {name: 'Grenze', code: 'grenze'},
-    {name: 'Kalam', code: 'kalam'},
-    {name: 'Merienda', code: 'merienda'},
-    {name: 'Amita', code: 'amita'},
-    {name: 'Averia', code: 'averia'},
-    {name: 'Turret', code: 'turret'},
-    {name: 'Sansita', code: 'sansita'},
-    {name: 'Comfortaa', code: 'comfortaa'},
-    {name: 'Charm', code: 'charm'},
-    {name: 'Lobster', code: 'lobster'}
-]
 const textColors = ['red', 'red-1', 'red-2', 'red-3', 'orange', 'orange-1', 'orange-2', 'orange-3', 'amber', 'amber-1', 'amber-2', 'amber-3', 'yellow', 'yellow-1', 'yellow-2', 'yellow-3', 'lime', 'lime-1', 'lime-2', 'lime-3', 'green', 'green-1', 'green-2', 'green-3', 'emerald', 'emerald-1', 'emerald-2', 'emerald-3', 'teal', 'teal-1', 'teal-2', 'teal-3', 'cyan', 'cyan-1', 'cyan-2', 'cyan-3', 'sky', 'sky-1', 'sky-2', 'sky-3', 'blue', 'blue-1', 'blue-2', 'blue-3', 'indigo', 'indigo-1', 'indigo-2', 'indigo-3', 'violet', 'violet-1', 'violet-2', 'violet-3', 'purple', 'purple-1', 'purple-2', 'purple-3', 'fuchsia', 'fuchsia-1', 'fuchsia-2', 'fuchsia-3', 'pink', 'pink-1', 'pink-2', 'pink-3', 'rose', 'rose-1', 'rose-2', 'rose-3', 'slate', 'slate-1', 'slate-2', 'slate-3', 'gray', 'gray-1', 'gray-2', 'gray-3', 'zinc', 'zinc-1', 'zinc-2', 'zinc-3', 'stone', 'stone-1', 'stone-2', 'stone-3', 'black']
 const bgColors = ['b-red', 'b-red-1', 'b-red-2', 'b-red-3', 'b-orange', 'b-orange-1', 'b-orange-2', 'b-orange-3', 'b-amber', 'b-amber-1', 'b-amber-2', 'b-amber-3', 'b-yellow', 'b-yellow-1', 'b-yellow-2', 'b-yellow-3', 'b-lime', 'b-lime-1', 'b-lime-2', 'b-lime-3', 'b-green', 'b-green-1', 'b-green-2', 'b-green-3', 'b-emerald', 'b-emerald-1', 'b-emerald-2', 'b-emerald-3', 'b-teal', 'b-teal-1', 'b-teal-2', 'b-teal-3', 'b-cyan', 'b-cyan-1', 'b-cyan-2', 'b-cyan-3', 'b-sky', 'b-sky-1', 'b-sky-2', 'b-sky-3', 'b-blue', 'b-blue-1', 'b-blue-2', 'b-blue-3', 'b-indigo', 'b-indigo-1', 'b-indigo-2', 'b-indigo-3', 'b-violet', 'b-violet-1', 'b-violet-2', 'b-violet-3', 'b-purple', 'b-purple-1', 'b-purple-2', 'b-purple-3', 'b-fuchsia', 'b-fuchsia-1', 'b-fuchsia-2', 'b-fuchsia-3', 'b-pink', 'b-pink-1', 'b-pink-2', 'b-pink-3', 'b-rose', 'b-rose-1', 'b-rose-2', 'b-rose-3', 'b-slate', 'b-slate-1', 'b-slate-2', 'b-slate-3', 'b-gray', 'b-gray-1', 'b-gray-2', 'b-gray-3', 'b-zinc', 'b-zinc-1', 'b-zinc-2', 'b-zinc-3', 'b-stone', 'b-stone-1', 'b-stone-2', 'b-stone-3', 'b-black']
 const avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp',]
@@ -72,7 +54,6 @@ document.addEventListener('alpine:init', () => {
             u: {},
             bgColors: bgColors,
             avatars: avatars,
-            fonts: fonts,
             statusColor: '',
             userStatusColor: '',
             emoTab: 0,
@@ -364,7 +345,7 @@ document.addEventListener('alpine:init', () => {
                     const offline = []
                     const online = []
                     users.forEach(user => {
-                        if (user.sessions > 0) {
+                        if (user.sessions > 0 || user.status === Status.Stay) {
                             online.push(user)
                         } else {
                             offline.push(user)
@@ -668,9 +649,22 @@ document.addEventListener('alpine:init', () => {
                     <div class="w-full h-10 mb-4">
                         <select x-model="user.nameFont" class="input-text">
                             <option>Select Font</option>
-                            <template x-for="(font, index) in fonts" :key="index">
-                                <option :value="font.code" x-text="font.name"></option>
-                            </template>
+                            <option value="signika">Signika</option>
+                            <option value="grandstander">Grandstander</option>
+                            <option value="comic">Comic</option>
+                            <option value="orbitron">Orbitron</option>
+                            <option value="quicksand">Quicksand</option>
+                            <option value="lemonada">Lemonada</option>
+                            <option value="grenze">Grenze</option>
+                            <option value="kalam">Kalam</option>
+                            <option value="merienda">Merienda</option>
+                            <option value="amita">Amita</option>
+                            <option value="averia">Averia</option>
+                            <option value="turret">Turret</option>
+                            <option value="sansita">Sansita</option>
+                            <option value="comfortaa">Comfortaa</option>
+                            <option value="charm">Charm</option>
+                            <option value="lobste">Lobster</option>
                         </select>
                     </div>
                     <div class="w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar">
@@ -844,13 +838,14 @@ document.addEventListener('alpine:init', () => {
                     <div class="w-full h-10 mb-4">
                         <select x-model="status" class="input-text">
                             <option value="-1" selected>Select Status</option>
-                            <option value="0">Online</option>
-                            <option value="1">Away</option>
-                            <option value="2">Busy</option>
-                            <option value="3">Eating</option>
-                            <option value="4">Gaming</option>
-                            <option value="5">Singing</option>
-                            <option value="6">Listening</option>
+                            <option value="0">Stay</option>
+                            <option value="1">Online</option>
+                            <option value="2">Away</option>
+                            <option value="3">Busy</option>
+                            <option value="4">Eating</option>
+                            <option value="5">Gaming</option>
+                            <option value="6">Singing</option>
+                            <option value="7">Listening</option>
                         </select>
                     </div>
                     <button @click="changeStatus(status)" class="w-36 btn btn-skin text-center">Change<button>
@@ -957,9 +952,22 @@ document.addEventListener('alpine:init', () => {
                         <div class="w-full h-10 mb-4">
                             <select x-model="user.textFont" class="input-text">
                                 <option>Select Font</option>
-                                <template x-for="(font, index) in fonts" :key="index">
-                                    <option :value="font.code" x-text="font.name"></option>
-                                </template>
+                                <option value="signika">Signika</option>
+                                <option value="grandstander">Grandstander</option>
+                                <option value="comic">Comic</option>
+                                <option value="orbitron">Orbitron</option>
+                                <option value="quicksand">Quicksand</option>
+                                <option value="lemonada">Lemonada</option>
+                                <option value="grenze">Grenze</option>
+                                <option value="kalam">Kalam</option>
+                                <option value="merienda">Merienda</option>
+                                <option value="amita">Amita</option>
+                                <option value="averia">Averia</option>
+                                <option value="turret">Turret</option>
+                                <option value="sansita">Sansita</option>
+                                <option value="comfortaa">Comfortaa</option>
+                                <option value="charm">Charm</option>
+                                <option value="lobste">Lobster</option>
                             </select>
                         </div>
                         <p class="text-left font-bold text-[12px]">Text Bold</p>
@@ -1121,7 +1129,7 @@ document.addEventListener('alpine:init', () => {
                 formData.append('image', file)
                 formData.append('content', content)
                 axios.post('/room/upload-image', formData).then(res => {
-
+                    this.sendToRoom(res.data)
                     this.$refs.mainInput.value = ''
                     this.$refs.mainInput.focus()
                     this.showLoader = false
@@ -1458,7 +1466,7 @@ document.addEventListener('alpine:init', () => {
                 this.showFullModal(html)
             },
             setAllSeen(sender) {
-                axios.post(`message/pvt/${sender}/allseen`).then(res => {
+                axios.post(`message/pvt/${sender}/all-seen`).then(res => {
                     const user = this.pvtUsers.find(user => user.id === sender)
                     user.messages.forEach(message => message.seen = true)
                     this.setPvtNotificationCount()
@@ -1545,12 +1553,12 @@ document.addEventListener('alpine:init', () => {
                         if (e.response) {
                             if (e.response.status === 404) {
                                 this.showAlertMsg(e.response.data, 'error')
-                                axios.delete(`/reports/${id}/delete?domainId=${domainId}`).then(res => {
-                                })
+                                const formData = new FormData()
+                                formData.append('domainId', domainId)
+                                axios.delete(`/reports/${id}/delete`, {data: formData})
                             }
                             return
                         }
-                        console.log(e)
                         this.showAlertMsg('Something went wrong', 'error')
                     })
                 } else if (type === ReportType.PvtChat) {

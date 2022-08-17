@@ -67,8 +67,8 @@ fun Route.adminRotes(
             route("/reports") {
                 delete("/{id}/delete") {
                     try {
-                        val id = call.parameters["id"]?.toInt()!!
-                        val domainId = call.request.queryParameters["domainId"]?.toInt()!!
+                        val id = call.parameters["id"]!!.toInt()
+                        val domainId = call.receiveParameters()["domainId"]!!.toInt()
                         val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                         reportRepository.deleteReportById(id)
                         val message = PvtMessage(content = "", type = MessageType.ActionTaken)
@@ -82,11 +82,11 @@ fun Route.adminRotes(
 
                 post("/{id}/take-action") {
                     try {
-                        val id = call.parameters["id"]?.toInt()!!
+                        val id = call.parameters["id"]!!.toInt()
                         val params = call.receiveParameters()
-                        val targetId = params["targetId"]?.toLong()!!
-                        val domainId = params["domainId"]?.toInt()!!
-                        val roomId = params["roomId"]?.toInt()!!
+                        val targetId = params["targetId"]!!.toLong()
+                        val domainId = params["domainId"]!!.toInt()
+                        val roomId = params["roomId"]!!.toInt()
                         val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                         when (ReportType.valueOf(params["type"].toString())) {
                             ReportType.Chat -> {
@@ -113,9 +113,9 @@ fun Route.adminRotes(
 
                 post("/{id}/no-action") {
                     try {
-                        val id = call.parameters["id"]?.toInt()!!
+                        val id = call.parameters["id"]!!.toInt()
                         val params = call.receiveParameters()
-                        val domainId = params["domainId"]?.toInt()!!
+                        val domainId = params["domainId"]!!.toInt()
                         val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                         when (ReportType.valueOf(params["type"].toString())) {
                             ReportType.Chat -> reportRepository.deleteReportById(id)
