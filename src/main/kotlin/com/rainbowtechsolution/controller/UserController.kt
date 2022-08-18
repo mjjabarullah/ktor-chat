@@ -63,16 +63,13 @@ class UserController : UserRepository {
         Users.select { (Users.email eq email and (Users.domainId eq domainId)) }.count() > 0
     }
 
-    override suspend fun login(name: String, password: String, domainId: Int): User? {
-        val resultRow =
-            dbQuery {
-                (Users innerJoin Ranks)
-                    .select { (Users.name eq name) and (Users.domainId eq domainId) }
-                    .firstOrNull()
-            } ?: return null
-        val userPassword = resultRow[Users.password]
-        if (!userPassword.checkPassword(password)) return null
-        return resultRow.toUserModel()
+    override suspend fun login(name: String, password: String, domainId: Int): User? = dbQuery {
+        val row = Users.innerJoin(Ranks).select { (Users.name eq name) and (Users.domainId eq domainId) }.firstOrNull()
+        when {
+            row == null -> null
+            !row[Users.password].checkPassword(password) -> null
+            else -> row.toUserModel()
+        }
     }
 
     override suspend fun update(user: User): Unit = dbQuery {

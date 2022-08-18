@@ -21,7 +21,8 @@ data class Permission(
     val private: Boolean = false,
     val splEmo: Boolean = false,
     val status: Boolean = false,
-    val delMsg:Boolean = false,
+    val delMsg: Boolean = false,
+    val seeReports: Boolean = false,
     val mute: Boolean = false,
     val kick: Boolean = false,
     val ban: Boolean = false

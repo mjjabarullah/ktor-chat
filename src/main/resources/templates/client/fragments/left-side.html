@@ -1,7 +1,12 @@
 <!--suppress ALL -->
-<div id="left-side"
-     class="hidden z-[60] lg:z-0 border-r border-gray-200 lg:block h-screen absolute top-0 inset-y-0 lg:relative w-52 lg:w-80 lg:h-full rounded-tr-xl rounded-br-xl lg:rounded-none drop-shadow-lg lg:drop-shadow-none bg-white">
-    <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none absolute">
+<div x-show="showLeft" class="left-side-wrap"
+     x-transition:enter="transition ease-in-out duration-50"
+     x-transition:enter-start="opacity-0 transform scale-x-0 -translate-x-1/2"
+     x-transition:enter-end="opacity-100 transform scale-x-100 translate-x-0"
+     x-transition:leave="transition ease-in-out duration-50"
+     x-transition:leave-start="opacity-100 transform scale-x-100 translate-x-0"
+     x-transition:leave-end="opacity-0 transform scale-x-0 -translate-x-1/2">
+    <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none">
         <div class="left top-0 flex flex-col overflow-y-auto overflow-x-hidden h-full w-full">
             <ul class="flex flex-col ">
                 <li class="pt-4 px-1">

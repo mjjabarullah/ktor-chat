@@ -3,15 +3,14 @@
      th:object="${user}">
     <div id="header" class="header">
         <div class="h-full flex gap-2 items-center">
-            <i class="fa-solid fa-bars icon-white px-2 lg:hidden"></i>
+            <i @click="toggleLeft" class="fa-solid fa-bars icon-white px-2 lg:hidden"></i>
             <div @click="showDropDown = !showDropDown" class="flex gap-2 items-center cursor-pointer lg:ml-4">
                 <img class="avatar" :src="user.avatar" th:src="${user.avatar}" alt="">
                 <p x-text="user.name" class="username" th:text="${user.name}"></p>
             </div>
         </div>
         <div class="h-full flex lg:w-80 justify-end items-center gap-4 pr-4">
-            <div th:if="${permission.delMsg}" @click="openReportsModal" class="relative">
-                <!--TODO: change appropriate permission-->
+            <div th:if="${permission.seeReports}" @click="openReportsModal" class="relative">
                 <i class="fa-solid fa-flag icon-white"></i>
                 <p x-cloak x-show="reportNotificationCount > 0" x-transition class="count"
                    x-text="reportNotificationCount"></p>
@@ -25,7 +24,7 @@
                 <i class="fa-solid fa-bell icon-white"></i>
                 <p x-cloak x-show="notificationCount > 0" x-transition class="count" x-text="notificationCount"></p>
             </div>
-            <i @click="showRight()" class="fa-solid fa-user-group icon-white lg:hidden block"></i>
+            <i @click="toggleRight" class="fa-solid fa-user-group icon-white lg:hidden block"></i>
         </div>
     </div>
     <div class="z-[60] rounded-b fixed top-[39px] bg-skin-hover py-0.5 px-2 left-[50%] -translate-x-1/2 mx-auto">

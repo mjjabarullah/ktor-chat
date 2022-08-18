@@ -21,6 +21,7 @@ object Permissions : IntIdTable("permissions") {
     val splEmo = bool("spl_emo").default(false)
     val status = bool("status").default(false)
     val delMsg = bool("del_msg").default(false)
+    val seeReports = bool("see_reports").default(false)
     val mute = bool("mute").default(false)
     val kick = bool("kick").default(false)
     val ban = bool("ban").default(false)

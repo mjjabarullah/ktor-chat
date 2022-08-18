@@ -92,18 +92,6 @@ fun ResultRow.toRankModel(): Rank {
     )
 }
 
-fun ResultRow.toMessageModel(): Message {
-    return Message(
-        id = this[Messages.id].value,
-        content = this[Messages.content],
-        image = this[Messages.image],
-        audio = this[Messages.audio],
-        type = this[Messages.type],
-        user = toUserModel(),
-        createdAt = this[Messages.createdAt].format()
-    )
-}
-
 fun ResultRow.toPvtMessageModel(sender: QueryAlias, receiver: QueryAlias): PvtMessage {
     val userSender = User(
         id = this[sender[Users.id]].value,
@@ -154,6 +142,7 @@ fun ResultRow.toPermissionModel(): Permission {
         splEmo = this[Permissions.splEmo],
         status = this[Permissions.status],
         delMsg = this[Permissions.delMsg],
+        seeReports = this[Permissions.seeReports],
         mute = this[Permissions.mute],
         kick = this[Permissions.kick],
         ban = this[Permissions.ban]

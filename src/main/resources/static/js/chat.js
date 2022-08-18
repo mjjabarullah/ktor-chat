@@ -5428,9 +5428,14 @@ var bgColors = ['b-red', 'b-red-1', 'b-red-2', 'b-red-3', 'b-orange', 'b-orange-
 var avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp'];
 var emojis = [easy, modern, easy, modern];
 var RECORDING_TIME = 180;
+var mobile = window.matchMedia('(max-width: 640px)');
+var tablet = window.matchMedia('(min-width: 768px)');
+var desktop = window.matchMedia('(min-width: 1024px)');
 document.addEventListener('alpine:init', function () {
   alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('chat', function () {
     return {
+      showLeft: true,
+      showRight: true,
       showModal: false,
       showImage: false,
       showFulModal: false,
@@ -5488,6 +5493,18 @@ document.addEventListener('alpine:init', function () {
       init: function init() {
         var _this = this;
 
+        this.showRight = desktop.matches || tablet.matches;
+        this.showLeft = desktop.matches;
+
+        desktop.onchange = function (e) {
+          _this.showLeft = desktop.matches;
+          _this.showRight = desktop.matches || tablet.matches;
+        };
+
+        tablet.onchange = function (e) {
+          _this.showRight = desktop.matches || tablet.matches;
+        };
+
         this.recorder = new MicRecorder({
           bitrate: 80
         });
@@ -5540,6 +5557,15 @@ document.addEventListener('alpine:init', function () {
           user.nameFont = _this.user.nameFont;
           user.gender = _this.user.gender;
         });
+      },
+      toggleLeft: function toggleLeft() {
+        this.showLeft = !this.showLeft;
+        if (tablet.matches) return;
+        this.showRight = false;
+      },
+      toggleRight: function toggleRight() {
+        this.showLeft = false;
+        this.showRight = !this.showRight;
       },
       showSmallModal: function showSmallModal(html) {
         this.$refs.modalContent.innerHTML = html;
@@ -6309,6 +6335,13 @@ document.addEventListener('alpine:init', function () {
         var exists = this.pvtUsers.find(function (user) {
           return user.id === id;
         });
+        this.closeUserProfile();
+        this.closeFullModal();
+
+        if (mobile.matches) {
+          this.showLeft = false;
+          this.showRight = false;
+        }
 
         if (exists != null && exists !== 'undefined') {
           exists.minimize = false;
@@ -6318,8 +6351,6 @@ document.addEventListener('alpine:init', function () {
             this.setAllSeen(exists.id);
           }
 
-          this.closeUserProfile();
-          this.closeFullModal();
           this.$nextTick(function () {
             dragElement(document.getElementById("draggable-".concat(exists.id)), exists.id);
           });
@@ -6523,6 +6554,8 @@ document.addEventListener('alpine:init', function () {
           html += "</ul></div></div>";
 
           _this29.showFullModal(html);
+
+          if (mobile.matches) _this29.showLeft = false;
         });
       },
       openMessageModal: function openMessageModal() {

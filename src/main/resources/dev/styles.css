@@ -945,7 +945,7 @@ body {
 }
 
 .chat {
-    @apply text-[13px] leading-[18px] flex items-center justify-start
+    @apply text-[13px] leading-[18px]
 }
 
 .lobby-image {
@@ -964,11 +964,11 @@ body {
     @apply z-50 fixed bg-transparent top-20 right-2 lg:right-[330px]
 }
 
-.pvt-modal{
+.pvt-modal {
     @apply rounded-md mx-auto md:mx-0 z-50 fixed left-0 right-0 top-[60px] md:left-[50%] md:-translate-x-1/2 flex justify-end flex-grow flex-col h-[320px] bg-white w-[90%] md:w-[350px] shadow-lg shadow-black/20
 }
 
-.pvt-header{
+.pvt-header {
     @apply py-1 flex justify-between items-center bg-skin-hover w-full text-white text-left font-bold flex-none rounded-t-md cursor-move
 }
 
@@ -984,7 +984,7 @@ body {
     @apply w-full flex border-t border-gray-200
 }
 
-.pvt-modal li.chat-wrap{
+.pvt-modal li.chat-wrap {
     @apply border-none
 }
 
@@ -1082,7 +1082,7 @@ body {
 }
 
 .emoticon {
-    @apply h-[24px] float-left m-[5px] cursor-pointer
+    @apply h-[24px] inline-block m-[5px] cursor-pointer
 }
 
 .main-input-wrap {
@@ -1165,6 +1165,13 @@ body {
     @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
 }
 
+.left-side-wrap {
+    @apply z-[60] lg:z-0 md:border-r md:border-gray-200 absolute lg:relative inset-y-0 w-full md:w-80 h-full bg-white md:shadow-md md:shadow-black/20
+}
+
+.right-side-wrap {
+    @apply z-[60] md:z-0 md:border-l md:border-gray-200 absolute md:relative inset-y-0 w-full md:w-[320px] h-full bg-white
+}
 
 @layer utilities {
 

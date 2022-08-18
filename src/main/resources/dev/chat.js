@@ -17,149 +17,176 @@ const avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/im
 const emojis = [easy, modern, easy, modern]
 const RECORDING_TIME = 180
 
+const mobile = window.matchMedia('(max-width: 640px)')
+const tablet = window.matchMedia('(min-width: 768px)')
+const desktop = window.matchMedia('(min-width: 1024px)')
+
 document.addEventListener('alpine:init', () => {
 
     Alpine.data('chat', () => ({
-            showModal: false,
-            showImage: false,
-            showFulModal: false,
-            showAlert: false,
-            showLoader: true,
-            showDropDown: false,
-            showProfile: false,
-            showUserProfile: false,
-            showOption: false,
-            showEmo: false,
-            showMessages: false,
-            user: {
-                avatar: avatar,
-                name: name,
-                gender: gender,
-                mood: mood,
-                about: about,
-                nameColor: nameColor,
-                nameFont: nameFont,
-                textColor: textColor,
-                textBold: `${textBold}`,
-                textFont: textFont,
-                status: status,
-                joined: joined,
-                dob: dob,
-                points: points,
-                level: level,
-                rankCode: rankCode,
-                rankName: rankName,
-                rankIcon: rankIcon,
-            },
-            u: {},
-            bgColors: bgColors,
-            avatars: avatars,
-            statusColor: '',
-            userStatusColor: '',
-            emoTab: 0,
-            register: {
-                email: '',
-                password: '',
-                errors: {}
-            },
-            roomSocket: new WebSocket(`wss://${location.host}/chatroom/${roomId}`),
-            userSocket: new WebSocket(`wss://${location.host}/member/${userId}`),
-            onlineUsers: [],
-            offlineUsers: [],
-            pvtUsers: [],
-            rooms: [],
-            reports: [],
-            pvtNotificationCount: 0,
-            reportNotificationCount: 0,
-            notificationCount: 0,
-            isRecording: false,
-            remainingTime: RECORDING_TIME,
-            init() {
+        showLeft: true,
+        showRight: true,
+        showModal: false,
+        showImage: false,
+        showFulModal: false,
+        showAlert: false,
+        showLoader: true,
+        showDropDown: false,
+        showProfile: false,
+        showUserProfile: false,
+        showOption: false,
+        showEmo: false,
+        showMessages: false,
+        user: {
+            avatar: avatar,
+            name: name,
+            gender: gender,
+            mood: mood,
+            about: about,
+            nameColor: nameColor,
+            nameFont: nameFont,
+            textColor: textColor,
+            textBold: `${textBold}`,
+            textFont: textFont,
+            status: status,
+            joined: joined,
+            dob: dob,
+            points: points,
+            level: level,
+            rankCode: rankCode,
+            rankName: rankName,
+            rankIcon: rankIcon,
+        },
+        u: {},
+        bgColors: bgColors,
+        avatars: avatars,
+        statusColor: '',
+        userStatusColor: '',
+        emoTab: 0,
+        register: {
+            email: '',
+            password: '',
+            errors: {}
+        },
+        roomSocket: new WebSocket(`wss://${location.host}/chatroom/${roomId}`),
+        userSocket: new WebSocket(`wss://${location.host}/member/${userId}`),
+        onlineUsers: [],
+        offlineUsers: [],
+        pvtUsers: [],
+        rooms: [],
+        reports: [],
+        pvtNotificationCount: 0,
+        reportNotificationCount: 0,
+        notificationCount: 0,
+        isRecording: false,
+        remainingTime: RECORDING_TIME,
+        init() {
 
-                this.recorder = new MicRecorder({bitrate: 80})
+            this.showRight = desktop.matches || tablet.matches
+            this.showLeft = desktop.matches
 
-                this.getEmojis()
+            desktop.onchange = (e) => {
+                this.showLeft = desktop.matches
+                this.showRight = desktop.matches || tablet.matches
+            }
 
-                this.getMessages()
+            tablet.onchange = (e) => {
+                this.showRight = desktop.matches || tablet.matches
+            }
 
-                this.reCheckPvtMessages()
+            this.recorder = new MicRecorder({bitrate: 80})
 
-                this.getProfile()
+            this.getEmojis()
 
-                this.setStatusColor()
+            this.getMessages()
 
-                this.getReports()
+            this.reCheckPvtMessages()
 
-                this.roomSocket.addEventListener('message', (e) => {
-                    this.renderMessage(JSON.parse(e.data))
-                })
+            this.getProfile()
 
-                this.roomSocket.addEventListener('close', (e) => {
-                    this.showAlertMsg('Room connection closed', 'error')
-                })
+            this.setStatusColor()
 
-                this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
+            this.getReports()
 
-                this.userSocket.addEventListener('close', (e) => {
-                    this.showAlertMsg('User connection closed', 'error')
-                })
+            this.roomSocket.addEventListener('message', (e) => {
+                this.renderMessage(JSON.parse(e.data))
+            })
 
-                const isUGCShowed = localStorage.getItem('isUGCShowed')
-                if (isUGCShowed !== "true") {
+            this.roomSocket.addEventListener('close', (e) => {
+                this.showAlertMsg('Room connection closed', 'error')
+            })
+
+            this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
+
+            this.userSocket.addEventListener('close', (e) => {
+                this.showAlertMsg('User connection closed', 'error')
+            })
+
+            const isUGCShowed = localStorage.getItem('isUGCShowed')
+            if (isUGCShowed !== "true") {
+                this.showLoader = false
+                this.showUCGPolicyDialog()
+            } else {
+                /*TODO: uncomment this*/
+                /*this.showLoader = true
+                setTimeout(() => {
                     this.showLoader = false
-                    this.showUCGPolicyDialog()
-                } else {
-                    /*TODO: uncomment this*/
-                    /*this.showLoader = true
-                    setTimeout(() => {
-                        this.showLoader = false
-                        this.$refs.mainInput.focus()
-                        this.showMessages = true
-                    }, 15e2)*/
-
                     this.$refs.mainInput.focus()
                     this.showMessages = true
-                    this.showLoader = false
-                }
+                }, 15e2)*/
 
-                this.$watch('user', () => {
-                    const user = this.onlineUsers.find(user => user.id === userId)
-                    user.name = this.user.name
-                    user.mood = this.user.mood
-                    user.avatar = this.user.avatar
-                    user.nameColor = this.user.nameColor
-                    user.nameFont = this.user.nameFont
-                    user.gender = this.user.gender
-                })
-            },
-            showSmallModal(html) {
-                this.$refs.modalContent.innerHTML = html
-                this.showModal = true
-            },
-            closeSmallModal() {
-                this.$refs.modalContent.innerText = ''
-                this.showModal = false
-            },
-            showImgModal(html) {
-                this.$refs.imgModalContent.innerHTML = html
-                this.showImage = true
-            },
-            closeImgModal() {
-                this.$refs.imgModalContent.innerText = ''
-                this.showImage = false
-            },
-            showFullModal(html) {
-                this.$refs.fullModalContent.innerHTML = html
-                this.showFulModal = true
-            },
-            closeFullModal() {
-                this.showFulModal = false
-                setTimeout(() => {
-                    this.$refs.fullModalContent.innerText = ''
-                }, 500)
-            },
-            showUCGPolicyDialog() {
-                const html = `
+                this.$refs.mainInput.focus()
+                this.showMessages = true
+                this.showLoader = false
+            }
+
+            this.$watch('user', () => {
+                const user = this.onlineUsers.find(user => user.id === userId)
+                user.name = this.user.name
+                user.mood = this.user.mood
+                user.avatar = this.user.avatar
+                user.nameColor = this.user.nameColor
+                user.nameFont = this.user.nameFont
+                user.gender = this.user.gender
+            })
+        },
+        toggleLeft() {
+            this.showLeft = !this.showLeft
+            if (tablet.matches) return
+            this.showRight = false
+        },
+        toggleRight() {
+            this.showLeft = false
+            this.showRight = !this.showRight
+        },
+        showSmallModal(html) {
+            this.$refs.modalContent.innerHTML = html
+            this.showModal = true
+        },
+        closeSmallModal() {
+            this.$refs.modalContent.innerText = ''
+            this.showModal = false
+        },
+        showImgModal(html) {
+            this.$refs.imgModalContent.innerHTML = html
+            this.showImage = true
+        },
+        closeImgModal() {
+            this.$refs.imgModalContent.innerText = ''
+            this.showImage = false
+        },
+        showFullModal(html) {
+            this.$refs.fullModalContent.innerHTML = html
+            this.showFulModal = true
+        },
+        closeFullModal() {
+            this.showFulModal = false
+            setTimeout(() => {
+                this.$refs.fullModalContent.innerText = ''
+            }, 500)
+        },
+        showUCGPolicyDialog() {
+            const html = `
                 <div class="text-gray-700 text-center">
                     <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                         <p class="text-md font-bold ">Information</p>
@@ -173,56 +200,56 @@ document.addEventListener('alpine:init', () => {
                     </div>
                 </div>
                 `
-                this.showSmallModal(html)
-            },
-            closeUGCPolicy() {
-                this.closeSmallModal()
-                this.showMessages = true
-                this.$refs.mainInput.focus()
-                localStorage.setItem("isUGCShowed", "true")
-            },
-            showAlertMsg(msg, color) {
-                this.$refs.alertMsg.classList.add(color)
-                this.$refs.alertMsg.innerHTML = `
+            this.showSmallModal(html)
+        },
+        closeUGCPolicy() {
+            this.closeSmallModal()
+            this.showMessages = true
+            this.$refs.mainInput.focus()
+            localStorage.setItem("isUGCShowed", "true")
+        },
+        showAlertMsg(msg, color) {
+            this.$refs.alertMsg.classList.add(color)
+            this.$refs.alertMsg.innerHTML = `
                 <div class="flex flex-col justify-center items-center w-full h-full">
                     <p class="w-full text-center">${msg}</p>
                 </div>
                 `
-                this.showAlert = true
-                setTimeout(() => {
-                    this.$refs.alertMsg.classList.remove(color)
-                    this.$refs.alertMsg.innerHTML = ''
-                    this.showAlert = false
-                }, 3e3)
-            },
-            setStatusColor() {
-                switch (this.user.status) {
-                    case Status.Online :
-                        this.statusColor = 'green'
-                        break
-                    case Status.Away:
-                        this.statusColor = 'yellow'
-                        break
-                    case Status.Busy :
-                        this.statusColor = 'red'
-                        break
-                }
-            },
-            setUserStatusColor() {
-                switch (this.u.status) {
-                    case Status.Online :
-                        this.statusColor = 'green'
-                        break
-                    case Status.Away:
-                        this.statusColor = 'yellow'
-                        break
-                    case Status.Busy :
-                        this.statusColor = 'red'
-                        break
-                }
-            },
-            getProfile() {
-                this.$refs.profileContent.innerHTML = `
+            this.showAlert = true
+            setTimeout(() => {
+                this.$refs.alertMsg.classList.remove(color)
+                this.$refs.alertMsg.innerHTML = ''
+                this.showAlert = false
+            }, 3e3)
+        },
+        setStatusColor() {
+            switch (this.user.status) {
+                case Status.Online :
+                    this.statusColor = 'green'
+                    break
+                case Status.Away:
+                    this.statusColor = 'yellow'
+                    break
+                case Status.Busy :
+                    this.statusColor = 'red'
+                    break
+            }
+        },
+        setUserStatusColor() {
+            switch (this.u.status) {
+                case Status.Online :
+                    this.statusColor = 'green'
+                    break
+                case Status.Away:
+                    this.statusColor = 'yellow'
+                    break
+                case Status.Busy :
+                    this.statusColor = 'red'
+                    break
+            }
+        },
+        getProfile() {
+            this.$refs.profileContent.innerHTML = `
             <div class="profile text-gray-700 text-center">
                 <div class="flex rounded px-4 py-2 flex bg-skin-hover to-skin-hover text-white items-center relative">
                     <div class="relative flex-none">
@@ -293,74 +320,74 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-            },
-            getMessages() {
-                axios.get(`/room/${roomId}/messages`).then(res => {
-                    const messages = res.data
-                    this.$refs.chatMessages.innerHTML = ''
-                    messages.forEach(message => {
-                        this.renderMessage(message)
-                    })
+        },
+        getMessages() {
+            axios.get(`/room/${roomId}/messages`).then(res => {
+                const messages = res.data
+                this.$refs.chatMessages.innerHTML = ''
+                messages.forEach(message => {
+                    this.renderMessage(message)
                 })
-            },
-            getReports() {
-                if (canSeeReports) {
-                    axios.get(`/${domainId}/reports`).then(res => {
-                        this.reports = res.data
-                        this.reportNotificationCount = this.reports.length
-                    })
-                }
-            },
-            getEmojis() {
-                let head = '<div class="emo-head">'
-                let emos = ''
-                emojis.forEach((emoji, index) => {
-                    emos += `<div x-show="emoTab === ${index}"  class="emojis">`
-                    Object.keys(emoji).forEach(key => {
-                        if (key === 'head') head += `<img @click="emoTab=${index}" class="head" src="${emoji[key]}" :class="[emoTab==${index}?'active': '']" >`
-                        else emos += `<img @click="addMainEmo('${key}')" class="emoticon" src="${emoji[key]}"> `
-                    })
-                    emos += '</div>'
+            })
+        },
+        getReports() {
+            if (canSeeReports) {
+                axios.get(`/${domainId}/reports`).then(res => {
+                    this.reports = res.data
+                    this.reportNotificationCount = this.reports.length
                 })
-                head += '</div>'
-                this.$refs.mainEmojis.innerHTML = head + emos
-            },
-            getPvtEmojis(element) {
-                let head = '<div class="emo-head">'
-                let emos = ''
-                emojis.forEach((emoji, index) => {
-                    emos += `<div x-show="pvtEmoTab == ${index}" class="pvt-emojis">`
-                    Object.keys(emoji).forEach(key => {
-                        if (key === 'head') head += `<img @click="pvtEmoTab=${index}" class="head" src="${emoji[key]}" :class="[pvtEmoTab===${index}?'active': '']" >`
-                        else emos += `<img @click="addPvtEmo('${key}');showPvtEmo=false" class="emoticon" src="${emoji[key]}"> `
-                    })
-                    emos += '</div>'
+            }
+        },
+        getEmojis() {
+            let head = '<div class="emo-head">'
+            let emos = ''
+            emojis.forEach((emoji, index) => {
+                emos += `<div x-show="emoTab === ${index}"  class="emojis">`
+                Object.keys(emoji).forEach(key => {
+                    if (key === 'head') head += `<img @click="emoTab=${index}" class="head" src="${emoji[key]}" :class="[emoTab==${index}?'active': '']" >`
+                    else emos += `<img @click="addMainEmo('${key}')" class="emoticon" src="${emoji[key]}"> `
                 })
-                head += '</div>'
-                element.innerHTML = head + emos
-            },
-            getRoomUsers() {
-                axios.get(`/room/${roomId}/users?limit=${offlineLimit}`).then(res => {
-                    const users = res.data
-                    const offline = []
-                    const online = []
-                    users.forEach(user => {
-                        if (user.sessions > 0 || user.status === Status.Stay) {
-                            online.push(user)
-                        } else {
-                            offline.push(user)
-                        }
-                    })
-                    this.onlineUsers = online
-                    this.offlineUsers = offline
-                    this.offlineUsers = this.offlineUsers.sort()
-                }).catch(e => {
+                emos += '</div>'
+            })
+            head += '</div>'
+            this.$refs.mainEmojis.innerHTML = head + emos
+        },
+        getPvtEmojis(element) {
+            let head = '<div class="emo-head">'
+            let emos = ''
+            emojis.forEach((emoji, index) => {
+                emos += `<div x-show="pvtEmoTab == ${index}" class="pvt-emojis">`
+                Object.keys(emoji).forEach(key => {
+                    if (key === 'head') head += `<img @click="pvtEmoTab=${index}" class="head" src="${emoji[key]}" :class="[pvtEmoTab===${index}?'active': '']" >`
+                    else emos += `<img @click="addPvtEmo('${key}');showPvtEmo=false" class="emoticon" src="${emoji[key]}"> `
+                })
+                emos += '</div>'
+            })
+            head += '</div>'
+            element.innerHTML = head + emos
+        },
+        getRoomUsers() {
+            axios.get(`/room/${roomId}/users?limit=${offlineLimit}`).then(res => {
+                const users = res.data
+                const offline = []
+                const online = []
+                users.forEach(user => {
+                    if (user.sessions > 0 || user.status === Status.Stay) {
+                        online.push(user)
+                    } else {
+                        offline.push(user)
+                    }
+                })
+                this.onlineUsers = online
+                this.offlineUsers = offline
+                this.offlineUsers = this.offlineUsers.sort()
+            }).catch(e => {
 
-                })
-            },
-            showGuestRegisterDialog() {
-                if (rankCode !== 'guest') return
-                const html = `
+            })
+        },
+        showGuestRegisterDialog() {
+            if (rankCode !== 'guest') return
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Register</p>
@@ -399,39 +426,39 @@ document.addEventListener('alpine:init', () => {
                     </form>
                 </div>
             </div>`
-                this.showSmallModal(html)
-            },
-            guestRegister() {
-                this.showLoader = true
-                const form = new FormData()
-                form.append('name', name)
-                form.append('email', this.register.email)
-                form.append('password', this.register.password)
-                form.append('gender', gender)
+            this.showSmallModal(html)
+        },
+        guestRegister() {
+            this.showLoader = true
+            const form = new FormData()
+            form.append('name', name)
+            form.append('email', this.register.email)
+            form.append('password', this.register.password)
+            form.append('gender', gender)
 
-                axios.post('/guest-register', form).then(res => {
-                    this.showLoader = false
-                    this.closeSmallModal()
-                    setTimeout(() => {
-                        location.reload()
-                    }, 2000)
-                    this.showAlertMsg("Registration Successful", 'success')
-                }).catch(e => {
-                    this.showLoader = false
-                    this.register.errors = {}
-                    this.register.errors = e.response.data
-                })
-            },
-            getUserProfile(id) {
-                if (id === userId) {
-                    this.showProfile = true
-                    return
-                }
-                axios.get(`/user/${id}`).then(res => {
-                    this.u = res.data
+            axios.post('/guest-register', form).then(res => {
+                this.showLoader = false
+                this.closeSmallModal()
+                setTimeout(() => {
+                    location.reload()
+                }, 2000)
+                this.showAlertMsg("Registration Successful", 'success')
+            }).catch(e => {
+                this.showLoader = false
+                this.register.errors = {}
+                this.register.errors = e.response.data
+            })
+        },
+        getUserProfile(id) {
+            if (id === userId) {
+                this.showProfile = true
+                return
+            }
+            axios.get(`/user/${id}`).then(res => {
+                this.u = res.data
 
-                    this.setUserStatusColor()
-                    this.$refs.userProfileContent.innerHTML = `
+                this.setUserStatusColor()
+                this.$refs.userProfileContent.innerHTML = `
                 <div class="profile text-gray-700 text-center">
                     <div class="flex rounded px-4 py-2 bg-skin-hover to-skin-hover text-white items-center relative">
                         <img :src="u.avatar" src="" class="avatar" alt="">
@@ -494,17 +521,17 @@ document.addEventListener('alpine:init', () => {
                     </div>
                 </div>
                 `
-                    this.showUserProfile = true
-                }).catch(e => {
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            closeUserProfile() {
-                this.$refs.userProfileContent.innerHTML = ''
-                this.showUserProfile = false
-            },
-            showLogoutDialog() {
-                const html = `
+                this.showUserProfile = true
+            }).catch(e => {
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        closeUserProfile() {
+            this.$refs.userProfileContent.innerHTML = ''
+            this.showUserProfile = false
+        },
+        showLogoutDialog() {
+            const html = `
                 <div class="text-gray-700 text-center">
                     <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                         <p class="text-md font-bold ">Logout</p>
@@ -519,17 +546,17 @@ document.addEventListener('alpine:init', () => {
                     </div>
                 </div>
                 `
-                this.showSmallModal(html)
-            },
-            logout() {
-                axios.post('logout').then(res => {
-                    location.reload()
-                }).catch(e => {
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeAvatarDialog() {
-                const html = `
+            this.showSmallModal(html)
+        },
+        logout() {
+            axios.post('logout').then(res => {
+                location.reload()
+            }).catch(e => {
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeAvatarDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Avatar</p>
@@ -553,48 +580,48 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            setAvatar(index) {
-                this.showLoader = true
-                const data = new FormData()
-                data.append('avatar', avatars[index])
-                axios.post('/user/update-default-avatar', data).then(res => {
-                    this.user.avatar = res.data.avatar
-                    this.showLoader = false
-                    this.closeSmallModal()
-                    this.showAlertMsg('Avatar has been changed.', 'success')
-                }).catch(e => {
-                    this.showLoader = false
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeAvatar(el) {
-                this.showLoader = true
-                const formData = new FormData()
-                const file = el.files[0]
-                const pattern = /image-*/
-                if (file == null || file.type === 'undefined') return
-                if (!file.type.match(pattern)) {
-                    this.showLoader = false
-                    this.showAlertMsg('Invalid image format', 'error')
-                    return
-                }
-                formData.append('avatar', file)
-                axios.post('/user/update-avatar', formData).then(res => {
-                    this.user.avatar = res.data.avatar
-                    this.showLoader = false
-                    this.closeSmallModal()
-                    this.showAlertMsg('Avatar has been changed.', 'success')
-                }).catch(e => {
-                    this.showLoader = false
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeNameDialog() {
-                const html = `
+            this.showSmallModal(html)
+        },
+        setAvatar(index) {
+            this.showLoader = true
+            const data = new FormData()
+            data.append('avatar', avatars[index])
+            axios.post('/user/update-default-avatar', data).then(res => {
+                this.user.avatar = res.data.avatar
+                this.showLoader = false
+                this.closeSmallModal()
+                this.showAlertMsg('Avatar has been changed.', 'success')
+            }).catch(e => {
+                this.showLoader = false
+                this.closeSmallModal()
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeAvatar(el) {
+            this.showLoader = true
+            const formData = new FormData()
+            const file = el.files[0]
+            const pattern = /image-*/
+            if (file == null || file.type === 'undefined') return
+            if (!file.type.match(pattern)) {
+                this.showLoader = false
+                this.showAlertMsg('Invalid image format', 'error')
+                return
+            }
+            formData.append('avatar', file)
+            axios.post('/user/update-avatar', formData).then(res => {
+                this.user.avatar = res.data.avatar
+                this.showLoader = false
+                this.closeSmallModal()
+                this.showAlertMsg('Avatar has been changed.', 'success')
+            }).catch(e => {
+                this.showLoader = false
+                this.closeSmallModal()
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeNameDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Username</p>
@@ -612,31 +639,31 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            closeNameDialog() {
+            this.showSmallModal(html)
+        },
+        closeNameDialog() {
+            this.user.name = name
+            this.closeSmallModal()
+        },
+        changeName() {
+            if (this.user.name.length < 4 || this.user.name.length > 12) {
+                this.showAlertMsg('Must have min 4 to max 12 letters', 'error')
+                return
+            }
+            const formData = new FormData()
+            formData.append('name', this.user.name)
+            axios.post('/user/update-name', formData).then(res => {
+                name = res.data.name
+                this.closeSmallModal()
+                this.showAlertMsg('Username has been changed', 'success')
+            }).catch(e => {
                 this.user.name = name
                 this.closeSmallModal()
-            },
-            changeName() {
-                if (this.user.name.length < 4 || this.user.name.length > 12) {
-                    this.showAlertMsg('Must have min 4 to max 12 letters', 'error')
-                    return
-                }
-                const formData = new FormData()
-                formData.append('name', this.user.name)
-                axios.post('/user/update-name', formData).then(res => {
-                    name = res.data.name
-                    this.closeSmallModal()
-                    this.showAlertMsg('Username has been changed', 'success')
-                }).catch(e => {
-                    this.user.name = name
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            customizeNameDialog() {
-                const html = `
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        customizeNameDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Customize Username</p>
@@ -680,40 +707,40 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            closeCustomizeNameDialog() {
+            this.showSmallModal(html)
+        },
+        closeCustomizeNameDialog() {
+            this.user.nameColor = nameColor
+            this.user.nameFont = nameFont
+            this.closeSmallModal()
+        },
+        setNameColor(index) {
+            this.user.nameColor = textColors[index]
+        },
+        isShowTickForName(index) {
+            return this.user.nameColor === textColors[index]
+        },
+        customizeName() {
+            if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
+                return
+            }
+            const formData = new FormData()
+            formData.append('nameColor', this.user.nameColor)
+            formData.append('nameFont', this.user.nameFont)
+            axios.post('/user/customize-name', formData).then(res => {
+                nameColor = res.data.nameColor
+                nameFont = res.data.nameFont
+                this.closeSmallModal()
+                this.showAlertMsg('Name customized.', 'success')
+            }).catch(e => {
                 this.user.nameColor = nameColor
                 this.user.nameFont = nameFont
                 this.closeSmallModal()
-            },
-            setNameColor(index) {
-                this.user.nameColor = textColors[index]
-            },
-            isShowTickForName(index) {
-                return this.user.nameColor === textColors[index]
-            },
-            customizeName() {
-                if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
-                    return
-                }
-                const formData = new FormData()
-                formData.append('nameColor', this.user.nameColor)
-                formData.append('nameFont', this.user.nameFont)
-                axios.post('/user/customize-name', formData).then(res => {
-                    nameColor = res.data.nameColor
-                    nameFont = res.data.nameFont
-                    this.closeSmallModal()
-                    this.showAlertMsg('Name customized.', 'success')
-                }).catch(e => {
-                    this.user.nameColor = nameColor
-                    this.user.nameFont = nameFont
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeMoodDialog() {
-                const html = `
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeMoodDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Your Mood</p>
@@ -731,31 +758,31 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            closeMoodDialog() {
+            this.showSmallModal(html)
+        },
+        closeMoodDialog() {
+            this.user.mood = mood
+            this.closeSmallModal()
+        },
+        changeMood() {
+            if (this.user.mood.length >= 40) {
+                this.showAlertMsg('Must have max 40 letters', 'error')
+                return
+            }
+            const formData = new FormData()
+            formData.append('mood', this.user.mood)
+            axios.post('/user/update-mood', formData).then(res => {
+                mood = res.data.mood
+                this.closeSmallModal()
+                this.showAlertMsg('Mood has been changed', 'success')
+            }).catch(e => {
                 this.user.mood = mood
                 this.closeSmallModal()
-            },
-            changeMood() {
-                if (this.user.mood.length >= 40) {
-                    this.showAlertMsg('Must have max 40 letters', 'error')
-                    return
-                }
-                const formData = new FormData()
-                formData.append('mood', this.user.mood)
-                axios.post('/user/update-mood', formData).then(res => {
-                    mood = res.data.mood
-                    this.closeSmallModal()
-                    this.showAlertMsg('Mood has been changed', 'success')
-                }).catch(e => {
-                    this.user.mood = mood
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeAboutDialog() {
-                const html = `
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeAboutDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change About Me</p>
@@ -769,31 +796,31 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            closeAboutDialog() {
+            this.showSmallModal(html)
+        },
+        closeAboutDialog() {
+            this.user.about = about
+            this.closeSmallModal()
+        },
+        changeAbout() {
+            const formData = new FormData()
+            formData.append('about', this.user.about)
+            axios.post('/user/update-about', formData).then(res => {
+                about = res.data.about
+                this.closeSmallModal()
+                this.showAlertMsg('About me has been changed', 'success')
+            }).catch(e => {
                 this.user.about = about
                 this.closeSmallModal()
-            },
-            changeAbout() {
-                const formData = new FormData()
-                formData.append('about', this.user.about)
-                axios.post('/user/update-about', formData).then(res => {
-                    about = res.data.about
-                    this.closeSmallModal()
-                    this.showAlertMsg('About me has been changed', 'success')
-                }).catch(e => {
-                    this.user.about = about
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changePasswordDialog() {
-                if (this.user.rankCode === 'guest') {
-                    this.showAlertMsg('Guest does not have password', 'error')
-                    return
-                }
-                const html = `
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changePasswordDialog() {
+            if (this.user.rankCode === 'guest') {
+                this.showAlertMsg('Guest does not have password', 'error')
+                return
+            }
+            const html = `
             <div x-data="{password:''}" class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Password</p>
@@ -810,25 +837,25 @@ document.addEventListener('alpine:init', () => {
                 </div>   
             </div>
             `
-                this.showSmallModal(html)
-            },
-            changePassword(password) {
-                if (password.length < 8) {
-                    this.showAlertMsg('Must have min 8 letters', 'error')
-                    return
-                }
-                const formData = new FormData()
-                formData.append('password', password)
-                axios.post('/user/update-password', formData).then(res => {
-                    this.showAlertMsg('Password has been changed', 'success')
-                    this.closeSmallModal()
-                }).catch(e => {
-                    this.showAlertMsg(e.response.data, 'error')
-                    this.closeSmallModal()
-                })
-            },
-            changeStatusDialog() {
-                const html = `
+            this.showSmallModal(html)
+        },
+        changePassword(password) {
+            if (password.length < 8) {
+                this.showAlertMsg('Must have min 8 letters', 'error')
+                return
+            }
+            const formData = new FormData()
+            formData.append('password', password)
+            axios.post('/user/update-password', formData).then(res => {
+                this.showAlertMsg('Password has been changed', 'success')
+                this.closeSmallModal()
+            }).catch(e => {
+                this.showAlertMsg(e.response.data, 'error')
+                this.closeSmallModal()
+            })
+        },
+        changeStatusDialog() {
+            const html = `
             <div x-data="{status:''}" class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Status</p>
@@ -852,24 +879,24 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            changeStatus(status) {
-                if (status === "" || status === "-1") return
-                const formData = new FormData()
-                formData.append('status', status)
-                axios.post('/user/update-status', formData).then(res => {
-                    this.showAlertMsg('Status has been changed', 'success')
-                    this.user.status = res.data.status
-                    this.setStatusColor()
-                    this.closeSmallModal()
-                }).catch(e => {
-                    this.showAlertMsg(e.response.data, 'error')
-                    this.closeSmallModal()
-                })
-            },
-            changeGenderDialog() {
-                const html = `
+            this.showSmallModal(html)
+        },
+        changeStatus(status) {
+            if (status === "" || status === "-1") return
+            const formData = new FormData()
+            formData.append('status', status)
+            axios.post('/user/update-status', formData).then(res => {
+                this.showAlertMsg('Status has been changed', 'success')
+                this.user.status = res.data.status
+                this.setStatusColor()
+                this.closeSmallModal()
+            }).catch(e => {
+                this.showAlertMsg(e.response.data, 'error')
+                this.closeSmallModal()
+            })
+        },
+        changeGenderDialog() {
+            const html = `
             <div x-data="{gender:''}" class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Gender</p>
@@ -887,23 +914,23 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            changeGender(gender) {
-                if (gender === '') return
-                const formData = new FormData()
-                formData.append('gender', gender)
-                axios.post('/user/update-gender', formData).then(res => {
-                    this.user.gender = res.data.gender
-                    this.closeSmallModal()
-                    this.showAlertMsg('Gender has been changed', 'success')
-                }).catch(e => {
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            changeDobDialog() {
-                const html = `
+            this.showSmallModal(html)
+        },
+        changeGender(gender) {
+            if (gender === '') return
+            const formData = new FormData()
+            formData.append('gender', gender)
+            axios.post('/user/update-gender', formData).then(res => {
+                this.user.gender = res.data.gender
+                this.closeSmallModal()
+                this.showAlertMsg('Gender has been changed', 'success')
+            }).catch(e => {
+                this.closeSmallModal()
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        changeDobDialog() {
+            const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Date of Birth</p>
@@ -917,29 +944,29 @@ document.addEventListener('alpine:init', () => {
                 </div>
             </div>
             `
-                this.showSmallModal(html)
-            },
-            closeDobDialog() {
-                this.user.dob = dob
+            this.showSmallModal(html)
+        },
+        closeDobDialog() {
+            this.user.dob = dob
+            this.closeSmallModal()
+        },
+        changeDob(dob) {
+            if (dob === '') return
+            const formData = new FormData()
+            formData.append('dob', dob)
+            axios.post('/user/update-dob', formData).then(res => {
+                this.showAlertMsg('DOB has been changed', 'success')
+                this.user.dob = res.data.dob
+                dob = res.data.dob
                 this.closeSmallModal()
-            },
-            changeDob(dob) {
-                if (dob === '') return
-                const formData = new FormData()
-                formData.append('dob', dob)
-                axios.post('/user/update-dob', formData).then(res => {
-                    this.showAlertMsg('DOB has been changed', 'success')
-                    this.user.dob = res.data.dob
-                    dob = res.data.dob
-                    this.closeSmallModal()
-                }).catch(e => {
-                    this.user.dob = dob
-                    this.showAlertMsg(e.response.data, 'error')
-                    this.closeSmallModal()
-                })
-            },
-            customizeTextDialog() {
-                const html = `
+            }).catch(e => {
+                this.user.dob = dob
+                this.showAlertMsg(e.response.data, 'error')
+                this.closeSmallModal()
+            })
+        },
+        customizeTextDialog() {
+            const html = `
                 <div class="text-gray-700 text-center">
                     <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                         <p class="text-md font-bold ">Change Chat Option</p>
@@ -991,155 +1018,155 @@ document.addEventListener('alpine:init', () => {
                     </div>
                 </div>
                 `
-                this.showSmallModal(html)
-            },
-            closeCustomizeTextDialog() {
+            this.showSmallModal(html)
+        },
+        closeCustomizeTextDialog() {
+            this.user.textColor = textColor
+            this.user.textBold = textBold
+            this.user.textFont = textFont
+            this.closeSmallModal()
+        },
+        setTextColor(index) {
+            this.user.textColor = textColors[index]
+        },
+        isShowTick(index) {
+            return this.user.textColor === textColors[index]
+        },
+        closeCustomizeText() {
+            this.showEmo = false
+            this.showOption = false
+        },
+        customizeText() {
+            if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) {
+                return
+            }
+            const formData = new FormData()
+            formData.append('textBold', this.user.textBold)
+            formData.append('textColor', this.user.textColor)
+            formData.append('textFont', this.user.textFont)
+            axios.post('/user/customize-text', formData).then(res => {
+                textColor = res.data.textColor
+                textBold = res.data.textBold
+                textFont = res.data.textFont
+                this.closeSmallModal()
+                this.showAlertMsg('Chat options has been changed', 'success')
+            }).catch(e => {
                 this.user.textColor = textColor
                 this.user.textBold = textBold
                 this.user.textFont = textFont
                 this.closeSmallModal()
-            },
-            setTextColor(index) {
-                this.user.textColor = textColors[index]
-            },
-            isShowTick(index) {
-                return this.user.textColor === textColors[index]
-            },
-            closeCustomizeText() {
+                this.showAlertMsg(e.response.data, 'error')
+            })
+        },
+        removeTopic() {
+            const topic = document.getElementById('topic')
+            topic.remove()
+        },
+        welcomeMessage(name) {
+            this.$refs.mainInput.value = `Welcome ${name}`
+        },
+        addMainEmo(emo) {
+            const input = this.$refs.mainInput
+            input.value === '' ? input.value = `${emo} ` : input.value += ` ${emo} `
+            this.showEmo = false
+            input.focus()
+        },
+        addPvtEmo(emo,) {
+            const input = this.$refs.pvtInput
+            input.value === '' ? input.value = `${emo} ` : input.value += ` ${emo} `
+            input.focus()
+        },
+        appendUserName(el) {
+            const username = el.innerText
+            const input = this.$refs.mainInput
+            input.value === '' ? input.value = `${username} ` : input.value += ` ${username} `
+            input.focus()
+        },
+        sendToRoom(message) {
+            this.roomSocket.send(JSON.stringify(message))
+        },
+        sendMessage() {
+            const content = this.$refs.mainInput.value
+            if (content === '') {
+                this.$refs.mainInput.focus()
+                return
+            }
+            this.roomSocket.send(JSON.stringify({content: content, type: MessageType.Chat}))
+            this.$refs.mainInput.value = ''
+            this.$refs.mainInput.focus()
+        },
+        recordMainAudio() {
+            if (this.isRecording) {
                 this.showEmo = false
                 this.showOption = false
-            },
-            customizeText() {
-                if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) {
-                    return
-                }
-                const formData = new FormData()
-                formData.append('textBold', this.user.textBold)
-                formData.append('textColor', this.user.textColor)
-                formData.append('textFont', this.user.textFont)
-                axios.post('/user/customize-text', formData).then(res => {
-                    textColor = res.data.textColor
-                    textBold = res.data.textBold
-                    textFont = res.data.textFont
-                    this.closeSmallModal()
-                    this.showAlertMsg('Chat options has been changed', 'success')
-                }).catch(e => {
-                    this.user.textColor = textColor
-                    this.user.textBold = textBold
-                    this.user.textFont = textFont
-                    this.closeSmallModal()
-                    this.showAlertMsg(e.response.data, 'error')
-                })
-            },
-            removeTopic() {
-                const topic = document.getElementById('topic')
-                topic.remove()
-            },
-            welcomeMessage(name) {
-                this.$refs.mainInput.value = `Welcome ${name}`
-            },
-            addMainEmo(emo) {
-                const input = this.$refs.mainInput
-                input.value === '' ? input.value = `${emo} ` : input.value += ` ${emo} `
-                this.showEmo = false
-                input.focus()
-            },
-            addPvtEmo(emo,) {
-                const input = this.$refs.pvtInput
-                input.value === '' ? input.value = `${emo} ` : input.value += ` ${emo} `
-                input.focus()
-            },
-            appendUserName(el) {
-                const username = el.innerText
-                const input = this.$refs.mainInput
-                input.value === '' ? input.value = `${username} ` : input.value += ` ${username} `
-                input.focus()
-            },
-            sendToRoom(message) {
-                this.roomSocket.send(JSON.stringify(message))
-            },
-            sendMessage() {
-                const content = this.$refs.mainInput.value
-                if (content === '') {
-                    this.$refs.mainInput.focus()
-                    return
-                }
-                this.roomSocket.send(JSON.stringify({content: content, type: MessageType.Chat}))
-                this.$refs.mainInput.value = ''
-                this.$refs.mainInput.focus()
-            },
-            recordMainAudio() {
-                if (this.isRecording) {
-                    this.showEmo = false
-                    this.showOption = false
-                    if (!(RECORDING_TIME - this.remainingTime > 10)) {
-                        this.recorder.stop()
-                        this.isRecording = false
-                        this.remainingTime = RECORDING_TIME
-                        clearInterval(this.mainInterval)
-                        this.showAlertMsg('Record length at least 10 seconds', 'error')
-                        return
-                    }
-                    this.recorder.stop().getMp3().then(([buffer, blob]) => {
-                        const audioFile = new File(buffer, 'music.mp3', {type: blob.type, lastModified: Date.now()})
-                        const formData = new FormData()
-                        formData.append('audio', audioFile)
-                        const content = this.$refs.mainInput.value
-                        formData.append('content', content)
-                        axios.post('/room/upload-audio', formData).then(res => {
-                            this.sendToRoom(res.data)
-                        }).catch(err => {
-                            this.showAlertMsg('Audio upload failed', 'error')
-                        })
-                    }).catch((e) => {
-                        this.showAlertMsg('Audio recording failed', 'error')
-                    })
+                if (!(RECORDING_TIME - this.remainingTime > 10)) {
+                    this.recorder.stop()
                     this.isRecording = false
                     this.remainingTime = RECORDING_TIME
                     clearInterval(this.mainInterval)
-                } else {
-                    this.showEmo = false
-                    this.showOption = false
-                    this.recorder.start().then(() => {
-                        this.mainInterval = setInterval(() => {
-                            if (this.remainingTime === 1) {
-                                this.recordMainAudio()
-                            } else this.remainingTime--
-                        }, 1000)
-
-                        this.isRecording = true
-                    }).catch((e) => {
-                        this.showAlertMsg('You haven\'t given mic permission', 'error')
-                    })
-
-                }
-            },
-            uploadImage(event) {
-                this.showLoader = true
-                const formData = new FormData()
-                const file = event.target.files[0]
-                const pattern = /image-*/
-                const content = this.$refs.mainInput.value
-                if (file == null || file.type === 'undefined') return
-                if (!file.type.match(pattern)) {
-                    this.showAlertMsg('Invalid image format', 'error')
-                    this.showLoader = false
+                    this.showAlertMsg('Record length at least 10 seconds', 'error')
                     return
                 }
-                formData.append('image', file)
-                formData.append('content', content)
-                axios.post('/room/upload-image', formData).then(res => {
-                    this.sendToRoom(res.data)
-                    this.$refs.mainInput.value = ''
-                    this.$refs.mainInput.focus()
-                    this.showLoader = false
-                }).catch(e => {
-                    this.showLoader = false
+                this.recorder.stop().getMp3().then(([buffer, blob]) => {
+                    const audioFile = new File(buffer, 'music.mp3', {type: blob.type, lastModified: Date.now()})
+                    const formData = new FormData()
+                    formData.append('audio', audioFile)
+                    const content = this.$refs.mainInput.value
+                    formData.append('content', content)
+                    axios.post('/room/upload-audio', formData).then(res => {
+                        this.sendToRoom(res.data)
+                    }).catch(err => {
+                        this.showAlertMsg('Audio upload failed', 'error')
+                    })
+                }).catch((e) => {
+                    this.showAlertMsg('Audio recording failed', 'error')
                 })
-            },
-            showImageDialog(el) {
-                const image = el.src
-                const html = `
+                this.isRecording = false
+                this.remainingTime = RECORDING_TIME
+                clearInterval(this.mainInterval)
+            } else {
+                this.showEmo = false
+                this.showOption = false
+                this.recorder.start().then(() => {
+                    this.mainInterval = setInterval(() => {
+                        if (this.remainingTime === 1) {
+                            this.recordMainAudio()
+                        } else this.remainingTime--
+                    }, 1000)
+
+                    this.isRecording = true
+                }).catch((e) => {
+                    this.showAlertMsg('You haven\'t given mic permission', 'error')
+                })
+
+            }
+        },
+        uploadImage(event) {
+            this.showLoader = true
+            const formData = new FormData()
+            const file = event.target.files[0]
+            const pattern = /image-*/
+            const content = this.$refs.mainInput.value
+            if (file == null || file.type === 'undefined') return
+            if (!file.type.match(pattern)) {
+                this.showAlertMsg('Invalid image format', 'error')
+                this.showLoader = false
+                return
+            }
+            formData.append('image', file)
+            formData.append('content', content)
+            axios.post('/room/upload-image', formData).then(res => {
+                this.sendToRoom(res.data)
+                this.$refs.mainInput.value = ''
+                this.$refs.mainInput.focus()
+                this.showLoader = false
+            }).catch(e => {
+                this.showLoader = false
+            })
+        },
+        showImageDialog(el) {
+            const image = el.src
+            const html = `
                 <div class="relative w-full mx-auto">
                     <img src="${image}" class="mx-auto" alt="">
                     <div class="bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1"> 
@@ -1148,48 +1175,48 @@ document.addEventListener('alpine:init', () => {
                 </div>
                
                 `
-                this.showImgModal(html)
-            },
-            renderMessage(message) {
-                const chatMessages = this.$refs.chatMessages
-                if (message.type === MessageType.Join) {
-                    this.getRoomUsers()
-                    if (message.user.id === userId) {
-                        setTimeout(() => {
-                            chatMessages.insertAdjacentHTML("afterbegin", renderWelcomeMessage())
-                        }, 1e3)
-                        return
-                    }
-                    chatMessages.insertAdjacentHTML("afterbegin", renderJoinMessage(message))
-                } else if (message.type === MessageType.Chat) {
-                    chatMessages.insertAdjacentHTML("afterbegin", renderChatMessage(message))
-                } else if (message.type === MessageType.Leave) {
-                    this.getRoomUsers()
-                    if (message.user.id === userId) {
-                        location.replace('rooms')
-                        return
-                    }
-                    chatMessages.insertAdjacentHTML("afterbegin", renderLeaveMessage(message))
-                } else if (message.type === MessageType.Delete) {
-                    const li = document.getElementById(`chat-${message.id}`)
-                    li != null ? li.remove() : ''
+            this.showImgModal(html)
+        },
+        renderMessage(message) {
+            const chatMessages = this.$refs.chatMessages
+            if (message.type === MessageType.Join) {
+                this.getRoomUsers()
+                if (message.user.id === userId) {
+                    setTimeout(() => {
+                        chatMessages.insertAdjacentHTML("afterbegin", renderWelcomeMessage())
+                    }, 1e3)
+                    return
                 }
-            },
-            deleteChat(id) {
-                if (canDelMsg) {
-                    axios.delete(`/message/${id}/delete`).catch(e => {
-                        if (e.response) {
+                chatMessages.insertAdjacentHTML("afterbegin", renderJoinMessage(message))
+            } else if (message.type === MessageType.Chat) {
+                chatMessages.insertAdjacentHTML("afterbegin", renderChatMessage(message))
+            } else if (message.type === MessageType.Leave) {
+                this.getRoomUsers()
+                if (message.user.id === userId) {
+                    location.replace('rooms')
+                    return
+                }
+                chatMessages.insertAdjacentHTML("afterbegin", renderLeaveMessage(message))
+            } else if (message.type === MessageType.Delete) {
+                const li = document.getElementById(`chat-${message.id}`)
+                li != null ? li.remove() : ''
+            }
+        },
+        deleteChat(id) {
+            if (canDelMsg) {
+                axios.delete(`/message/${id}/delete`).catch(e => {
+                    if (e.response) {
 
-                            this.showAlertMsg(e.response.data, 'error')
-                            return
-                        }
-                        this.showAlertMsg('Deleting message failed.', 'error')
-                    })
-                } else this.showAlertMsg('Permission denied', 'error')
-            },
-            reportDialog(id, type) {
-                const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
-                const html = `
+                        this.showAlertMsg(e.response.data, 'error')
+                        return
+                    }
+                    this.showAlertMsg('Deleting message failed.', 'error')
+                })
+            } else this.showAlertMsg('Permission denied', 'error')
+        },
+        reportDialog(id, type) {
+            const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
+            const html = `
                     <div x-data="{ id: ${id}, selectedReason :'', reasons:[
                     'Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment'
                     ]}" class="text-gray-700 text-center">
@@ -1209,178 +1236,182 @@ document.addEventListener('alpine:init', () => {
                         </div>
                     </div>
                 `
-                this.showSmallModal(html)
-            },
-            report(targetId, reason, type) {
-                const formData = new FormData()
-                formData.append('targetId', targetId)
-                formData.append('reason', reason)
-                formData.append('domainId', domainId)
-                formData.append('roomId', roomId)
-                formData.append('type', type)
-                axios.post(`/reports/create`, formData).then(res => {
-                    this.showAlertMsg('Message reported successfully', 'success')
-                }).catch(e => {
-                    this.showAlertMsg('Reporting message failed', 'error')
+            this.showSmallModal(html)
+        },
+        report(targetId, reason, type) {
+            const formData = new FormData()
+            formData.append('targetId', targetId)
+            formData.append('reason', reason)
+            formData.append('domainId', domainId)
+            formData.append('roomId', roomId)
+            formData.append('type', type)
+            axios.post(`/reports/create`, formData).then(res => {
+                this.showAlertMsg('Message reported successfully', 'success')
+            }).catch(e => {
+                this.showAlertMsg('Reporting message failed', 'error')
+            })
+            this.closeSmallModal()
+        },
+        openPvtDialog(id, name, avatar, nameColor, nameFont) {
+            const user = {id, name, avatar, nameColor, nameFont}
+            const exists = this.pvtUsers.find(user => user.id === id)
+            this.closeUserProfile()
+            this.closeFullModal()
+            if (mobile.matches) {
+                this.showLeft = false
+                this.showRight = false
+            }
+            if (exists != null && exists !== 'undefined') {
+                exists.minimize = false
+                exists.added = true
+                if (exists.unReadCount > 0) {
+                    this.setAllSeen(exists.id)
+                }
+                this.$nextTick(() => {
+                    dragElement(document.getElementById(`draggable-${exists.id}`), exists.id)
                 })
-                this.closeSmallModal()
-            },
-            openPvtDialog(id, name, avatar, nameColor, nameFont) {
-                const user = {id, name, avatar, nameColor, nameFont}
-                const exists = this.pvtUsers.find(user => user.id === id)
-                if (exists != null && exists !== 'undefined') {
-                    exists.minimize = false
-                    exists.added = true
-                    if (exists.unReadCount > 0) {
-                        this.setAllSeen(exists.id)
-                    }
-                    this.closeUserProfile()
-                    this.closeFullModal()
-                    this.$nextTick(() => {
-                        dragElement(document.getElementById(`draggable-${exists.id}`), exists.id)
-                    })
+                return
+            }
+            axios.get(`message/pvt/${id}/messages`).then(res => {
+                user.messages = res.data
+                user.minimize = false
+                user.added = true
+                user.isRecording = false
+                user.remainingTime = RECORDING_TIME
+                user.recorder = new MicRecorder({bitrate: 80})
+                user.interval = null
+                this.pvtUsers.unshift(user)
+                this.showUserProfile = false
+            }).catch(e => {
+                console.log(e)
+            })
+            this.setPvtNotificationCount()
+        },
+        closePvtModal(id) {
+            const user = this.pvtUsers.find(user => user.id === id)
+            user.minimize = false
+            user.added = false
+        },
+        maximize(id) {
+            const user = this.pvtUsers.find(user => user.id === id)
+            user.minimize = false
+            if (user.unReadCount > 0) {
+                this.setAllSeen(user.id)
+            }
+        },
+        sendPvtMessage(id, input) {
+            const content = input.value
+            if (content === '') {
+                input.focus()
+                return
+            }
+            this.sendToUser({
+                sender: {id: userId}, receiver: {id: id}, content: content, type: MessageType.Chat
+            })
+            input.value = ''
+            input.focus()
+        },
+        sendToUser(message) {
+            this.userSocket.send(JSON.stringify(message))
+        },
+        recordPvtAudio(id) {
+            let user = this.pvtUsers.find(user => user.id === id)
+            console.log(user)
+            if (!user.isRecording) {
+                user.recorder.start().then(() => {
+                    user.interval = setInterval(() => {
+                        if (user.remainingTime === 1) {
+                            this.recordPvtAudio(id)
+                        } else user.remainingTime--
+                    }, 1000)
+                    user.isRecording = true
+                }).catch((e) => {
+                    this.showAlertMsg('You haven\'t given mic permission', 'error')
+                })
+            } else {
+                if (!(RECORDING_TIME - user.remainingTime > 10)) {
+                    user.recorder.stop()
+                    user.isRecording = false
+                    clearInterval(user.interval)
+                    user.remainingTime = RECORDING_TIME
+                    this.showAlertMsg('Record length at least 10 seconds', 'error')
                     return
                 }
-                axios.get(`message/pvt/${id}/messages`).then(res => {
-                    user.messages = res.data
+                user.recorder.stop().getMp3().then(([buffer, blob]) => {
+                    const audioFile = new File(buffer, 'music.mp3', {type: blob.type, lastModified: Date.now()})
+                    const formData = new FormData()
+                    formData.append('audio', audioFile)
+                    axios.post(`/message/pvt/${id}/upload-audio`, formData).then(res => {
+                        this.sendToUser(res.data)
+                    }).catch(err => {
+                        this.showAlertMsg('Audio upload failed', 'error')
+                    })
+                }).catch((e) => {
+                    this.showAlertMsg('Audio recording failed', 'error')
+                })
+                user.isRecording = false
+                clearInterval(user.interval)
+                user.remainingTime = RECORDING_TIME
+            }
+        },
+        uploadPvtImage(id, event, input) {
+            this.showLoader = true
+            const formData = new FormData()
+            const file = event.target.files[0]
+            const pattern = /image-*/
+            if (file == null || file.type === 'undefined') return
+            if (!file.type.match(pattern)) {
+                this.showAlertMsg('Invalid image format', 'error')
+                this.showLoader = false
+                return
+            }
+            formData.append("image", file)
+            formData.append("content", input.value)
+            axios.post(`/message/pvt/${id}/upload-image`, formData).then(res => {
+                this.sendToUser(res.data)
+                input.value = ''
+                input.focus()
+                this.showLoader = false
+            }).catch(e => {
+                this.showLoader = false
+            })
+        },
+        onPvtMessageReceived(e) {
+            const message = JSON.parse(e.data)
+            if (message.type === MessageType.Chat) {
+                const id = message.sender.id === userId ? message.receiver.id : message.sender.id
+                const user = this.pvtUsers.find(user => user.id === id)
+                if (user.added && user.minimize === false) {
+                    if (message.sender.id !== userId) {
+                        message.seen = true
+                        this.setPvtMessageSeen(message.id)
+                    }
+                }
+                user.messages.unshift(message)
+                this.setPvtNotificationCount()
+            } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
+                this.getReports()
+            }
+        },
+        reCheckPvtMessages() {
+            axios.get('message/pvt/users').then(res => {
+                this.pvtUsers = res.data
+                this.pvtUsers.forEach(user => {
                     user.minimize = false
-                    user.added = true
+                    user.added = false
                     user.isRecording = false
                     user.remainingTime = RECORDING_TIME
                     user.recorder = new MicRecorder({bitrate: 80})
                     user.interval = null
-                    this.pvtUsers.unshift(user)
-                    this.showUserProfile = false
-                }).catch(e => {
-                    console.log(e)
                 })
                 this.setPvtNotificationCount()
-            },
-            closePvtModal(id) {
-                const user = this.pvtUsers.find(user => user.id === id)
-                user.minimize = false
-                user.added = false
-            },
-            maximize(id) {
-                const user = this.pvtUsers.find(user => user.id === id)
-                user.minimize = false
-                if (user.unReadCount > 0) {
-                    this.setAllSeen(user.id)
-                }
-            },
-            sendPvtMessage(id, input) {
-                const content = input.value
-                if (content === '') {
-                    input.focus()
-                    return
-                }
-                this.sendToUser({
-                    sender: {id: userId}, receiver: {id: id}, content: content, type: MessageType.Chat
-                })
-                input.value = ''
-                input.focus()
-            },
-            sendToUser(message) {
-                this.userSocket.send(JSON.stringify(message))
-            },
-            recordPvtAudio(id) {
-                let user = this.pvtUsers.find(user => user.id === id)
-                console.log(user)
-                if (!user.isRecording) {
-                    user.recorder.start().then(() => {
-                        user.interval = setInterval(() => {
-                            if (user.remainingTime === 1) {
-                                this.recordPvtAudio(id)
-                            } else user.remainingTime--
-                        }, 1000)
-                        user.isRecording = true
-                    }).catch((e) => {
-                        this.showAlertMsg('You haven\'t given mic permission', 'error')
-                    })
-                } else {
-                    if (!(RECORDING_TIME - user.remainingTime > 10)) {
-                        user.recorder.stop()
-                        user.isRecording = false
-                        clearInterval(user.interval)
-                        user.remainingTime = RECORDING_TIME
-                        this.showAlertMsg('Record length at least 10 seconds', 'error')
-                        return
-                    }
-                    user.recorder.stop().getMp3().then(([buffer, blob]) => {
-                        const audioFile = new File(buffer, 'music.mp3', {type: blob.type, lastModified: Date.now()})
-                        const formData = new FormData()
-                        formData.append('audio', audioFile)
-                        axios.post(`/message/pvt/${id}/upload-audio`, formData).then(res => {
-                            this.sendToUser(res.data)
-                        }).catch(err => {
-                            this.showAlertMsg('Audio upload failed', 'error')
-                        })
-                    }).catch((e) => {
-                        this.showAlertMsg('Audio recording failed', 'error')
-                    })
-                    user.isRecording = false
-                    clearInterval(user.interval)
-                    user.remainingTime = RECORDING_TIME
-                }
-            },
-            uploadPvtImage(id, event, input) {
-                this.showLoader = true
-                const formData = new FormData()
-                const file = event.target.files[0]
-                const pattern = /image-*/
-                if (file == null || file.type === 'undefined') return
-                if (!file.type.match(pattern)) {
-                    this.showAlertMsg('Invalid image format', 'error')
-                    this.showLoader = false
-                    return
-                }
-                formData.append("image", file)
-                formData.append("content", input.value)
-                axios.post(`/message/pvt/${id}/upload-image`, formData).then(res => {
-                    this.sendToUser(res.data)
-                    input.value = ''
-                    input.focus()
-                    this.showLoader = false
-                }).catch(e => {
-                    this.showLoader = false
-                })
-            },
-            onPvtMessageReceived(e) {
-                const message = JSON.parse(e.data)
-                if (message.type === MessageType.Chat) {
-                    const id = message.sender.id === userId ? message.receiver.id : message.sender.id
-                    const user = this.pvtUsers.find(user => user.id === id)
-                    if (user.added && user.minimize === false) {
-                        if (message.sender.id !== userId) {
-                            message.seen = true
-                            this.setPvtMessageSeen(message.id)
-                        }
-                    }
-                    user.messages.unshift(message)
-                    this.setPvtNotificationCount()
-                } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
-                    this.getReports()
-                }
-            },
-            reCheckPvtMessages() {
-                axios.get('message/pvt/users').then(res => {
-                    this.pvtUsers = res.data
-                    this.pvtUsers.forEach(user => {
-                        user.minimize = false
-                        user.added = false
-                        user.isRecording = false
-                        user.remainingTime = RECORDING_TIME
-                        user.recorder = new MicRecorder({bitrate: 80})
-                        user.interval = null
-                    })
-                    this.setPvtNotificationCount()
-                }).catch(e => {
-                })
-            },
-            openRoomsModal() {
-                axios.get(`/${domainId}/rooms`).then(res => {
-                    this.rooms = res.data
-                    let html = `
+            }).catch(e => {
+            })
+        },
+        openRoomsModal() {
+            axios.get(`/${domainId}/rooms`).then(res => {
+                this.rooms = res.data
+                let html = `
                     <div class="text-skin-on-primary h-full">
                         <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                             <p class="text-md font-bold ">Room List</p>
@@ -1389,17 +1420,17 @@ document.addEventListener('alpine:init', () => {
                         <div class="p-[10px]">
                             <ul class="h-full">
                     `
-                    this.rooms.forEach((room, index) => {
-                        const submitBtn = room.id === roomId ?
-                            '<p class="text-black text-[10px] font-bold">(Current Room)</p>' :
-                            `<form class="flex-none" action="room/join" method="post">
+                this.rooms.forEach((room, index) => {
+                    const submitBtn = room.id === roomId ?
+                        '<p class="text-black text-[10px] font-bold">(Current Room)</p>' :
+                        `<form class="flex-none" action="room/join" method="post">
                                 <input type="hidden" name="id" :value="${room.id}">
                                 <button type="submit" 
                                         class="text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin">
                                     Join&nbsp&nbsp<i class="fa-solid fa-angles-right"></i>
                                 </button>
                             </form>`
-                        html += `
+                    html += `
                         <li class="my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 ">
                             <i class="fa-solid fa-earth-americas text-3xl flex-none text-skin-hover"></i>
                             <div class="flex-1 text-left ml-2 text-black">
@@ -1410,13 +1441,14 @@ document.addEventListener('alpine:init', () => {
                             </div>
                             ${submitBtn}
                         </li>`
-                    })
-                    html += `</ul></div></div>`
-                    this.showFullModal(html)
                 })
-            },
-            openMessageModal() {
-                let html = `
+                html += `</ul></div></div>`
+                this.showFullModal(html)
+                if (mobile.matches) this.showLeft = false
+            })
+        },
+        openMessageModal() {
+            let html = `
                 <div class="text-skin-on-primary h-full">
                     <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                         <p class="text-md font-bold ">Messages</p>
@@ -1425,18 +1457,18 @@ document.addEventListener('alpine:init', () => {
                     <div class="p-[10px]">
                         <ul class="h-full ">
                 `
-                if (this.pvtUsers.length > 0) {
-                    this.pvtUsers.forEach((user, index) => {
-                        let count = user.unReadCount > 0 ? `
+            if (this.pvtUsers.length > 0) {
+                this.pvtUsers.forEach((user, index) => {
+                    let count = user.unReadCount > 0 ? `
                         <div class="shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none">
                             <p class="font-bold text-[12px]" >${user.unReadCount}</p>
                         </div>` : ''
-                        const message = user.messages[0]
-                        const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} : `
-                        let content = message != null ? user.messages[0].content : ''
-                        content = content !== '' ? appendEmojis(content) : ''
-                        content = content !== '' ? person + content : content
-                        html += `
+                    const message = user.messages[0]
+                    const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} : `
+                    let content = message != null ? user.messages[0].content : ''
+                    content = content !== '' ? appendEmojis(content) : ''
+                    content = content !== '' ? person + content : content
+                    html += `
                         <li @click="openPvtDialog(${user.id},'${user.name}','${user.avatar}', '${user.nameColor}', '${user.nameFont}')" class="pvt-user-wrap">
                            <div class="w-full gap-2">
                                 <div class="flex h-full w-full items-center">
@@ -1450,9 +1482,9 @@ document.addEventListener('alpine:init', () => {
                             </div>
                         </li>
                         `
-                    })
-                } else {
-                    html += `
+                })
+            } else {
+                html += `
                         <li class="pvt-user-wrap">
                            <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                 <i class="fa-solid fa-envelope text-[40px]"></i>
@@ -1460,48 +1492,48 @@ document.addEventListener('alpine:init', () => {
                             </div>
                         </li>
                         `
-                }
+            }
 
-                html += `</ul></div></div>`
-                this.showFullModal(html)
-            },
-            setAllSeen(sender) {
-                axios.post(`message/pvt/${sender}/all-seen`).then(res => {
-                    const user = this.pvtUsers.find(user => user.id === sender)
-                    user.messages.forEach(message => message.seen = true)
-                    this.setPvtNotificationCount()
-                }).catch(e => {
+            html += `</ul></div></div>`
+            this.showFullModal(html)
+        },
+        setAllSeen(sender) {
+            axios.post(`message/pvt/${sender}/all-seen`).then(res => {
+                const user = this.pvtUsers.find(user => user.id === sender)
+                user.messages.forEach(message => message.seen = true)
+                this.setPvtNotificationCount()
+            }).catch(e => {
+            })
+        },
+        setPvtNotificationCount() {
+            let count = 0
+            this.pvtUsers.forEach(user => {
+                user.unReadCount = 0
+                let unSeen = false
+                user.messages.forEach(message => {
+                    if (message.receiver.id === userId && message.seen === false) {
+                        user.unReadCount++
+                        unSeen = true
+                    }
+                    message.content = appendEmojis(message.content)
                 })
-            },
-            setPvtNotificationCount() {
-                let count = 0
-                this.pvtUsers.forEach(user => {
-                    user.unReadCount = 0
-                    let unSeen = false
-                    user.messages.forEach(message => {
-                        if (message.receiver.id === userId && message.seen === false) {
-                            user.unReadCount++
-                            unSeen = true
-                        }
-                        message.content = appendEmojis(message.content)
-                    })
-                    if (unSeen === true) count++
-                })
-                this.pvtNotificationCount = count
-            },
-            setPvtMessageSeen(id) {
-                axios.post(`message/pvt/${id}/seen`).then(res => {
-                }).catch(e => {
-                })
-            },
-            makeItBefore(el) {
-                el.style.zIndex = "60"
-            },
-            makeItBehind(el) {
-                el.style.zIndex = "50"
-            },
-            openReportsModal() {
-                let html = `
+                if (unSeen === true) count++
+            })
+            this.pvtNotificationCount = count
+        },
+        setPvtMessageSeen(id) {
+            axios.post(`message/pvt/${id}/seen`).then(res => {
+            }).catch(e => {
+            })
+        },
+        makeItBefore(el) {
+            el.style.zIndex = "60"
+        },
+        makeItBehind(el) {
+            el.style.zIndex = "50"
+        },
+        openReportsModal() {
+            let html = `
                 <div class="text-skin-on-primary h-full">
                     <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                         <p class="text-md font-bold ">Reports</p>
@@ -1510,9 +1542,9 @@ document.addEventListener('alpine:init', () => {
                     <div class="p-[10px]">
                         <ul class="h-full ">
                 `
-                if (this.reports.length > 0) {
-                    this.reports.forEach((report, index) => {
-                        html += `
+            if (this.reports.length > 0) {
+                this.reports.forEach((report, index) => {
+                    html += `
                         <li @click="openReportActionDialog(${report.id}, ${report.targetId}, ${report.roomId}, '${report.type}')" class="report-user-wrap">
                            <div class="w-full gap-2">
                                 <div class="flex h-full w-full items-center">
@@ -1525,68 +1557,67 @@ document.addEventListener('alpine:init', () => {
                                 </div>
                             </div>
                         </li>`
-                    })
-                } else {
-                    html += `
+                })
+            } else {
+                html += `
                         <li class="pvt-user-wrap">
                            <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                 <i class="fa-solid fa-flag text-[40px]"></i>
                                 <p class="text-[12px] font-bold" > No Reports</p>
                             </div>
                         </li>`
-                }
-                html += `</ul></div></div>`
-                this.showFullModal(html)
-            },
-            openReportActionDialog(id, targetId, roomId, type) {
-                this.closeFullModal()
-                let html = `<div class="text-gray-700 text-center">
+            }
+            html += `</ul></div></div>`
+            this.showFullModal(html)
+        },
+        openReportActionDialog(id, targetId, roomId, type) {
+            this.closeFullModal()
+            let html = `<div class="text-gray-700 text-center">
                     <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                         <p class="text-md font-bold ">Report Action</p>
                         <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
                     </div>`
-                if (type === ReportType.Chat) {
-                    axios.get(`/message/${targetId}`).then(res => {
-                        html += renderReportChatMessage(res.data, id, targetId, roomId, type)
-                        this.showSmallModal(html)
-                    }).catch(e => {
-                        if (e.response) {
-                            if (e.response.status === 404) {
-                                this.showAlertMsg(e.response.data, 'error')
-                                const formData = new FormData()
-                                formData.append('domainId', domainId)
-                                axios.delete(`/reports/${id}/delete`, {data: formData})
-                            }
-                            return
+            if (type === ReportType.Chat) {
+                axios.get(`/message/${targetId}`).then(res => {
+                    html += renderReportChatMessage(res.data, id, targetId, roomId, type)
+                    this.showSmallModal(html)
+                }).catch(e => {
+                    if (e.response) {
+                        if (e.response.status === 404) {
+                            this.showAlertMsg(e.response.data, 'error')
+                            const formData = new FormData()
+                            formData.append('domainId', domainId)
+                            axios.delete(`/reports/${id}/delete`, {data: formData})
                         }
-                        this.showAlertMsg('Something went wrong', 'error')
-                    })
-                } else if (type === ReportType.PvtChat) {
-
-                } else if (type === ReportType.NewsFeed) {
-
-                }
-            },
-            takeAction(id, targetId, roomId, type) {
-                const formData = new FormData()
-                formData.append('targetId', targetId)
-                formData.append('domainId', domainId)
-                formData.append('roomId', roomId)
-                formData.append('type', type)
-                axios.post(`/reports/${id}/take-action`, formData).then(res => {
-                    this.closeSmallModal()
+                        return
+                    }
+                    this.showAlertMsg('Something went wrong', 'error')
                 })
-            },
-            noAction(id, type) {
-                const formData = new FormData()
-                formData.append('domainId', domainId)
-                formData.append('type', type)
-                axios.post(`/reports/${id}/no-action`, formData).then(res => {
-                    this.closeSmallModal()
-                })
-            },
-        })
-    )
+            } else if (type === ReportType.PvtChat) {
+
+            } else if (type === ReportType.NewsFeed) {
+
+            }
+        },
+        takeAction(id, targetId, roomId, type) {
+            const formData = new FormData()
+            formData.append('targetId', targetId)
+            formData.append('domainId', domainId)
+            formData.append('roomId', roomId)
+            formData.append('type', type)
+            axios.post(`/reports/${id}/take-action`, formData).then(res => {
+                this.closeSmallModal()
+            })
+        },
+        noAction(id, type) {
+            const formData = new FormData()
+            formData.append('domainId', domainId)
+            formData.append('type', type)
+            axios.post(`/reports/${id}/no-action`, formData).then(res => {
+                this.closeSmallModal()
+            })
+        },
+    }))
 })
 
 Alpine.start()

@@ -1,8 +1,10 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.data.entity.*
+import com.rainbowtechsolution.data.entity.Messages
+import com.rainbowtechsolution.data.entity.PvtMessages
+import com.rainbowtechsolution.data.entity.Ranks
+import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.MessageRepository
-import com.rainbowtechsolution.domain.mappers.toMessageModel
 import com.rainbowtechsolution.domain.mappers.toPvtMessageModel
 import com.rainbowtechsolution.domain.model.Message
 import com.rainbowtechsolution.domain.model.PvtMessage
