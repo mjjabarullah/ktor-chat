@@ -1,0 +1,136 @@
+<div x-cloak x-show="showUserProfile" class="profile-wrap">
+    <div x-transition x-show="showUserProfile" class="user-profile">
+        <template x-if="u">
+            <div class="profile">
+                <div class="flex rounded px-4 py-2 bg-skin-hover text-white items-center relative">
+                    <template x-if="permission.avatar">
+                        <div class="relative flex-none">
+                            <i @click="changeUserAvatarDialog(u.id)" class="fa-solid fa-camera upload-icon"></i>
+                        </div>
+                    </template>
+                    <img :src="u.avatar" src="" class="avatar" alt="">
+                    <div class="flex ml-4 flex-col flex-1 mt-auto">
+                        <p class="text-left">
+                            <span class="username" x-text="u.name"></span>
+                            <template x-if="permission.userName">
+                                <i @click="changeUserNameDialog(u.id, u.name)"
+                                   class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
+                            </template>
+                        </p>
+                        <div class="flex text-left whitespace-wrap">
+                            <p class="mood" x-text="u.mood"></p>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <template x-if="u.private && permission.private">
+                            <i @click="openPvtDialog(u.id, u.name, u.avatar,u.nameColor, u.nameFont)"
+                               class="fa-solid fa-envelope icon-white"></i>
+                        </template>
+                        <i @click="closeUserProfile" class="fas fa-times-circle icon-white"></i>
+                    </div>
+                </div>
+                <div class="p-4 text-gray-900 text-left text-[14px]">
+                    <p class="font-bold"> About Me</p>
+                    <p class="font-normal" x-text="u.about ? u.about : ''"></p>
+                    <div class="flex py-1 items-center">
+                        <img class="rank-icon" :src="u.rank.icon" alt="" src="">
+                        <p class="font-bold text-[16px] ml-4" x-text="u.rank.name"></p>
+                    </div>
+                    <template x-if="u.rank.code==='guest'">
+                        <button @click="changeUserPasswordDialog" class="btn">Change Password</button>
+                    </template>
+                    <div x-data="{tab:0}" class="flex flex-col mt-2">
+                        <div class="flex overflow-x-auto scrollbar">
+                            <p @click="tab=0"
+                               class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                               :class="tab===0? 'bg-skin-primary text-skin-on-primary': ' text-skin-hover' ">
+                                Account</p>
+                            <p @click="tab=1"
+                               class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                               :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                                Actions</p>
+                            <p @click="tab=2"
+                               class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                               :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                                Others</p>
+                        </div>
+                        <div x-show="tab===0" class="mt-1 text-black">
+                            <table class="table w-full border-separate">
+                                <tbody>
+                                <tr>
+                                    <th>Status</th>
+                                    <td class="font-bold" x-text="u.status" :class="userStatusColor"></td>
+                                </tr>
+                                <tr>
+                                    <th>Gender</th>
+                                    <td x-text="u.gender">
+                                </tr>
+                                <tr>
+                                    <th>Joined</th>
+                                    <td x-text="joined"></td>
+                                </tr>
+                                <tr>
+                                    <th>DOB</th>
+                                    <td x-text="u.dob ? u.dob : 'Not set'"></td>
+                                </tr>
+                                <tr>
+                                    <th>Points</th>
+                                    <td><i class="fa-solid fa-coins text-orange-400 mr-1"></i><span
+                                            x-text="u.points"></span></td>
+                                </tr>
+                                <tr>
+                                    <th>Level</th>
+                                    <td><i class="fa-solid fa-database text-orange-400 mr-1"></i><span
+                                            x-text="u.level"></span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div x-show="tab===1" class="mt-1 text-black">
+                            <table class="table w-full border-separate">
+                                <tbody>
+                                <tr>
+                                    <th>Spammer</th>
+                                    <td>
+                                        <label class="switch">
+                                            <input type="checkbox">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Mute</th>
+                                    <td>
+                                        <label class="switch">
+                                            <input @change="actionMute" type="checkbox" x-model="u.muted">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Kick</th>
+                                    <td>
+                                        <label class="switch">
+                                            <input type="checkbox">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ban</th>
+                                    <td>
+                                        <label class="switch">
+                                            <input type="checkbox">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

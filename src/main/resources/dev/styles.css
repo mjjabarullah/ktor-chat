@@ -37,11 +37,11 @@ body {
 }
 
 .success {
-    @apply bg-green-700
+    @apply bg-green-700/90
 }
 
 .error {
-    @apply bg-red-700
+    @apply bg-red-700/90
 }
 
 .theme-sky {
@@ -865,7 +865,7 @@ body {
 }
 
 .rank-icon-sm {
-    @apply w-[14px] h-[14px]
+    @apply w-[14px] h-[14px] cursor-pointer
 }
 
 .gender {
@@ -956,12 +956,8 @@ body {
     @apply absolute bottom-0 flex flex-col-reverse overflow-y-auto overflow-x-hidden h-full w-full scrollbar
 }
 
-/*.chat-container li:nth-child(even) {
-    @apply bg-gray-50
-}*/
-
 .pvt-wrap {
-    @apply z-50 fixed bg-transparent top-20 right-2 lg:right-[330px]
+    @apply z-50 fixed bg-transparent top-20 right-2 md:right-[330px]
 }
 
 .pvt-modal {
@@ -1023,11 +1019,6 @@ body {
 .loader-wrap {
     @apply z-[100] absolute top-0 left-0 h-full w-full flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent
 }
-
-.loader {
-    @apply shadow-skin-primary/50 shadow-md h-12 w-12 rounded-md bg-white
-}
-
 
 .user-wrap img.avatar {
     @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
@@ -1105,6 +1096,10 @@ body {
     @apply text-skin-hover pl-2 text-[13px] font-bold
 }
 
+.profile {
+    @apply text-gray-700 text-center
+}
+
 .profile img.avatar {
     @apply w-[70px] h-[70px] border-[7px] border-white bg-white ring-0 p-0 mt-0
 }
@@ -1173,6 +1168,88 @@ body {
     @apply z-[60] md:z-0 md:border-l md:border-gray-200 absolute md:relative inset-y-0 w-full md:w-[320px] h-full bg-white
 }
 
+.profile-wrap {
+    @apply z-[80] fixed bg-black/30 w-full h-full
+}
+
+.user-profile {
+    @apply w-11/12 max-w-[350px] mx-auto rounded bg-white shadow-lg shadow-skin-primary/20 mt-12
+}
+
+.switch {
+    @apply relative inline-block w-[40px] h-[20px] transition-all duration-300 ease-in-out
+}
+
+.switch input {
+    @apply opacity-0 w-0 h-0
+}
+
+.slider {
+    @apply absolute cursor-pointer inset-0 bg-gray-200 before:content-[""]
+    before:absolute before:h-[15px] before:w-[15px] before:left-[3px] before:bottom-[2.5px] before:bg-white
+    before:transition-all before:duration-300 before:ease-in-out
+}
+
+input:checked + .slider {
+    @apply bg-skin-primary before:translate-x-[18px]
+}
+
+.slider.round {
+    @apply rounded-3xl before:rounded-[50%]
+}
+
+.loader {
+    @apply shadow-skin-primary/50 shadow-md h-12 w-12 bg-white border-l-skin-primary border-t-skin-primary border-r-transparent border-b-transparent border-[3px] rounded-full
+    relative before:absolute before:inset-[5px] before:border-l-skin-primary before:border-t-skin-primary before:border-[3px] before:rounded-full before:border-r-transparent before:border-b-transparent
+    after:absolute after:inset-[13px] after:border-l-skin-primary after:border-t-skin-primary after:border-[3px] after:rounded-full after:border-r-transparent after:border-b-transparent
+}
+
+.loader {
+    animation: loading 5s infinite linear
+}
+
+.loader::before {
+    animation: loading 2s infinite linear reverse
+}
+
+.loader::after {
+    animation: loading 4s infinite linear
+}
+
+@keyframes loading {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.full-image-wrap {
+    @apply z-[90] fixed bg-black/30 w-full h-full
+}
+
+.full-image {
+    @apply h-full w-11/12 max-w-[600px] rounded-lg flex items-center justify-center mx-auto
+}
+
+.small-modal-wrap {
+    @apply z-[90] fixed bg-black/30 w-full h-full
+}
+
+.small-modal {
+    @apply w-11/12 max-w-[350px] mx-auto rounded-lg bg-white mt-20
+}
+
+.full-modal-wrap {
+    @apply fixed bg-white z-[60] h-screen right-0 w-full md:w-[350px] lg:h-full shadow-xl shadow-black/50
+}
+
+.full-modal {
+    @apply w-full h-full
+}
+
 @layer utilities {
 
     .scrollbar::-webkit-scrollbar {
@@ -1195,42 +1272,4 @@ body {
         margin-top: 10px;
         margin-bottom: 10px;
     }
-
-    /*audio::-webkit-media-controls-panel {
-        background-color: rgba(var(--color-primary), 1);
-    }
-
-    audio::-webkit-media-controls-mute-button {
-        background-color: #FFFFFF;
-        border-radius: 50%;
-    }
-
-    audio::-webkit-media-controls-play-button {
-        background-color: #FFFFFF;
-        border-radius: 50%;
-    }
-
-    audio::-webkit-media-controls-current-time-display {
-        color: #FFFFFF;
-    }
-
-    audio::-webkit-media-controls-time-remaining-display {
-        color: #FFFFFF;
-    }
-
-    audio::-webkit-media-controls-timeline {
-        background-color: #FFFFFF;
-        border-radius: 25px;
-        margin-left: 5px;
-        margin-right: 5px;
-        padding: 5px 8px;
-    }
-
-    audio::-webkit-media-controls-volume-slider {
-        background-color: #FFFFFF;
-        border-radius: 25px;
-        padding-left: 5px;
-        padding-right: 5px;
-    }*/
-
 }

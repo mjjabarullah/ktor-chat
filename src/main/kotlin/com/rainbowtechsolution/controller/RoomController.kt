@@ -4,20 +4,20 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.rainbowtechsolution.data.entity.PvtMessages
 import com.rainbowtechsolution.data.entity.Rooms
+import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.RoomRepository
 import com.rainbowtechsolution.domain.mappers.toRoomModel
 import com.rainbowtechsolution.domain.model.Room
 import com.rainbowtechsolution.utils.dbQuery
+import javassist.expr.Expr
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 
 class RoomController : RoomRepository {
 
-    private val roomCache: Cache<Int, Room> = Caffeine.newBuilder()
-        .maximumSize(10_000)
-        .build()
+    private val roomCache: Cache<Int, Room> = Caffeine.newBuilder().maximumSize(10_000).build()
 
     override suspend fun createRoom(room: Room): Int = dbQuery {
         Rooms.insertAndGetId {
@@ -42,13 +42,16 @@ class RoomController : RoomRepository {
     }
 
     override suspend fun getRoomsByDomain(id: Int): List<Room> = dbQuery {
-        val subQuery = Users.slice(Users.roomId.count()).select { (Users.roomId eq Rooms.id) and (Users.sessions greater 0) }
+        val subQuery = Users
+            .slice(Users.roomId.count())
+            .select { (Users.roomId eq Rooms.id) and ((Users.sessions greater 0) or (Users.status eq Status.Stay)) }
         val onlineUsers = wrapAsExpression<Long>(subQuery).alias("onlineUsers")
+        val expressions = listOf<Expression<*>>(
+            Rooms.id, Rooms.name, Rooms.description, Rooms.topic, Rooms.showJoin, Rooms.showLeave,
+            Rooms.showGreet, Rooms.domainId, Rooms.createdAt, onlineUsers
+        )
         Rooms
-            .slice(
-                Rooms.id, Rooms.name, Rooms.description, Rooms.topic, Rooms.showJoin, Rooms.showLeave,
-                Rooms.showGreet, Rooms.domainId, Rooms.createdAt, onlineUsers
-            )
+            .slice(expressions)
             .select { Rooms.domainId eq id }
             .groupBy(Rooms.id)
             .map {

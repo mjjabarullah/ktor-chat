@@ -5384,6 +5384,8 @@ module.exports = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var alpinejs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alpinejs */ "./node_modules/alpinejs/dist/module.esm.js");
+/* harmony import */ var disable_devtool__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! disable-devtool */ "./node_modules/disable-devtool/disable-devtool.min.js");
+/* harmony import */ var disable_devtool__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(disable_devtool__WEBPACK_IMPORTED_MODULE_1__);
 
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -5399,8 +5401,14 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
+ //disableDevtool() /*TODO : Uncomment this in production*/
+
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.Alpine = alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"];
+Object.freeze(domain);
+Object.freeze(room);
+Object.freeze(permission);
+Object.freeze(rank);
 
 var MicRecorder = __webpack_require__(/*! mic-recorder-to-mp3 */ "./node_modules/mic-recorder-to-mp3/dist/index.js");
 
@@ -5410,7 +5418,12 @@ var MessageType = {
   Leave: 'Leave',
   Delete: 'Delete',
   Report: 'Report',
-  ActionTaken: 'ActionTaken'
+  ActionTaken: 'ActionTaken',
+  DataChanges: 'DataChanges',
+  Mute: 'Mute',
+  UnMute: 'UnMute',
+  Kick: 'Kick',
+  Ban: 'Ban'
 };
 var Status = {
   Stay: 'Stay',
@@ -5463,11 +5476,14 @@ document.addEventListener('alpine:init', function () {
         dob: dob,
         points: points,
         level: level,
-        rankCode: rankCode,
-        rankName: rankName,
-        rankIcon: rankIcon
+        "private": pvt,
+        chatSound: chatSound,
+        pvtSound: pvtSound,
+        nameSound: nameSound,
+        notifiSound: notifiSound,
+        muted: muted
       },
-      u: {},
+      u: null,
       bgColors: bgColors,
       avatars: avatars,
       statusColor: '',
@@ -5478,7 +5494,7 @@ document.addEventListener('alpine:init', function () {
         password: '',
         errors: {}
       },
-      roomSocket: new WebSocket("wss://".concat(location.host, "/chatroom/").concat(roomId)),
+      roomSocket: new WebSocket("wss://".concat(location.host, "/chatroom/").concat(room.id)),
       userSocket: new WebSocket("wss://".concat(location.host, "/member/").concat(userId)),
       onlineUsers: [],
       offlineUsers: [],
@@ -5511,21 +5527,20 @@ document.addEventListener('alpine:init', function () {
         this.getEmojis();
         this.getMessages();
         this.reCheckPvtMessages();
-        this.getProfile();
         this.setStatusColor();
         this.getReports();
         this.roomSocket.addEventListener('message', function (e) {
-          _this.renderMessage(JSON.parse(e.data));
+          return _this.onMessageReceived(JSON.parse(e.data));
         });
-        this.roomSocket.addEventListener('close', function (e) {
-          _this.showAlertMsg('Room connection closed', 'error');
-        });
+        this.roomSocket.addEventListener('close', function (e) {}
+        /*location.reload()*/
+        );
         this.userSocket.addEventListener('message', function (e) {
           return _this.onPvtMessageReceived(e);
         });
-        this.userSocket.addEventListener('close', function (e) {
-          _this.showAlertMsg('User connection closed', 'error');
-        });
+        this.userSocket.addEventListener('close', function (e) {}
+        /*location.reload()*/
+        );
         var isUGCShowed = localStorage.getItem('isUGCShowed');
 
         if (isUGCShowed !== "true") {
@@ -5534,17 +5549,18 @@ document.addEventListener('alpine:init', function () {
         } else {
           /*TODO: uncomment this*/
 
-          /*this.showLoader = true
-          setTimeout(() => {
-              this.showLoader = false
-              this.$refs.mainInput.focus()
-              this.showMessages = true
-          }, 15e2)*/
+          /* this.showLoader = true
+           setTimeout(() => {
+               this.showLoader = false
+               this.$refs.mainInput.focus()
+               this.showMessages = true
+           }, 15e2)*/
           this.$refs.mainInput.focus();
           this.showMessages = true;
           this.showLoader = false;
         }
 
+        this.$refs.mainInput.disabled = this.user.muted;
         this.$watch('user', function () {
           var user = _this.onlineUsers.find(function (user) {
             return user.id === userId;
@@ -5576,11 +5592,11 @@ document.addEventListener('alpine:init', function () {
         this.showModal = false;
       },
       showImgModal: function showImgModal(html) {
-        this.$refs.imgModalContent.innerHTML = html;
+        this.$refs.fullImage.innerHTML = html;
         this.showImage = true;
       },
       closeImgModal: function closeImgModal() {
-        this.$refs.imgModalContent.innerText = '';
+        this.$refs.fullImage.innerText = '';
         this.showImage = false;
       },
       showFullModal: function showFullModal(html) {
@@ -5588,12 +5604,11 @@ document.addEventListener('alpine:init', function () {
         this.showFulModal = true;
       },
       closeFullModal: function closeFullModal() {
-        var _this2 = this;
-
         this.showFulModal = false;
+        var content = this.$refs.fullModalContent;
         setTimeout(function () {
-          _this2.$refs.fullModalContent.innerText = '';
-        }, 500);
+          return content.innerHTML = '';
+        }, 5e2);
       },
       showUCGPolicyDialog: function showUCGPolicyDialog() {
         var html = "\n                <div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Information</p>\n                        <i @click=\"closeUGCPolicy\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-4\">\n                        <i class=\"fa-solid fa-triangle-exclamation clIcons text-[70px]\" ></i>\n                        <p class=\"text-lg font-bold \">Do Not Spam / Abuse</p>\n                        <p class=\"pt-2 text-[14px] text-left\">To improve our chat room app we use UGC Policy to control abusive chat.</p>\n                        <p class=\"pt-2 text-[14px] text-left\">Our automatic abuse detection system can mark your message as spam and block or mute your account immediately.</p>\n                    </div>\n                </div>\n                ";
@@ -5606,16 +5621,16 @@ document.addEventListener('alpine:init', function () {
         localStorage.setItem("isUGCShowed", "true");
       },
       showAlertMsg: function showAlertMsg(msg, color) {
-        var _this3 = this;
+        var _this2 = this;
 
         this.$refs.alertMsg.classList.add(color);
         this.$refs.alertMsg.innerHTML = "\n                <div class=\"flex flex-col justify-center items-center w-full h-full\">\n                    <p class=\"w-full text-center\">".concat(msg, "</p>\n                </div>\n                ");
         this.showAlert = true;
         setTimeout(function () {
-          _this3.$refs.alertMsg.classList.remove(color);
+          _this2.$refs.alertMsg.classList.remove(color);
 
-          _this3.$refs.alertMsg.innerHTML = '';
-          _this3.showAlert = false;
+          _this2.$refs.alertMsg.innerHTML = '';
+          _this2.showAlert = false;
         }, 3e3);
       },
       setStatusColor: function setStatusColor() {
@@ -5648,27 +5663,24 @@ document.addEventListener('alpine:init', function () {
             break;
         }
       },
-      getProfile: function getProfile() {
-        this.$refs.profileContent.innerHTML = "\n            <div class=\"profile text-gray-700 text-center\">\n                <div class=\"flex rounded px-4 py-2 flex bg-skin-hover to-skin-hover text-white items-center relative\">\n                    <div class=\"relative flex-none\">\n                        <i @click=\"changeAvatarDialog\" class=\"fa-solid fa-camera upload-icon\"></i>\n                    </div>\n                    <img :src=\"user.avatar\" src=\"\" class=\"avatar\" alt=\"\">\n                    <div class=\"flex ml-4 flex-col flex-1 mt-auto\">\n                        <p class=\"text-left\">\n                            <span class=\"username\" x-text=\"user.name\"></span>\n                            <i @click=\"changeNameDialog\" class=\"ml-1 fa-solid fa-pen-to-square cursor-pointer\"></i>\n                            <i @click=\"customizeNameDialog\" class=\"ml-1 fa-solid fa-palette cursor-pointer\"></i>\n                        </p>\n                        <div class=\"flex text-left whitespace-wrap\">\n                            <p class=\"mood\" x-text=\"user.mood ? user.mood : 'Add your mood'\"></p>\n                            <i @click=\"changeMoodDialog\" class=\"ml-1 fa-solid fa-pen-to-square icon-sm my-auto\"></i>\n                        </div>\n                    </div>\n                    <i @click=\"showProfile=false\" class=\"fas fa-times-circle icon-white\"></i>\n                </div>\n                <template x-if=\"user.rankCode === 'guest'\">\n                    <p @click=\"showGuestRegisterDialog\" class=\"p-2 w-full bg-green-500 text-white text-[12px] cursor-pointer\">\n                    <i class=\"fa-solid fa-circle-info\"></i> You are currently logged in as guest. Click here to register your account in order to access more features.</p> \n                </template>\n                <div class=\"p-4 text-gray-900 text-left text-[14px]\">\n                    <p class=\"font-bold\"> About Me\n                        <i @click=\"changeAboutDialog\" class=\"ml-1 fa-solid fa-pen-to-square cursor-pointer\"></i></p>\n                    <p class=\"font-normal\" x-text=\"user.about ? user.about : ''\"></p>\n                    <div class=\"flex py-1 items-center\">\n                        <img class=\"rank-icon\" :src=\"user.rankIcon\" alt=\"\" src=\"\">\n                        <p class=\"font-bold text-[16px] ml-4\" x-text=\"user.rankName\"></p>\n                    </div>\n                    <template>\n                       <button x-if=\"user.rankCode==='guest'\" @click=\"changePasswordDialog\" class=\"btn\">Change Password</button>\n                    </template>\n                    <div class=\"mt-1 text-black\">\n                        <table class=\"table w-full border-separate\">\n                            <tbody>\n                            <tr>\n                                <th>Status</th>\n                                <td ><span class=\"font-bold\" x-text=\"user.status\" :class=\"statusColor\"></span>\n                                <i @click=\"changeStatusDialog\" class=\"ml-1 text-black fa-solid fa-pen-to-square cursor-pointer\"></i></td>\n                            </tr>\n                            <tr>\n                                <th>Gender</th>\n                                <td ><span x-text=\"user.gender\"></span>\n                                <i @click=\"changeGenderDialog\" class=\"ml-1 fa-solid fa-pen-to-square cursor-pointer\"></i></td>\n                            </tr>\n                            <tr>\n                                <th>Joined</th>\n                                <td x-text=\"joined\"></td>\n                            </tr>\n                            <tr>\n                                <th>DOB</th>\n                                <td><span x-text=\"user.dob ? user.dob : 'Set date of birth'\"></span>\n                                <i @click=\"changeDobDialog\" class=\"ml-1 fa-solid fa-pen-to-square cursor-pointer\"></i></td>\n                            </tr>\n                            <tr>\n                                <th>Points</th>\n                                <td ><i class=\"fa-solid fa-coins text-orange-400 mr-1\" ></i><span x-text=\"user.points\"></span></td>\n                            </tr>\n                            <tr>\n                                <th>Level</th>\n                                <td > <i class=\"fa-solid fa-database text-orange-400 mr-1\" ></i><span x-text=\"user.level\"></span></td>\n                            </tr>\n                            </tbody>\n                        </table>\n                    </div>\n                </div>\n            </div>\n            ";
-      },
       getMessages: function getMessages() {
-        var _this4 = this;
+        var _this3 = this;
 
-        axios.get("/room/".concat(roomId, "/messages")).then(function (res) {
+        axios.get("/room/".concat(room.id, "/messages")).then(function (res) {
           var messages = res.data;
-          _this4.$refs.chatMessages.innerHTML = '';
+          _this3.$refs.chatMessages.innerHTML = '';
           messages.forEach(function (message) {
-            _this4.renderMessage(message);
+            _this3.onMessageReceived(message);
           });
         });
       },
       getReports: function getReports() {
-        var _this5 = this;
+        var _this4 = this;
 
-        if (canSeeReports) {
-          axios.get("/".concat(domainId, "/reports")).then(function (res) {
-            _this5.reports = res.data;
-            _this5.reportNotificationCount = _this5.reports.length;
+        if (permission.reports) {
+          axios.get("/".concat(domain.id, "/reports")).then(function (res) {
+            _this4.reports = res.data;
+            _this4.reportNotificationCount = _this4.reports.length;
           });
         }
       },
@@ -5699,9 +5711,9 @@ document.addEventListener('alpine:init', function () {
         element.innerHTML = head + emos;
       },
       getRoomUsers: function getRoomUsers() {
-        var _this6 = this;
+        var _this5 = this;
 
-        axios.get("/room/".concat(roomId, "/users?limit=").concat(offlineLimit)).then(function (res) {
+        axios.get("/room/".concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
           var users = res.data;
           var offline = [];
           var online = [];
@@ -5712,18 +5724,18 @@ document.addEventListener('alpine:init', function () {
               offline.push(user);
             }
           });
-          _this6.onlineUsers = online;
-          _this6.offlineUsers = offline;
-          _this6.offlineUsers = _this6.offlineUsers.sort();
+          _this5.onlineUsers = online;
+          _this5.offlineUsers = offline;
+          _this5.offlineUsers = _this5.offlineUsers.sort();
         })["catch"](function (e) {});
       },
       showGuestRegisterDialog: function showGuestRegisterDialog() {
-        if (rankCode !== 'guest') return;
+        if (rank.code !== 'guest') return;
         var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Register</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4 text-left\">\n                    <form class=\"w-full\" @submit.prevent=\"guestRegister\" method=\"post\">\n                        <template x-if=\"register.errors.default\"> \n                            <div x-text=\"register.errors.default\" class=\"error-default\"></div>\n                        </template>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.email\" name=\"email\"  class=\"input-text\"\n                                           type=\"email\" placeholder=\"Email Address\" autoComplete=\"off\" required>\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.email\"> \n                                <div  x-text=\"register.errors.email\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.password\" name=\"password\"  class=\"input-text\"\n                                           type=\"password\" placeholder=\"Password\" autoComplete=\"off\" required >\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.password\"> \n                                <div x-text=\"register.errors.password\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"text-center\"> \n                            <button type=\"submit\" class=\"w-36 btn btn-skin text-center\">Register </button>\n                        </div>  \n                    </form>\n                </div>\n            </div>";
         this.showSmallModal(html);
       },
       guestRegister: function guestRegister() {
-        var _this7 = this;
+        var _this6 = this;
 
         this.showLoader = true;
         var form = new FormData();
@@ -5732,23 +5744,25 @@ document.addEventListener('alpine:init', function () {
         form.append('password', this.register.password);
         form.append('gender', gender);
         axios.post('/guest-register', form).then(function (res) {
-          _this7.showLoader = false;
+          _this6.showLoader = false;
 
-          _this7.closeSmallModal();
+          _this6.closeSmallModal();
 
           setTimeout(function () {
             location.reload();
           }, 2000);
 
-          _this7.showAlertMsg("Registration Successful", 'success');
+          _this6.showAlertMsg("Registration Successful", 'success');
         })["catch"](function (e) {
-          _this7.showLoader = false;
-          _this7.register.errors = {};
-          _this7.register.errors = e.response.data;
+          _this6.showLoader = false;
+          _this6.register.errors = {};
+          _this6.register.errors = e.response.data;
         });
       },
       getUserProfile: function getUserProfile(id) {
-        var _this8 = this;
+        var _this7 = this;
+
+        if (mobile.matches) this.showRight = false;
 
         if (id === userId) {
           this.showProfile = true;
@@ -5756,18 +5770,17 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios.get("/user/".concat(id)).then(function (res) {
-          _this8.u = res.data;
+          _this7.u = res.data;
 
-          _this8.setUserStatusColor();
+          _this7.setUserStatusColor();
 
-          _this8.$refs.userProfileContent.innerHTML = "\n                <div class=\"profile text-gray-700 text-center\">\n                    <div class=\"flex rounded px-4 py-2 bg-skin-hover to-skin-hover text-white items-center relative\">\n                        <img :src=\"u.avatar\" src=\"\" class=\"avatar\" alt=\"\">\n                        <div class=\"flex ml-4 flex-col flex-1 mt-auto\">\n                            <p class=\"text-left\">\n                                <span class=\"username\" x-text=\"u.name\"></span>\n                                <i @click=\"changeUserNameDialog\" class=\"ml-1 fa-solid fa-pen-to-square cursor-pointer\"></i>\n                            </p>\n                            <div class=\"flex text-left whitespace-wrap\">\n                                <p class=\"mood\" x-text=\"u.mood ? u.mood : 'Add your mood'\"></p>\n                            </div>\n                        </div>\n                        <div class=\"actions\"> \n                            <template x-if=\"u.private\"> \n                                <i @click=\"openPvtDialog(u.id, u.name, u.avatar,u.nameColor, u.nameFont)\" class=\"fa-solid fa-envelope icon-white\"></i>\n                            </template>\n                            <i @click=\"closeUserProfile\" class=\"fas fa-times-circle icon-white\"></i> \n                        </div>\n                    </div>\n                    <div class=\"p-4 text-gray-900 text-left text-[14px]\">\n                        <p class=\"font-bold\"> About Me</p>\n                        <p class=\"font-normal\" x-text=\"u.about ? u.about : ''\"></p>\n                        <div class=\"flex py-1 items-center\">\n                            <img class=\"rank-icon\" :src=\"u.rank.icon\" alt=\"\" src=\"\">\n                            <p class=\"font-bold text-[16px] ml-4\" x-text=\"u.rank.name\"></p>\n                        </div>\n                        <template>\n                           <button x-if=\"u.rank.code==='guest'\" @click=\"changeUserPasswordDialog\" class=\"btn\">Change Password</button>\n                        </template>\n                        <div class=\"mt-1 text-black\">\n                            <table class=\"table w-full border-separate\">\n                                <tbody>\n                                <tr>\n                                    <th>Status</th>\n                                    <td class=\"font-bold\" x-text=\"u.status\" :class=\"userStatusColor\"></td>\n                                </tr>\n                                <tr>\n                                    <th>Gender</th>\n                                    <td x-text=\"u.gender\">\n                                </tr>\n                                <tr>\n                                    <th>Joined</th>\n                                    <td x-text=\"joined\"></td>\n                                </tr>\n                                <tr>\n                                    <th>DOB</th>\n                                    <td x-text=\"u.dob ? u.dob : 'Not set'\"></td>\n                                </tr>\n                                <tr>\n                                    <th>Points</th>\n                                    <td ><i class=\"fa-solid fa-coins text-orange-400 mr-1\" ></i><span x-text=\"u.points\"></span></td>\n                                </tr>\n                                <tr>\n                                    <th>Level</th>\n                                    <td > <i class=\"fa-solid fa-database text-orange-400 mr-1\" ></i><span x-text=\"u.level\"></span></td>\n                                </tr>\n                                </tbody>\n                            </table>\n                        </div>\n                    </div>\n                </div>\n                ";
-          _this8.showUserProfile = true;
+          _this7.showUserProfile = true;
         })["catch"](function (e) {
-          _this8.showAlertMsg(e.response.data, 'error');
+          _this7.showAlertMsg(e.response.data, 'error');
         });
       },
       closeUserProfile: function closeUserProfile() {
-        this.$refs.userProfileContent.innerHTML = '';
+        this.u = null;
         this.showUserProfile = false;
       },
       showLogoutDialog: function showLogoutDialog() {
@@ -5775,41 +5788,41 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       logout: function logout() {
-        var _this9 = this;
+        var _this8 = this;
 
         axios.post('logout').then(function (res) {
           location.reload();
         })["catch"](function (e) {
-          _this9.showAlertMsg(e.response.data, 'error');
+          _this8.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAvatarDialog: function changeAvatarDialog() {
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Avatar</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    Select an image\n                    <div class=\"w-full mt-1 mb-4 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                          <div class=\"w-[50px] h-[50px] relative\">\n                            <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                          </div>\n                      </template>\n                    </div> \n                    Or \n                    <div class=\"mt-1\">\n                        <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                                   accept=\"image/*\">\n                        <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                    </div>  \n                </div>\n            </div>\n            ";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Avatar</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    Select an image\n                    <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                          <div class=\"w-[50px] h-[50px] relative\">\n                            <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                          </div>\n                      </template>\n                    </div> \n                    Or \n                    <div class=\"mt-1\">\n                        <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                                   accept=\"image/*\">\n                        <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                    </div>  \n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       setAvatar: function setAvatar(index) {
-        var _this10 = this;
+        var _this9 = this;
 
         this.showLoader = true;
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.post('/user/update-default-avatar', data).then(function (res) {
-          _this10.user.avatar = res.data.avatar;
-          _this10.showLoader = false;
+          _this9.user.avatar = res.data.avatar;
+          _this9.showLoader = false;
 
-          _this10.closeSmallModal();
+          _this9.closeSmallModal();
 
-          _this10.showAlertMsg('Avatar has been changed.', 'success');
+          _this9.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this10.showLoader = false;
+          _this9.showLoader = false;
 
-          _this10.closeSmallModal();
+          _this9.closeSmallModal();
 
-          _this10.showAlertMsg(e.response.data, 'error');
+          _this9.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAvatar: function changeAvatar(el) {
-        var _this11 = this;
+        var _this10 = this;
 
         this.showLoader = true;
         var formData = new FormData();
@@ -5825,18 +5838,18 @@ document.addEventListener('alpine:init', function () {
 
         formData.append('avatar', file);
         axios.post('/user/update-avatar', formData).then(function (res) {
-          _this11.user.avatar = res.data.avatar;
-          _this11.showLoader = false;
+          _this10.user.avatar = res.data.avatar;
+          _this10.showLoader = false;
 
-          _this11.closeSmallModal();
+          _this10.closeSmallModal();
 
-          _this11.showAlertMsg('Avatar has been changed.', 'success');
+          _this10.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this11.showLoader = false;
+          _this10.showLoader = false;
 
-          _this11.closeSmallModal();
+          _this10.closeSmallModal();
 
-          _this11.showAlertMsg(e.response.data, 'error');
+          _this10.showAlertMsg(e.response.data, 'error');
         });
       },
       changeNameDialog: function changeNameDialog() {
@@ -5848,7 +5861,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeName: function changeName() {
-        var _this12 = this;
+        var _this11 = this;
 
         if (this.user.name.length < 4 || this.user.name.length > 12) {
           this.showAlertMsg('Must have min 4 to max 12 letters', 'error');
@@ -5860,19 +5873,19 @@ document.addEventListener('alpine:init', function () {
         axios.post('/user/update-name', formData).then(function (res) {
           name = res.data.name;
 
-          _this12.closeSmallModal();
+          _this11.closeSmallModal();
 
-          _this12.showAlertMsg('Username has been changed', 'success');
+          _this11.showAlertMsg('Username has been changed', 'success');
         })["catch"](function (e) {
-          _this12.user.name = name;
+          _this11.user.name = name;
 
-          _this12.closeSmallModal();
+          _this11.closeSmallModal();
 
-          _this12.showAlertMsg(e.response.data, 'error');
+          _this11.showAlertMsg(e.response.data, 'error');
         });
       },
       customizeNameDialog: function customizeNameDialog() {
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Customize Username</p>\n                    <i @click=\"closeCustomizeNameDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <template x-if=\"user.nameFont\"> \n                        <p class=\"w-full font-bold clip\" :class=\"[user.nameFont, user.nameColor]\" x-text=\"user.name\"></p>\n                    </template>    \n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"user.nameFont\" class=\"input-text\">\n                            <option>Select Font</option>\n                            <option value=\"signika\">Signika</option>\n                            <option value=\"grandstander\">Grandstander</option>\n                            <option value=\"comic\">Comic</option>\n                            <option value=\"orbitron\">Orbitron</option>\n                            <option value=\"quicksand\">Quicksand</option>\n                            <option value=\"lemonada\">Lemonada</option>\n                            <option value=\"grenze\">Grenze</option>\n                            <option value=\"kalam\">Kalam</option>\n                            <option value=\"merienda\">Merienda</option>\n                            <option value=\"amita\">Amita</option>\n                            <option value=\"averia\">Averia</option>\n                            <option value=\"turret\">Turret</option>\n                            <option value=\"sansita\">Sansita</option>\n                            <option value=\"comfortaa\">Comfortaa</option>\n                            <option value=\"charm\">Charm</option>\n                            <option value=\"lobste\">Lobster</option>\n                        </select>\n                    </div>\n                    <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                        <div @click=\"setNameColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                         <template x-if=\"isShowTickForName(index)\">\n                            <i  class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                         </template>\n                        </div>\n                      </template>\n                    </div>   \n                    <button @click=\"customizeName\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Customize Username</p>\n                    <i @click=\"closeCustomizeNameDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <template x-if=\"user.nameFont\"> \n                        <p class=\"w-full font-bold clip\" :class=\"[user.nameFont, user.nameColor]\" x-text=\"user.name\"></p>\n                    </template>\n                    <template x-if=\"permission.nameFont\"> \n                        <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"user.nameFont\" class=\"input-text\">\n                            <option>Select Font</option>\n                            <option value=\"signika\">Signika</option>\n                            <option value=\"grandstander\">Grandstander</option>\n                            <option value=\"comic\">Comic</option>\n                            <option value=\"orbitron\">Orbitron</option>\n                            <option value=\"quicksand\">Quicksand</option>\n                            <option value=\"lemonada\">Lemonada</option>\n                            <option value=\"grenze\">Grenze</option>\n                            <option value=\"kalam\">Kalam</option>\n                            <option value=\"merienda\">Merienda</option>\n                            <option value=\"amita\">Amita</option>\n                            <option value=\"averia\">Averia</option>\n                            <option value=\"turret\">Turret</option>\n                            <option value=\"sansita\">Sansita</option>\n                            <option value=\"comfortaa\">Comfortaa</option>\n                            <option value=\"charm\">Charm</option>\n                            <option value=\"lobste\">Lobster</option>\n                        </select>\n                    </div>\n                    </template>\n                     <template x-if=\"permission.nameColor\"> \n                        <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                          <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                            <div @click=\"setNameColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                             <template x-if=\"isShowTickForName(index)\">\n                                <i  class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                             </template>\n                            </div>\n                          </template>\n                        </div>   \n                    </template>\n                    <button @click=\"customizeName\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       closeCustomizeNameDialog: function closeCustomizeNameDialog() {
@@ -5887,7 +5900,7 @@ document.addEventListener('alpine:init', function () {
         return this.user.nameColor === textColors[index];
       },
       customizeName: function customizeName() {
-        var _this13 = this;
+        var _this12 = this;
 
         if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
           return;
@@ -5900,16 +5913,16 @@ document.addEventListener('alpine:init', function () {
           nameColor = res.data.nameColor;
           nameFont = res.data.nameFont;
 
-          _this13.closeSmallModal();
+          _this12.closeSmallModal();
 
-          _this13.showAlertMsg('Name customized.', 'success');
+          _this12.showAlertMsg('Name customized.', 'success');
         })["catch"](function (e) {
-          _this13.user.nameColor = nameColor;
-          _this13.user.nameFont = nameFont;
+          _this12.user.nameColor = nameColor;
+          _this12.user.nameFont = nameFont;
 
-          _this13.closeSmallModal();
+          _this12.closeSmallModal();
 
-          _this13.showAlertMsg(e.response.data, 'error');
+          _this12.showAlertMsg(e.response.data, 'error');
         });
       },
       changeMoodDialog: function changeMoodDialog() {
@@ -5921,7 +5934,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeMood: function changeMood() {
-        var _this14 = this;
+        var _this13 = this;
 
         if (this.user.mood.length >= 40) {
           this.showAlertMsg('Must have max 40 letters', 'error');
@@ -5933,15 +5946,15 @@ document.addEventListener('alpine:init', function () {
         axios.post('/user/update-mood', formData).then(function (res) {
           mood = res.data.mood;
 
-          _this14.closeSmallModal();
+          _this13.closeSmallModal();
 
-          _this14.showAlertMsg('Mood has been changed', 'success');
+          _this13.showAlertMsg('Mood has been changed', 'success');
         })["catch"](function (e) {
-          _this14.user.mood = mood;
+          _this13.user.mood = mood;
 
-          _this14.closeSmallModal();
+          _this13.closeSmallModal();
 
-          _this14.showAlertMsg(e.response.data, 'error');
+          _this13.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAboutDialog: function changeAboutDialog() {
@@ -5953,26 +5966,26 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeAbout: function changeAbout() {
-        var _this15 = this;
+        var _this14 = this;
 
         var formData = new FormData();
         formData.append('about', this.user.about);
         axios.post('/user/update-about', formData).then(function (res) {
           about = res.data.about;
 
-          _this15.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this15.showAlertMsg('About me has been changed', 'success');
+          _this14.showAlertMsg('About me has been changed', 'success');
         })["catch"](function (e) {
-          _this15.user.about = about;
+          _this14.user.about = about;
 
-          _this15.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this15.showAlertMsg(e.response.data, 'error');
+          _this14.showAlertMsg(e.response.data, 'error');
         });
       },
       changePasswordDialog: function changePasswordDialog() {
-        if (this.user.rankCode === 'guest') {
+        if (rank.code === 'guest') {
           this.showAlertMsg('Guest does not have password', 'error');
           return;
         }
@@ -5981,7 +5994,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       changePassword: function changePassword(password) {
-        var _this16 = this;
+        var _this15 = this;
 
         if (password.length < 8) {
           this.showAlertMsg('Must have min 8 letters', 'error');
@@ -5991,7 +6004,31 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('password', password);
         axios.post('/user/update-password', formData).then(function (res) {
-          _this16.showAlertMsg('Password has been changed', 'success');
+          _this15.showAlertMsg('Password has been changed', 'success');
+
+          _this15.closeSmallModal();
+        })["catch"](function (e) {
+          _this15.showAlertMsg(e.response.data, 'error');
+
+          _this15.closeSmallModal();
+        });
+      },
+      changeStatusDialog: function changeStatusDialog() {
+        var html = "\n            <div x-data=\"{status:''}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Status</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"status\" class=\"input-text\">\n                            <option value=\"-1\" selected>Select Status</option>\n                            <option value=\"0\">Stay</option>\n                            <option value=\"1\">Online</option>\n                            <option value=\"2\">Away</option>\n                            <option value=\"3\">Busy</option>\n                            <option value=\"4\">Eating</option>\n                            <option value=\"5\">Gaming</option>\n                            <option value=\"6\">Singing</option>\n                            <option value=\"7\">Listening</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeStatus(status)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+        this.showSmallModal(html);
+      },
+      changeStatus: function changeStatus(status) {
+        var _this16 = this;
+
+        if (status === "" || status === "-1") return;
+        var formData = new FormData();
+        formData.append('status', status);
+        axios.post('/user/update-status', formData).then(function (res) {
+          _this16.showAlertMsg('Status has been changed', 'success');
+
+          _this16.user.status = res.data.status;
+
+          _this16.setStatusColor();
 
           _this16.closeSmallModal();
         })["catch"](function (e) {
@@ -6000,50 +6037,26 @@ document.addEventListener('alpine:init', function () {
           _this16.closeSmallModal();
         });
       },
-      changeStatusDialog: function changeStatusDialog() {
-        var html = "\n            <div x-data=\"{status:''}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Status</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"status\" class=\"input-text\">\n                            <option value=\"-1\" selected>Select Status</option>\n                            <option value=\"0\">Stay</option>\n                            <option value=\"1\">Online</option>\n                            <option value=\"2\">Away</option>\n                            <option value=\"3\">Busy</option>\n                            <option value=\"4\">Eating</option>\n                            <option value=\"5\">Gaming</option>\n                            <option value=\"6\">Singing</option>\n                            <option value=\"7\">Listening</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeStatus(status)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
-        this.showSmallModal(html);
-      },
-      changeStatus: function changeStatus(status) {
-        var _this17 = this;
-
-        if (status === "" || status === "-1") return;
-        var formData = new FormData();
-        formData.append('status', status);
-        axios.post('/user/update-status', formData).then(function (res) {
-          _this17.showAlertMsg('Status has been changed', 'success');
-
-          _this17.user.status = res.data.status;
-
-          _this17.setStatusColor();
-
-          _this17.closeSmallModal();
-        })["catch"](function (e) {
-          _this17.showAlertMsg(e.response.data, 'error');
-
-          _this17.closeSmallModal();
-        });
-      },
       changeGenderDialog: function changeGenderDialog() {
         var html = "\n            <div x-data=\"{gender:''}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Gender</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div>\n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"gender\" class=\"input-text\">\n                            <option value=\"\" selected=\"\">Select Gender</option>\n                            <option value=\"0\">Male</option>\n                            <option value=\"1\">Female</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeGender(gender)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       changeGender: function changeGender(gender) {
-        var _this18 = this;
+        var _this17 = this;
 
         if (gender === '') return;
         var formData = new FormData();
         formData.append('gender', gender);
         axios.post('/user/update-gender', formData).then(function (res) {
-          _this18.user.gender = res.data.gender;
+          _this17.user.gender = res.data.gender;
 
-          _this18.closeSmallModal();
+          _this17.closeSmallModal();
 
-          _this18.showAlertMsg('Gender has been changed', 'success');
+          _this17.showAlertMsg('Gender has been changed', 'success');
         })["catch"](function (e) {
-          _this18.closeSmallModal();
+          _this17.closeSmallModal();
 
-          _this18.showAlertMsg(e.response.data, 'error');
+          _this17.showAlertMsg(e.response.data, 'error');
         });
       },
       changeDobDialog: function changeDobDialog() {
@@ -6055,24 +6068,24 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeDob: function changeDob(dob) {
-        var _this19 = this;
+        var _this18 = this;
 
         if (dob === '') return;
         var formData = new FormData();
         formData.append('dob', dob);
         axios.post('/user/update-dob', formData).then(function (res) {
-          _this19.showAlertMsg('DOB has been changed', 'success');
+          _this18.showAlertMsg('DOB has been changed', 'success');
 
-          _this19.user.dob = res.data.dob;
+          _this18.user.dob = res.data.dob;
           dob = res.data.dob;
 
-          _this19.closeSmallModal();
+          _this18.closeSmallModal();
         })["catch"](function (e) {
-          _this19.user.dob = dob;
+          _this18.user.dob = dob;
 
-          _this19.showAlertMsg(e.response.data, 'error');
+          _this18.showAlertMsg(e.response.data, 'error');
 
-          _this19.closeSmallModal();
+          _this18.closeSmallModal();
         });
       },
       customizeTextDialog: function customizeTextDialog() {
@@ -6096,7 +6109,7 @@ document.addEventListener('alpine:init', function () {
         this.showOption = false;
       },
       customizeText: function customizeText() {
-        var _this20 = this;
+        var _this19 = this;
 
         if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) {
           return;
@@ -6111,17 +6124,34 @@ document.addEventListener('alpine:init', function () {
           textBold = res.data.textBold;
           textFont = res.data.textFont;
 
-          _this20.closeSmallModal();
+          _this19.closeSmallModal();
 
-          _this20.showAlertMsg('Chat options has been changed', 'success');
+          _this19.showAlertMsg('Chat options has been changed', 'success');
         })["catch"](function (e) {
-          _this20.user.textColor = textColor;
-          _this20.user.textBold = textBold;
-          _this20.user.textFont = textFont;
+          _this19.user.textColor = textColor;
+          _this19.user.textBold = textBold;
+          _this19.user.textFont = textFont;
 
-          _this20.closeSmallModal();
+          _this19.closeSmallModal();
 
-          _this20.showAlertMsg(e.response.data, 'error');
+          _this19.showAlertMsg(e.response.data, 'error');
+        });
+      },
+      changeSoundSettings: function changeSoundSettings() {
+        var _this20 = this;
+
+        var formData = new FormData();
+        formData.append('chatSound', this.user.chatSound);
+        formData.append('pvtSound', this.user.pvtSound);
+        formData.append('nameSound', this.user.nameSound);
+        formData.append('notifiSound', this.user.notifiSound);
+        axios.post("/user/change-sound-settings", formData)["catch"](function (e) {
+          _this20.user.chatSound = chatSound;
+          _this20.user.pvtSound = pvtSound;
+          _this20.user.notifSound = notifSound;
+          _this20.user.nameSound = nameSound;
+
+          _this20.showAlertMsg('Something went wrong', 'error');
         });
       },
       removeTopic: function removeTopic() {
@@ -6152,6 +6182,11 @@ document.addEventListener('alpine:init', function () {
         this.roomSocket.send(JSON.stringify(message));
       },
       sendMessage: function sendMessage() {
+        if (this.user.muted) {
+          this.showAlertMsg('You are muted', 'error');
+          return;
+        }
+
         var content = this.$refs.mainInput.value;
 
         if (content === '') {
@@ -6168,6 +6203,11 @@ document.addEventListener('alpine:init', function () {
       },
       recordMainAudio: function recordMainAudio() {
         var _this21 = this;
+
+        if (this.user.muted) {
+          this.showAlertMsg('You are muted', 'error');
+          return;
+        }
 
         if (this.isRecording) {
           this.showEmo = false;
@@ -6224,6 +6264,11 @@ document.addEventListener('alpine:init', function () {
       uploadImage: function uploadImage(event) {
         var _this22 = this;
 
+        if (this.user.muted) {
+          this.showAlertMsg('You are muted', 'error');
+          return;
+        }
+
         this.showLoader = true;
         var formData = new FormData();
         var file = event.target.files[0];
@@ -6256,7 +6301,7 @@ document.addEventListener('alpine:init', function () {
         var html = "\n                <div class=\"relative w-full mx-auto\">\n                    <img src=\"".concat(image, "\" class=\"mx-auto\" alt=\"\">\n                    <div class=\"bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1\"> \n                        <i @click=\"closeImgModal\" class=\"fas fa-times-circle text-2xl \"></i>\n                    </div>\n                </div>\n               \n                ");
         this.showImgModal(html);
       },
-      renderMessage: function renderMessage(message) {
+      onMessageReceived: function onMessageReceived(message) {
         var chatMessages = this.$refs.chatMessages;
 
         if (message.type === MessageType.Join) {
@@ -6289,7 +6334,7 @@ document.addEventListener('alpine:init', function () {
       deleteChat: function deleteChat(id) {
         var _this23 = this;
 
-        if (canDelMsg) {
+        if (permission.delMsg) {
           axios["delete"]("/message/".concat(id, "/delete"))["catch"](function (e) {
             if (e.response) {
               _this23.showAlertMsg(e.response.data, 'error');
@@ -6303,7 +6348,7 @@ document.addEventListener('alpine:init', function () {
       },
       reportDialog: function reportDialog(id, type) {
         var reportType = type === 1 ? ReportType.Chat : type === 2 ? ReportType.PvtChat : ReportType.NewsFeed;
-        var html = "\n                    <div x-data=\"{ id: ".concat(id, ", selectedReason :'', reasons:[\n                    'Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment'\n                    ]}\" class=\"text-gray-700 text-center\">\n                        <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                            <p class=\"text-md font-bold \">Report Chat</p>\n                            <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                        </div> \n                        <div class=\"p-4\">\n                            <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                                 <div class=\"flex gap-2 items-center text-[14px] mb-2\">\n                                    <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" \n                                    :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                                    <p x-text=\"reason\"></p>\n                                </div>\n                            </template>\n                            <button @click=\"report(id, selectedReason, '").concat(reportType, "')\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n                        </div>\n                    </div>\n                ");
+        var html = "\n                    <div x-data=\"{ id: ".concat(id, ", selectedReason :'', reasons:[\n                    'Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment'\n                    ]}\" class=\"text-gray-700 text-center\">\n                        <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <div class=\"inline-flex items-center\"> \n                            <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                            <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n                        </div>\n                            <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                        </div> \n                        <div class=\"p-4\">\n                            <p class=\"mb-4 text-[13px] text-start leading-[15px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                            <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                                 <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                                    <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" \n                                    :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                                    <p x-text=\"reason\"></p>\n                                </div>\n                            </template>\n                            <button @click=\"report(id, selectedReason, '").concat(reportType, "')\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n                        </div>\n                    </div>\n                ");
         this.showSmallModal(html);
       },
       report: function report(targetId, reason, type) {
@@ -6312,8 +6357,8 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('targetId', targetId);
         formData.append('reason', reason);
-        formData.append('domainId', domainId);
-        formData.append('roomId', roomId);
+        formData.append('domainId', domain.id);
+        formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/reports/create", formData).then(function (res) {
           _this24.showAlertMsg('Message reported successfully', 'success');
@@ -6394,6 +6439,15 @@ document.addEventListener('alpine:init', function () {
         }
       },
       sendPvtMessage: function sendPvtMessage(id, input) {
+        var user = this.pvtUsers.find(function (user) {
+          return user.id === id;
+        });
+
+        if (!user["private"] || !permission["private"]) {
+          this.showAlertMsg('You can\'t private to this user', 'error');
+          return;
+        }
+
         var content = input.value;
 
         if (content === '') {
@@ -6423,7 +6477,11 @@ document.addEventListener('alpine:init', function () {
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
         });
-        console.log(user);
+
+        if (!user["private"] || !permission["private"]) {
+          this.showAlertMsg('You can\'t private to this user', 'error');
+          return;
+        }
 
         if (!user.isRecording) {
           user.recorder.start().then(function () {
@@ -6470,8 +6528,17 @@ document.addEventListener('alpine:init', function () {
           user.remainingTime = RECORDING_TIME;
         }
       },
-      uploadPvtImage: function uploadPvtImage(id, event, input) {
+      uploadPvtImage: function uploadPvtImage(id, event) {
         var _this27 = this;
+
+        var user = this.pvtUsers.find(function (user) {
+          return user.id === id;
+        });
+
+        if (!user["private"] || !permission["private"]) {
+          this.showAlertMsg('You can\'t private to this user', 'error');
+          return;
+        }
 
         this.showLoader = true;
         var formData = new FormData();
@@ -6486,12 +6553,9 @@ document.addEventListener('alpine:init', function () {
         }
 
         formData.append("image", file);
-        formData.append("content", input.value);
         axios.post("/message/pvt/".concat(id, "/upload-image"), formData).then(function (res) {
           _this27.sendToUser(res.data);
 
-          input.value = '';
-          input.focus();
           _this27.showLoader = false;
         })["catch"](function (e) {
           _this27.showLoader = false;
@@ -6517,6 +6581,18 @@ document.addEventListener('alpine:init', function () {
           this.setPvtNotificationCount();
         } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
           this.getReports();
+        } else if (message.type === MessageType.DataChanges) {
+          location.reload();
+        } else if (message.type === MessageType.Mute) {
+          this.showAlertMsg('You have been muted', 'error');
+          setTimeout(function () {
+            return location.reload();
+          }, 25e2);
+        } else if (message.type === MessageType.UnMute) {
+          this.showAlertMsg('You have been unmuted', 'success');
+          setTimeout(function () {
+            return location.reload();
+          }, 25e2);
         }
       },
       reCheckPvtMessages: function reCheckPvtMessages() {
@@ -6542,13 +6618,13 @@ document.addEventListener('alpine:init', function () {
       openRoomsModal: function openRoomsModal() {
         var _this29 = this;
 
-        axios.get("/".concat(domainId, "/rooms")).then(function (res) {
+        axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
           _this29.rooms = res.data;
           var html = "\n                    <div class=\"text-skin-on-primary h-full\">\n                        <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                            <p class=\"text-md font-bold \">Room List</p>\n                            <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                        </div> \n                        <div class=\"p-[10px]\">\n                            <ul class=\"h-full\">\n                    ";
 
-          _this29.rooms.forEach(function (room, index) {
-            var submitBtn = room.id === roomId ? '<p class="text-black text-[10px] font-bold">(Current Room)</p>' : "<form class=\"flex-none\" action=\"room/join\" method=\"post\">\n                                <input type=\"hidden\" name=\"id\" :value=\"".concat(room.id, "\">\n                                <button type=\"submit\" \n                                        class=\"text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin\">\n                                    Join&nbsp&nbsp<i class=\"fa-solid fa-angles-right\"></i>\n                                </button>\n                            </form>");
-            html += "\n                        <li class=\"my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 \">\n                            <i class=\"fa-solid fa-earth-americas text-3xl flex-none text-skin-hover\"></i>\n                            <div class=\"flex-1 text-left ml-2 text-black\">\n                                <p class=\"font-bold text-[12px]\">".concat(room.name, "</p>\n                                <div>\n                                    <i class=\"fa-solid fa-user-group \"></i>&nbsp&nbsp").concat(room.onlineUsers, "\n                                </div>\n                            </div>\n                            ").concat(submitBtn, "\n                        </li>");
+          _this29.rooms.forEach(function (rm, index) {
+            var submitBtn = rm.id === room.id ? '<p class="text-black text-[10px] font-bold">(Current Room)</p>' : "<form class=\"flex-none\" action=\"room/join\" method=\"post\">\n                                <input type=\"hidden\" name=\"id\" :value=\"".concat(rm.id, "\">\n                                <button type=\"submit\" \n                                        class=\"text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin\">\n                                    Join&nbsp&nbsp<i class=\"fa-solid fa-angles-right\"></i>\n                                </button>\n                            </form>");
+            html += "\n                        <li class=\"my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 \">\n                            <i class=\"fa-solid fa-earth-americas text-3xl flex-none text-skin-hover\"></i>\n                            <div class=\"flex-1 text-left ml-2 text-black\">\n                                <p class=\"font-bold text-[12px]\">".concat(rm.name, "</p>\n                                <div>\n                                    <i class=\"fa-solid fa-user-group \"></i>&nbsp&nbsp").concat(rm.onlineUsers, "\n                                </div>\n                            </div>\n                            ").concat(submitBtn, "\n                        </li>");
           });
 
           html += "</ul></div></div>";
@@ -6566,9 +6642,10 @@ document.addEventListener('alpine:init', function () {
             var count = user.unReadCount > 0 ? "\n                        <div class=\"shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none\">\n                            <p class=\"font-bold text-[12px]\" >".concat(user.unReadCount, "</p>\n                        </div>") : '';
             var message = user.messages[0];
             var person = message != null && message.sender.id === userId ? 'You : ' : "".concat(user.name, " : ");
-            var content = message != null ? user.messages[0].content : '';
-            content = content !== '' ? appendEmojis(content) : '';
-            content = content !== '' ? person + content : content;
+            var content = message != null ? appendEmojis(message.content) : '';
+            if (message.image && content === '') content += '(Image)';
+            if (message.audio && content === '') content += '(Audio)';
+            content = person + content;
             html += "\n                        <li @click=\"openPvtDialog(".concat(user.id, ",'").concat(user.name, "','").concat(user.avatar, "', '").concat(user.nameColor, "', '").concat(user.nameFont, "')\" class=\"pvt-user-wrap\">\n                           <div class=\"w-full gap-2\">\n                                <div class=\"flex h-full w-full items-center\">\n                                    <img class=\"avatar flex-none mx-1\" src=\"").concat(user.avatar, "\">\n                                    <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                        <p class=\"ellipsis username clip ").concat(user.nameColor, " ").concat(user.nameFont, "\"> ").concat(user.name, "\n                                        <p class=\"flex items-center clip ellipsis text-gray-500 text-[12px]\">").concat(content, "</p>\n                                    </div>\n                                    ").concat(count, "\n                                </div>\n                            </div>\n                        </li>\n                        ");
           });
         } else {
@@ -6650,7 +6727,7 @@ document.addEventListener('alpine:init', function () {
                 _this31.showAlertMsg(e.response.data, 'error');
 
                 var formData = new FormData();
-                formData.append('domainId', domainId);
+                formData.append('domainId', domain.id);
                 axios["delete"]("/reports/".concat(id, "/delete"), {
                   data: formData
                 });
@@ -6668,8 +6745,8 @@ document.addEventListener('alpine:init', function () {
 
         var formData = new FormData();
         formData.append('targetId', targetId);
-        formData.append('domainId', domainId);
-        formData.append('roomId', roomId);
+        formData.append('domainId', domain.id);
+        formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/reports/".concat(id, "/take-action"), formData).then(function (res) {
           _this32.closeSmallModal();
@@ -6679,11 +6756,149 @@ document.addEventListener('alpine:init', function () {
         var _this33 = this;
 
         var formData = new FormData();
-        formData.append('domainId', domainId);
+        formData.append('domainId', domain.id);
         formData.append('type', type);
         axios.post("/reports/".concat(id, "/no-action"), formData).then(function (res) {
           _this33.closeSmallModal();
         });
+      },
+      changeUserNameDialog: function changeUserNameDialog(id, name) {
+        if (!permission.userName) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        var html = "\n            <div x-data=\"{ name: '".concat(name, "' , id: ").concat(id, "}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Username</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"h-10 mb-4\">\n                        <label class=\"h-full\">\n                            <input x-model=\"name\" name=\"name\" onkeypress=\"return /^[a-zA-Z\\d_-]*$/i.test(event.key)\"\n                                   class=\"input-text\" type=\"text\" placeholder=\"Username\"\n                                   autocomplete=\"off\" required minlength=\"4\" maxlength=\"12\" autofocus>\n                        </label> \n                    </div>    \n                    <button @click=\"changeUserName(id, name)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ");
+        this.showSmallModal(html);
+      },
+      changeUserName: function changeUserName(id, name) {
+        var _this34 = this;
+
+        if (!permission.userName) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        if (name.length < 4 || name.length > 12) {
+          this.showAlertMsg('Must have min 4 to max 12 letters', 'error');
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('name', name);
+        formData.append('domainId', domain.id);
+        axios.post("/user/".concat(id, "/update-name"), formData).then(function (res) {
+          _this34.showAlertMsg('Username has been changed', 'success');
+        })["catch"](function (e) {
+          if (e.response) _this34.showAlertMsg(e.response.data, 'error');else _this34.showAlertMsg('Something went wrong', 'error');
+        });
+        this.closeUserProfile();
+        this.closeSmallModal();
+      },
+      changeUserAvatarDialog: function changeUserAvatarDialog(id) {
+        if (!permission.avatar) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        var html = "\n            <div  x-data=\"{id:".concat(id, "}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Avatar</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    Select an image\n                    <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                          <div class=\"w-[50px] h-[50px] relative\">\n                            <img @click=\"setUserAvatar(id, index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                          </div>\n                      </template>\n                    </div> \n                    Or \n                    <div class=\"mt-1\">\n                        <input x-ref='uploadUserAvatar' @change=\"changeUserAvatar(id, $el)\" class=\"input-image\" type=\"file\"\n                                   accept=\"image/*\">\n                        <button @click=\"$refs.uploadUserAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                    </div>  \n                </div>\n            </div>\n            ");
+        this.showSmallModal(html);
+      },
+      setUserAvatar: function setUserAvatar(id, index) {
+        var _this35 = this;
+
+        if (!permission.avatar) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        this.showLoader = true;
+        var data = new FormData();
+        data.append('avatar', avatars[index]);
+        axios.post("/user/".concat(id, "/update-default-avatar"), data).then(function (res) {
+          _this35.showLoader = false;
+
+          _this35.showAlertMsg('Avatar has been changed.', 'success');
+        })["catch"](function (e) {
+          _this35.showLoader = false;
+          if (e.response) _this35.showAlertMsg(e.response.data, 'error');else _this35.showAlertMsg('Something went wrong', 'error');
+        });
+        this.closeUserProfile();
+        this.closeSmallModal();
+      },
+      changeUserAvatar: function changeUserAvatar(id, el) {
+        var _this36 = this;
+
+        if (!permission.avatar) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        this.showLoader = true;
+        var formData = new FormData();
+        var file = el.files[0];
+        var pattern = /image-*/;
+        if (file == null || file.type === 'undefined') return;
+
+        if (!file.type.match(pattern)) {
+          this.showLoader = false;
+          this.showAlertMsg('Invalid image format', 'error');
+          return;
+        }
+
+        formData.append('avatar', file);
+        axios.post("/user/".concat(id, "/update-avatar"), formData).then(function (res) {
+          _this36.showLoader = false;
+
+          _this36.showAlertMsg('Avatar has been changed.', 'success');
+        })["catch"](function (e) {
+          _this36.showLoader = false;
+          if (e.response) _this36.showAlertMsg(e.response.data, 'error');else _this36.showAlertMsg('Something went wrong', 'error');
+        });
+        this.closeUserProfile();
+        this.closeSmallModal();
+      },
+      actionMute: function actionMute() {
+        var _this37 = this;
+
+        if (!permission.mute) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        if (this.u.muted) {
+          axios.post("/user/".concat(this.u.id, "/mute")).then(function (res) {
+            _this37.showAlertMsg('User muted successfully', 'success');
+          })["catch"](function (e) {
+            _this37.u.muted = false;
+
+            _this37.showAlertMsg('Something went wrong', 'error');
+          });
+        } else {
+          axios.post("/user/".concat(this.u.id, "/unmute")).then(function (res) {
+            _this37.showAlertMsg('User unmuted successfully', 'success');
+          })["catch"](function (e) {
+            _this37.u.muted = true;
+
+            _this37.showAlertMsg('Something went wrong', 'error');
+          });
+        }
+      },
+      kickUser: function kickUser(id) {
+        if (!permission.kick) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        axios.post("/user/".concat(id, "/kick"));
+      },
+      banUser: function banUser(id) {
+        if (!permission.ban) {
+          this.showAlertMsg('Permission denied', 'error');
+          return;
+        }
+
+        axios.post("/user/".concat(id, "/ban"));
       }
     };
   });
@@ -6694,11 +6909,11 @@ function renderReportChatMessage(message, id, targetId, roomId, type) {
   var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : '';
   var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : '';
   message.content = appendEmojis(message.content);
-  return "\n    <div class=\"p-4\">\n        <li class=\"chat-wrap mb-4\" style=\"border: none\">\n            <div class=\"flex py-1 px-2 w-full\" >\n                <img @click=\"getUserProfile(".concat(message.user.id, ")\" class=\"w-[36px] h-[36px] rounded-full flex-none cursor-pointer\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                    <div class=\"flex justify-between\">\n                        <p class=\"username clip \"> ").concat(message.user.name, "</p>\n                        <div class=\"flex items-center gap-2 mr-2\">\n                            <p class=\"date\">").concat(message.createdAt, "</p>\n                        </div>\n                    </div>\n                    <div class=\"pr-2\">").concat(image, " ").concat(audio, "\n                        <p class=\"chat clip\">").concat(message.content, "</p>\n                    </div>\n                </div>\n           </div>\n        </li> \n        <button @click=\"takeAction(").concat(id, ", ").concat(targetId, ",").concat(roomId, ", '").concat(type, "')\" class=\"btn btn-skin text-center\">Take Action<button>\n        <button @click=\"noAction(").concat(id, ", '").concat(type, "')\" class=\"btn btn-disabled text-center ml-2\">No Action<button>\n    </div></div>");
+  return "\n    <div class=\"p-4\">\n        <li class=\"chat-wrap mb-4\" style=\"border: none\">\n            <div class=\"flex py-1 px-2 w-full\" >\n                <img @click=\"getUserProfile(".concat(message.user.id, ")\" class=\"w-[36px] h-[36px] rounded-full flex-none cursor-pointer\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                    <div class=\"flex justify-between\">\n                        <p class=\"username clip \"> ").concat(message.user.name, "</p>\n                        <div class=\"flex items-center gap-2 mr-2\">\n                            <p class=\"date\">").concat(message.createdAt, "</p>\n                        </div>\n                    </div>\n                    <div class=\"pr-2\">").concat(image, " ").concat(audio, "\n                        <p class=\"chat clip text-start\">").concat(message.content, "</p>\n                    </div>\n                </div>\n           </div>\n        </li> \n        <button @click=\"takeAction(").concat(id, ", ").concat(targetId, ",").concat(roomId, ", '").concat(type, "')\" class=\"btn btn-skin text-center\">Take Action<button>\n        <button @click=\"noAction(").concat(id, ", '").concat(type, "')\" class=\"btn btn-disabled text-center ml-2\">No Action<button>\n    </div></div>");
 }
 
 function renderWelcomeMessage() {
-  var topic = roomTopic.replace(/%ROOM%/g, roomName);
+  var topic = room.topic.replace(/%ROOM%/g, room.name);
   return "\n         <li id=\"topic\" class=\"w-full flex justify-center !bg-skin-primary/10 relative\">\n             <i @click=\"removeTopic\" class=\"cursor-pointer fa-solid fa-circle-xmark absolute text-sm text-skin-primary top-2 right-4\"></i>\n             <div class=\"flex py-4 px-2 w-full\">\n                <img class=\"w-[32px] h-[32px] mt-0.5 rounded-lg flex-none\" src=\"images/defaults/topic.webp\" alt=\"\">\n                <div class=\"ml-2 flex-1 \">\n                    <p class=\"username ml-1 mb-1\">Topic</p>\n                    <p class=\"chat text-skin-hover px-1 pr-2\">\n                        <span class=\"tag mr-1\">".concat(name, "</span> ").concat(topic, "\n                    </p>  \n                </div>\n            </div>\n        </li>\n    ");
 }
 
@@ -6716,13 +6931,14 @@ function renderChatMessage(message) {
   var gender = message.user.gender === 'Male' ? 'male' : 'female';
   var bold = message.user.textBold ? ' font-bold' : ' font-normal';
   var reportIcon = message.user.id !== userId ? "<i @click=\"reportDialog(".concat(message.id, ", 1)\" class=\"fa-solid fa-font-awesome icon-sm\"></i>") : '';
-  var delIcon = canDelMsg ? "<i @click=\"deleteChat(".concat(message.id, ")\" class=\"fa-solid fa-trash-can icon-sm\"></i>") : '';
+  var delIcon = permission.delMsg ? "<i @click=\"deleteChat(".concat(message.id, ")\" class=\"fa-solid fa-trash-can icon-sm\"></i>") : '';
   message.content = appendEmojis(message.content);
   message.content = message.content.replace(RegExp("".concat(name), 'gi'), "<span class=\"tag\">".concat(name, "</span>"));
   return "\n         <li id=\"chat-".concat(message.id, "\" class=\"chat-wrap\">\n           <div class=\"flex py-1 px-2 w-full\" >\n            <img @click=\"getUserProfile(").concat(message.user.id, ")\" class=\"avatar flex-none cursor-pointer ").concat(gender, "\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                <div class=\"flex justify-between\">\n                    <div class=\"inline-flex items-center gap-0.5\">\n                        <img class=\"rank-icon-sm\" src=\"").concat(message.user.rank.icon, "\" alt=\"\" title=\"").concat(message.user.rank.name, "\">\n                        <p @click=\"appendUserName($el)\" class=\"username clip ").concat(message.user.nameColor, " ").concat(message.user.nameFont, "\"> \n                            ").concat(message.user.name, "\n                        </p>\n                    </div>\n                    <div class=\"flex items-center gap-2 mr-2\">\n                        <p class=\"date\">").concat(message.createdAt, "</p>\n                        ").concat(reportIcon, " ").concat(delIcon, "\n                    </div>\n                </div>\n                <div class=\" px-1 pr-2\">").concat(image, " ").concat(audio, "\n                    <p class=\"chat clip ").concat(message.user.textColor, " ").concat(message.user.textFont, " ").concat(bold, " \">\n                        ").concat(message.content, "\n                    </p>\n                </div>\n            </div>\n           </div>\n         </li>\n    ");
 }
 
 function appendEmojis(content) {
+  if (content === '') return content;
   var result = '';
   var words = content.split(" ");
   words.forEach(function (word) {
@@ -8742,6 +8958,16 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
+
+/***/ }),
+
+/***/ "./node_modules/disable-devtool/disable-devtool.min.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/disable-devtool/disable-devtool.min.js ***!
+  \*************************************************************/
+/***/ (function(module) {
+
+!function(n,e){ true?module.exports=e():0}(this,(function(){return function(n){var e={};function t(o){if(e[o])return e[o].exports;var i=e[o]={i:o,l:!1,exports:{}};return n[o].call(i.exports,i,i.exports,t),i.l=!0,i.exports}return t.m=n,t.c=e,t.d=function(n,e,o){t.o(n,e)||Object.defineProperty(n,e,{enumerable:!0,get:o})},t.r=function(n){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(n,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(n,"__esModule",{value:!0})},t.t=function(n,e){if(1&e&&(n=t(n)),8&e)return n;if(4&e&&"object"==typeof n&&n&&n.__esModule)return n;var o=Object.create(null);if(t.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:n}),2&e&&"string"!=typeof n)for(var i in n)t.d(o,i,function(e){return n[e]}.bind(null,i));return o},t.n=function(n){var e=n&&n.__esModule?function(){return n.default}:function(){return n};return t.d(e,"a",e),e},t.o=function(n,e){return Object.prototype.hasOwnProperty.call(n,e)},t.p="",t(t.s=0)}([function(n,e,t){"use strict";function o(n){return-1!==navigator.userAgent.toLocaleLowerCase().indexOf(n)}t.r(e);var i=function(){try{return window.self!==window.top}catch(n){return!0}}(),r=o("qqbrowser"),u=o("firefox"),c=o("macintosh"),a=o("edge"),l=a&&!o("chrome")||o("trident")||o("msie"),f=o("crios"),d=o("edgios"),v={UNKONW:-1,REG_TO_STRING:0,DEFINE_ID:1,SIZE:2,DATE_TO_STRING:3,FUNC_TO_STRING:4,DEBUGGER:5};var s=!1;var w,p={};for(var y in v)p[v[y]]=!1;function m(n){p[n]=!0}function b(n){p[n]=!1}function h(){for(var n in p)if(p[n])return s=!0,!0;return s=!1,!1}function g(){var n=function(){if(T(window.devicePixelRatio))return window.devicePixelRatio;var n=window.screen;if(T(n))return!1;if(n.deviceXDPI&&n.logicalXDPI)return n.deviceXDPI/n.logicalXDPI;return!1}();if(!1===n)return!0;var e=v.SIZE,t=window.outerWidth-window.innerWidth*n>200,o=window.outerHeight-window.innerHeight*n>300;return t||o?(G(e),!1):(b(e),!0)}function T(n){return null!=n}function E(n){throw new Error('"'+n+'" is read-only')}function D(n,e,t){return e in n?Object.defineProperty(n,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):n[e]=t,n}var I,_=(D(w={},v.REG_TO_STRING,r||u),D(w,v.DEFINE_ID,!0),D(w,v.SIZE,!i&&!a),D(w,v.DATE_TO_STRING,!f&&!d),D(w,v.FUNC_TO_STRING,!f&&!d),D(w,v.DEBUGGER,f||d),w);function O(n,e,t){return e in n?Object.defineProperty(n,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):n[e]=t,n}var S=(O(I={},v.REG_TO_STRING,(function(){var n=v.REG_TO_STRING,e=0,t=/./;z(t),t.toString=function(){if(r){var t=(new Date).getTime();e&&t-e<100?G(n):e=t}else u&&G(n);return""},A(n,(function(){z(t)}))})),O(I,v.DEFINE_ID,(function(){var n=v.DEFINE_ID,e=document.createElement("div");e.__defineGetter__("id",(function(){G(n)})),Object.defineProperty(e,"id",{get:function(){G(n)}}),A(n,(function(){z(e)}))})),O(I,v.SIZE,(function(){g(),window.addEventListener("resize",(function(){setTimeout(g,100)}),!0)})),O(I,v.DATE_TO_STRING,(function(){var n=v.DATE_TO_STRING,e=0,t=new Date;t.toString=function(){return e++,""},A(n,(function(){e=0,z(t),X(),e>=2&&G(n)}))})),O(I,v.FUNC_TO_STRING,(function(n){if(!n){var e=v.FUNC_TO_STRING,t=0,o=function(){};o.toString=function(){return t++,""};A(e,(function(){t=0,z(o),X(),t>=2&&G(e)}))}})),O(I,v.DEBUGGER,(function(n){if(n){var e=v.DEBUGGER;A(e,(function(){var n=Date.now();Date.now()-n>100&&G(e)}))}})),I);function N(){("all"===F.detectors?Object.keys(S):F.detectors).forEach((function(n){!function(n,e){if("function"==typeof e){var t=_[n];void 0===t?(E("value"),t=!0):"function"==typeof t&&(E("value"),t=t()),!0===t&&e()}}(n,S[n])}))}function G(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:v.UNKONW;console.warn("You ar not allow to use DEVTOOL! 【type = ".concat(n,"】")),F.clearIntervalWhenDevOpenTrigger&&L(),U(),F.ondevtoolopen(n,K),m(n)}function R(){if("function"==typeof F.ondevtoolclose){var n=s;!h()&&n&&F.ondevtoolclose()}}var x=null,j=null,C=[],P=0;function k(){var n,e,t,o,i,r,u=!1,c=function(){u=!0},a=function(){u=!1};n=c,e=a,t=window.alert,o=window.confirm,i=window.prompt,r=function(t){return function(){n&&n(),t.apply(void 0,arguments),e&&e()}},window.alert=r(t),window.confirm=r(o),window.prompt=r(i),function(n,e){var t,o,i;void 0!==document.hidden?(t="hidden",i="visibilitychange",o="visibilityState"):void 0!==document.mozHidden?(t="mozHidden",i="mozvisibilitychange",o="mozVisibilityState"):void 0!==document.msHidden?(t="msHidden",i="msvisibilitychange",o="msVisibilityState"):void 0!==document.webkitHidden&&(t="webkitHidden",i="webkitvisibilitychange",o="webkitVisibilityState");var r=function(){document[o]===t?e():n()};document.removeEventListener(i,r,!1),document.addEventListener(i,r,!1)}(a,c),x=window.setInterval((function(){u||(C.forEach((function(n){var e=n.type,t=n.handle;b(e),t(P++)})),X(),R())}),F.interval),j=setTimeout((function(){/(iphone|ipad|ipod|ios|android)/i.test(navigator.userAgent.toLowerCase())&&L()}),F.stopIntervalTime)}function A(n,e){C.push({type:n,handle:e})}function L(){window.clearInterval(x)}function U(){window.clearTimeout(j)}function K(){if(L(),F.url)window.location.href=F.url;else{try{window.opener=null,window.open("","_self"),window.close(),window.history.back()}catch(n){console.log(n)}setTimeout((function(){window.location.href="https://tackchen.gitee.io/404.html?h=".concat(encodeURIComponent(location.host))}),500)}}function W(n){return(W="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(n){return typeof n}:function(n){return n&&"function"==typeof Symbol&&n.constructor===Symbol&&n!==Symbol.prototype?"symbol":typeof n})(n)}var F={md5:"",ondevtoolopen:K,ondevtoolclose:null,url:"",tkName:"ddtk",interval:200,disableMenu:!0,stopIntervalTime:5e3,clearIntervalWhenDevOpenTrigger:!1,detectors:"all",clearLog:!0,disableSelect:!1,disableCopy:!1,disableCut:!1},H=["detectors","ondevtoolclose"];function V(){"function"==typeof F.ondevtoolclose&&!0===F.clearIntervalWhenDevOpenTrigger&&(F.clearIntervalWhenDevOpenTrigger=!1,console.warn("【DISABLE-DEVTOOL】clearIntervalWhenDevOpenTrigger 在使用 ondevtoolclose 时无效"))}var M=window.console||{log:function(){}},z=l?function(){return M.log.apply(M,arguments)}:M.log,B=l?function(){return M.clear()}:M.clear;function X(){F.clearLog&&B()}function Z(){var n=73,e=85,t=83,o=123,i=c?function(e,t){return e.metaKey&&e.altKey&&t===n}:function(e,t){return e.ctrlKey&&e.shiftKey&&t===n},r=c?function(n,o){return n.metaKey&&n.altKey&&o===e||n.metaKey&&o===t}:function(n,o){return n.ctrlKey&&(o===t||o===e)};window.addEventListener("keydown",(function(n){var e=(n=n||window.event).keyCode||n.which;if(e===o||i(n,e)||r(n,e))return n.returnValue=!1,n.preventDefault(),!1}),!0),F.disableMenu&&q(window,"contextmenu"),F.disableSelect&&q(window,"selectstart"),F.disableCopy&&q(window,"copy"),F.disableCut&&q(window,"cut")}function q(n,e){n.addEventListener(e,(function(n){return(n=n||window.event).returnValue=!1,n.preventDefault(),!1}))}function Y(n,e,t,o,i,r){return en((u=en(en(e,n),en(o,r)))<<(c=i)|u>>>32-c,t);var u,c}function $(n,e,t,o,i,r,u){return Y(e&t|~e&o,n,e,i,r,u)}function J(n,e,t,o,i,r,u){return Y(e&o|t&~o,n,e,i,r,u)}function Q(n,e,t,o,i,r,u){return Y(e^t^o,n,e,i,r,u)}function nn(n,e,t,o,i,r,u){return Y(t^(e|~o),n,e,i,r,u)}function en(n,e){var t=(65535&n)+(65535&e);return(n>>16)+(e>>16)+(t>>16)<<16|65535&t}var tn=function(n){return function(n){for(var e="0123456789abcdef",t="",o=0;o<4*n.length;o++)t+=e.charAt(n[o>>2]>>o%4*8+4&15)+e.charAt(n[o>>2]>>o%4*8&15);return t}(function(n,e){n[e>>5]|=128<<e%32,n[14+(e+64>>>9<<4)]=e;for(var t=1732584193,o=-271733879,i=-1732584194,r=271733878,u=0;u<n.length;u+=16){var c=t,a=o,l=i,f=r;t=$(t,o,i,r,n[u+0],7,-680876936),r=$(r,t,o,i,n[u+1],12,-389564586),i=$(i,r,t,o,n[u+2],17,606105819),o=$(o,i,r,t,n[u+3],22,-1044525330),t=$(t,o,i,r,n[u+4],7,-176418897),r=$(r,t,o,i,n[u+5],12,1200080426),i=$(i,r,t,o,n[u+6],17,-1473231341),o=$(o,i,r,t,n[u+7],22,-45705983),t=$(t,o,i,r,n[u+8],7,1770035416),r=$(r,t,o,i,n[u+9],12,-1958414417),i=$(i,r,t,o,n[u+10],17,-42063),o=$(o,i,r,t,n[u+11],22,-1990404162),t=$(t,o,i,r,n[u+12],7,1804603682),r=$(r,t,o,i,n[u+13],12,-40341101),i=$(i,r,t,o,n[u+14],17,-1502002290),o=$(o,i,r,t,n[u+15],22,1236535329),t=J(t,o,i,r,n[u+1],5,-165796510),r=J(r,t,o,i,n[u+6],9,-1069501632),i=J(i,r,t,o,n[u+11],14,643717713),o=J(o,i,r,t,n[u+0],20,-373897302),t=J(t,o,i,r,n[u+5],5,-701558691),r=J(r,t,o,i,n[u+10],9,38016083),i=J(i,r,t,o,n[u+15],14,-660478335),o=J(o,i,r,t,n[u+4],20,-405537848),t=J(t,o,i,r,n[u+9],5,568446438),r=J(r,t,o,i,n[u+14],9,-1019803690),i=J(i,r,t,o,n[u+3],14,-187363961),o=J(o,i,r,t,n[u+8],20,1163531501),t=J(t,o,i,r,n[u+13],5,-1444681467),r=J(r,t,o,i,n[u+2],9,-51403784),i=J(i,r,t,o,n[u+7],14,1735328473),o=J(o,i,r,t,n[u+12],20,-1926607734),t=Q(t,o,i,r,n[u+5],4,-378558),r=Q(r,t,o,i,n[u+8],11,-2022574463),i=Q(i,r,t,o,n[u+11],16,1839030562),o=Q(o,i,r,t,n[u+14],23,-35309556),t=Q(t,o,i,r,n[u+1],4,-1530992060),r=Q(r,t,o,i,n[u+4],11,1272893353),i=Q(i,r,t,o,n[u+7],16,-155497632),o=Q(o,i,r,t,n[u+10],23,-1094730640),t=Q(t,o,i,r,n[u+13],4,681279174),r=Q(r,t,o,i,n[u+0],11,-358537222),i=Q(i,r,t,o,n[u+3],16,-722521979),o=Q(o,i,r,t,n[u+6],23,76029189),t=Q(t,o,i,r,n[u+9],4,-640364487),r=Q(r,t,o,i,n[u+12],11,-421815835),i=Q(i,r,t,o,n[u+15],16,530742520),o=Q(o,i,r,t,n[u+2],23,-995338651),t=nn(t,o,i,r,n[u+0],6,-198630844),r=nn(r,t,o,i,n[u+7],10,1126891415),i=nn(i,r,t,o,n[u+14],15,-1416354905),o=nn(o,i,r,t,n[u+5],21,-57434055),t=nn(t,o,i,r,n[u+12],6,1700485571),r=nn(r,t,o,i,n[u+3],10,-1894986606),i=nn(i,r,t,o,n[u+10],15,-1051523),o=nn(o,i,r,t,n[u+1],21,-2054922799),t=nn(t,o,i,r,n[u+8],6,1873313359),r=nn(r,t,o,i,n[u+15],10,-30611744),i=nn(i,r,t,o,n[u+6],15,-1560198380),o=nn(o,i,r,t,n[u+13],21,1309151649),t=nn(t,o,i,r,n[u+4],6,-145523070),r=nn(r,t,o,i,n[u+11],10,-1120210379),i=nn(i,r,t,o,n[u+2],15,718787259),o=nn(o,i,r,t,n[u+9],21,-343485551),t=en(t,c),o=en(o,a),i=en(i,l),r=en(r,f)}return Array(t,o,i,r)}(function(n){for(var e=Array(),t=0;t<8*n.length;t+=8)e[t>>5]|=(255&n.charCodeAt(t/8))<<t%32;return e}(n),8*n.length))};function on(n){!function(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{};for(var e in F)void 0===n[e]||W(F[e])!==W(n[e])&&-1===H.indexOf(e)||(F[e]=n[e]);V()}(n),function(){if(F.md5){var n=function(n){var e=window.location.search,t=window.location.hash;if(""===e&&""!==t&&(e="?".concat(t.split("?")[1])),""!==e&&void 0!==e){var o=new RegExp("(^|&)"+n+"=([^&]*)(&|$)","i"),i=e.substr(1).match(o);if(null!=i)return unescape(i[2])}return""}(F.tkName);if(tn(n)===F.md5)return!0}return!1}()||(k(),Z(),N())}on.md5=tn,on.version="0.2.5",on.DETECTOR_TYPE=v,on.isDevToolOpened=h,function(){if("undefined"!=typeof document){var n=document.querySelector("[disable-devtool-auto]");if(n){var e={};["md5","url","tk-name","interval","disable-menu","detectors"].forEach((function(t){var o=n.getAttribute(t);null!==o&&("interval"===t?o=parseInt(o):"disable-menu"===t?o="false"!==o:"detector"===t&&"all"!==o&&(o=o.split(" ")),e[function(n){if(-1===n.indexOf("-"))return n;var e=!1;return n.split("").map((function(n){return"-"===n?(e=!0,""):e?(e=!1,n.toUpperCase()):n})).join("")}(t)]=o)})),on(e)}}}();e.default=on}]).default}));
 
 /***/ }),
 
@@ -25090,6 +25316,18 @@ process.umask = function() { return 0; };
 /******/ 				}
 /******/ 			}
 /******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
 /******/ 		};
 /******/ 	})();
 /******/ 	

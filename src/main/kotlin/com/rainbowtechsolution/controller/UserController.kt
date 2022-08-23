@@ -109,7 +109,7 @@ class UserController : UserRepository {
     override suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User> = dbQuery {
         val expressions = listOf<Expression<*>>(
             Users.id, Users.name, Users.avatar, Users.gender, Users.mood, Users.level, Users.status, Users.roomId,
-            Users.sessions, Users.nameColor, Users.nameFont, Ranks.name, Ranks.icon, Ranks.order
+            Users.sessions, Users.nameColor, Users.nameFont, Users.muted, Ranks.name, Ranks.icon, Ranks.order
         )
         val online = Users
             .innerJoin(Ranks)
@@ -127,7 +127,7 @@ class UserController : UserRepository {
                 id = it[Users.id].value, name = it[Users.name], avatar = it[Users.avatar], mood = it[Users.mood],
                 gender = it[Users.gender].name, nameColor = it[Users.nameColor], nameFont = it[Users.nameFont],
                 level = it[Users.level], sessions = it[Users.sessions], status = it[Users.status].name,
-                rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
+                muted = it[Users.muted], rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
             )
         }
     }
@@ -213,11 +213,53 @@ class UserController : UserRepository {
             }
         }
 
+    override suspend fun changeSoundSettings(
+        id: Long, chatSound: Boolean, pvtSound: Boolean, nameSound: Boolean, notifiSound: Boolean
+    ): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[Users.chatSound] = chatSound
+            it[Users.pvtSound] = pvtSound
+            it[Users.nameSound] = nameSound
+            it[Users.notifiSound] = notifiSound
+        }
+    }
+
     override suspend fun getStaffIdsByDomainId(domainId: Int): List<Long> = dbQuery {
         Users
             .slice(Users.id)
             .select { (Users.domainId eq domainId) and (Users.staff eq true) }
             .map { it[Users.id].value }
+    }
+
+    override suspend fun mute(id: Long): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[muted] = true
+        }
+    }
+
+    override suspend fun unMute(id: Long): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[muted] = false
+        }
+    }
+
+    override suspend fun kick(id: Long, roomId: Int) {
+
+    }
+
+    override suspend fun unKick(id: Long, roomId: Int) {
+
+    }
+
+    override suspend fun ban(id: Long) {
+
+    }
+
+    override suspend fun unBan(id: Long) {
+
     }
 
     override suspend fun delete(id: Long): Int = dbQuery {

@@ -1,4 +1,3 @@
-<!--suppress ALL -->
 <div @click.outside="showDropDown = false" class="header-wrap"
      th:object="${user}">
     <div id="header" class="header">
@@ -10,7 +9,7 @@
             </div>
         </div>
         <div class="h-full flex lg:w-80 justify-end items-center gap-4 pr-4">
-            <div th:if="${permission.seeReports}" @click="openReportsModal" class="relative">
+            <div th:if="${permission.reports}" @click="openReportsModal" class="relative">
                 <i class="fa-solid fa-flag icon-white"></i>
                 <p x-cloak x-show="reportNotificationCount > 0" x-transition class="count"
                    x-text="reportNotificationCount"></p>

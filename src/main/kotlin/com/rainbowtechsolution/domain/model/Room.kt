@@ -12,6 +12,5 @@ data class Room(
     var showLeave: Boolean = false,
     var showGreet: Boolean = false,
     var domainId: Int? = null,
-    var onlineUsers: Int? = null,
-    var createdAt: String? = null,
+    var onlineUsers: Int? = null
 )

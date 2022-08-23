@@ -1,4 +1,3 @@
-<!--suppress ALL -->
 <div class="relative flex justify-end flex-grow flex-col h-full bg-white">
     <div class="flex flex-col justify-end h-full w-full">
         <div class="h-full relative w-full">
@@ -54,7 +53,7 @@
             </div>
             <div x-transition x-cloak x-show="isRecording"
                  class="z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1">
-                <div class="bg-white rounded-full w-[10px] h-[10px] animate-pulse mx-auto"></div>
+                <div class="bg-white rounded-full w-[10px] h-[10px] animate-ping mx-auto"></div>
                 <p class="text-white font-bold text-[12px] mx-auto" x-text="'Rec '+ remainingTime"></p>
             </div>
             <div x-ref="mainEmojis" x-transition x-cloak x-show="showEmo" class="emo-wrap"></div>

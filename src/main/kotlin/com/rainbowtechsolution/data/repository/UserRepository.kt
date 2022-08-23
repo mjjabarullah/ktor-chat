@@ -8,7 +8,7 @@ interface UserRepository {
 
     suspend fun register(user: User, domainId: Int, rankId: Int): Long
 
-    suspend fun guestRegister(user: User, rankId: Int): Unit
+    suspend fun guestRegister(user: User, rankId: Int)
 
     suspend fun isUserExists(name: String, email: String, domainId: Int): Boolean
 
@@ -50,7 +50,23 @@ interface UserRepository {
 
     suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?)
 
+    suspend fun changeSoundSettings(
+        id: Long, chatSound: Boolean, pvtSound: Boolean, nameSound: Boolean, notifiSound: Boolean
+    )
+
     suspend fun getStaffIdsByDomainId(domainId: Int): List<Long>
+
+    suspend fun mute(id: Long)
+
+    suspend fun unMute(id: Long)
+
+    suspend fun kick(id: Long, roomId: Int)
+
+    suspend fun unKick(id: Long, roomId: Int)
+
+    suspend fun ban(id: Long)
+
+    suspend fun unBan(id: Long)
 
     suspend fun delete(id: Long): Int
 

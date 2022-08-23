@@ -4,11 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PvtUser(
-    val id: Long,
-    val name: String?,
-    val avatar: String?,
-    val nameColor: String?,
-    val nameFont: String?,
+    val id: Long? = null,
+    val name: String? = null,
+    val avatar: String? = null,
+    val nameColor: String? = null,
+    val nameFont: String? = null,
+    val private: Boolean = false,
     val messages: List<PvtMessage> = emptyList()
 )
 

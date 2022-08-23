@@ -312,7 +312,7 @@ fun Route.domainRoutes(
                     }
                 }
 
-                route("pvt") {
+                route("/pvt") {
 
                     get("/{id}/messages") {
                         try {
@@ -340,7 +340,7 @@ fun Route.domainRoutes(
                                 else usersMessages[i][0].receiver
                                 PvtUser(
                                     id, sender?.name, sender?.avatar, sender?.nameColor, sender?.nameFont,
-                                    usersMessages[i]
+                                    sender?.private!!, usersMessages[i]
                                 )
                             }
                             call.respond(HttpStatusCode.OK, pvtUsers)
@@ -644,6 +644,22 @@ fun Route.domainRoutes(
                         val user = userRepository.findUserById(chatSession.id!!)
                         WsController.updateMember(user!!)
                         call.respond(HttpStatusCode.OK, user)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+                    }
+                }
+
+                post("/change-sound-settings") {
+                    try {
+                        val chatSession = call.sessions.get<ChatSession>()
+                        val id = chatSession?.id!!
+                        val chatSound = call.receiveParameters()["chatSound"].toBoolean()
+                        val pvtSound = call.receiveParameters()["pvtSound"].toBoolean()
+                        val nameSound = call.receiveParameters()["nameSound"].toBoolean()
+                        val notifiSound = call.receiveParameters()["notifiSound"].toBoolean()
+                        userRepository.changeSoundSettings(id, chatSound, pvtSound, nameSound, notifiSound)
+                        call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")

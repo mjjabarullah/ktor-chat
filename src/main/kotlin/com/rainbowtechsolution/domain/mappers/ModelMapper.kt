@@ -24,8 +24,7 @@ fun ResultRow.toDomainModel(): Domain {
         inactiveUserDelete = this[Domains.inactiveUserDelete],
         chatChars = this[Domains.chatChars],
         pvtChars = this[Domains.pvtChars],
-        offlineLimit = this[Domains.offlineLimit],
-        createdAt = this[Domains.createdAt].toString()
+        offlineLimit = this[Domains.offlineLimit]
     )
 
 }
@@ -38,8 +37,7 @@ fun ResultRow.toRoomModel(): Room {
         topic = this[Rooms.topic],
         showJoin = this[Rooms.showJoin],
         showLeave = this[Rooms.showLeave],
-        showGreet = this[Rooms.showGreet],
-        createdAt = this[Rooms.createdAt].toString()
+        showGreet = this[Rooms.showGreet]
     )
 }
 
@@ -70,6 +68,10 @@ fun ResultRow.toUserModel(): User {
         deviceId = this[Users.deviceId],
         country = this[Users.country],
         private = this[Users.private],
+        chatSound = this[Users.chatSound],
+        pvtSound = this[Users.pvtSound],
+        nameSound = this[Users.nameSound],
+        notifiSound = this[Users.notifiSound],
         muted = this[Users.muted],
         kicked = this[Users.kicked],
         banned = this[Users.banned],
@@ -92,30 +94,33 @@ fun ResultRow.toRankModel(): Rank {
     )
 }
 
-fun ResultRow.toPvtMessageModel(sender: QueryAlias, receiver: QueryAlias): PvtMessage {
-    val userSender = User(
-        id = this[sender[Users.id]].value,
-        name = this[sender[Users.name]].capitalize(),
-        avatar = this[sender[Users.avatar]],
-        gender = this[sender[Users.gender]].name,
-        nameColor = this[sender[Users.nameColor]],
-        nameFont = this[sender[Users.nameFont]]
+fun ResultRow.toPvtMessageModel(senderAlias: QueryAlias, receiverAlias: QueryAlias): PvtMessage {
+    val sender = User(
+        id = this[senderAlias[Users.id]].value,
+        name = this[senderAlias[Users.name]].capitalize(),
+        avatar = this[senderAlias[Users.avatar]],
+        gender = this[senderAlias[Users.gender]].name,
+        nameColor = this[senderAlias[Users.nameColor]],
+        nameFont = this[senderAlias[Users.nameFont]],
+        private = this[senderAlias[Users.private]]
     )
-    val userReceiver = User(
-        id = this[receiver[Users.id]].value,
-        name = this[receiver[Users.name]].capitalize(),
-        avatar = this[receiver[Users.avatar]],
-        gender = this[sender[Users.gender]].name,
-        nameColor = this[receiver[Users.nameColor]],
-        nameFont = this[receiver[Users.nameFont]],
+    val receiver = User(
+        id = this[receiverAlias[Users.id]].value,
+        name = this[receiverAlias[Users.name]].capitalize(),
+        avatar = this[receiverAlias[Users.avatar]],
+        gender = this[receiverAlias[Users.gender]].name,
+        nameColor = this[receiverAlias[Users.nameColor]],
+        nameFont = this[receiverAlias[Users.nameFont]],
+        private = this[receiverAlias[Users.private]]
+
     )
     return PvtMessage(
         id = this[PvtMessages.id].value,
         content = this[PvtMessages.content],
         image = this[PvtMessages.image],
         audio = this[PvtMessages.audio],
-        sender = userSender,
-        receiver = userReceiver,
+        sender = sender,
+        receiver = receiver,
         type = this[PvtMessages.type],
         seen = this[PvtMessages.seen],
         createdAt = this[PvtMessages.createdAt].format()
@@ -127,6 +132,7 @@ fun ResultRow.toPermissionModel(): Permission {
         id = this[Permissions.id].value,
         rankId = this[Permissions.rankId].value,
         name = this[Permissions.name],
+        userName = this[Permissions.userName],
         nameColor = this[Permissions.nameColor],
         nameGradient = this[Permissions.nameGradient],
         nameFont = this[Permissions.nameFont],
@@ -142,7 +148,7 @@ fun ResultRow.toPermissionModel(): Permission {
         splEmo = this[Permissions.splEmo],
         status = this[Permissions.status],
         delMsg = this[Permissions.delMsg],
-        seeReports = this[Permissions.seeReports],
+        reports = this[Permissions.reports],
         mute = this[Permissions.mute],
         kick = this[Permissions.kick],
         ban = this[Permissions.ban]

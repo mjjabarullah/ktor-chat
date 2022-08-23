@@ -1,0 +1,177 @@
+<div x-cloak x-show="showProfile" class="profile-wrap">
+    <div x-data="{tab:0}" x-transition x-show="showProfile" class="user-profile">
+        <div class="profile">
+            <div class="flex rounded px-4 py-2 flex bg-skin-hover to-skin-hover text-white items-center relative">
+                <div class="relative flex-none">
+                    <i @click="changeAvatarDialog" class="fa-solid fa-camera upload-icon"></i>
+                </div>
+                <img :src="user.avatar" src="" class="avatar" alt="">
+                <div class="flex ml-4 flex-col flex-1 mt-auto">
+                    <p class="text-left">
+                        <span class="username" x-text="user.name"></span>
+                        <template x-if="permission.name">
+                            <i @click="changeNameDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
+                        </template>
+                        <i @click="customizeNameDialog" class="ml-1 fa-solid fa-palette cursor-pointer"></i>
+                    </p>
+                    <div class="flex text-left whitespace-wrap">
+                        <p class="mood" x-text="user.mood ? user.mood : 'Add your mood'"></p>
+                        <i @click="changeMoodDialog" class="ml-1 fa-solid fa-pen-to-square icon-sm my-auto"></i>
+                    </div>
+                </div>
+                <i @click="showProfile=false;tab=0" class="fas fa-times-circle icon-white"></i>
+            </div>
+            <template x-if="rank.code === 'guest'">
+                <p @click="showGuestRegisterDialog"
+                   class="p-2 w-full bg-green-500 text-white text-[12px] cursor-pointer">
+                    <i class="fa-solid fa-circle-info"></i> You are currently logged in as guest. Click here to
+                    register your account in order to access more features.</p>
+            </template>
+            <div class="p-4 text-gray-900 text-left text-[14px]">
+                <p class="font-bold"> About Me
+                    <i @click="changeAboutDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></p>
+                <p class="font-normal" x-text="user.about ? user.about : ''"></p>
+                <div class="flex py-1 items-center">
+                    <img class="rank-icon" :src="rank.icon" alt="" src="">
+                    <p class="font-bold text-[16px] ml-4" x-text="rank.name"></p>
+                </div>
+                <div class="flex flex-col mt-2">
+                    <div class="flex overflow-x-auto scrollbar">
+                        <p @click="tab=0"
+                           class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                           :class="tab===0? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                            Account</p>
+                        <p @click="tab=1"
+                           class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                           :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                            Sound Settings</p>
+                        <p @click="tab=2"
+                           class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                           :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                            Others</p>
+                    </div>
+                    <div x-show="tab===0" class="mt-1 text-black">
+                        <table class="table w-full border-separate">
+                            <tbody>
+                            <tr>
+                                <th>Status</th>
+                                <td><span class="font-bold" x-text="user.status" :class="statusColor"></span>
+                                    <i @click="changeStatusDialog"
+                                       class="ml-1 text-black fa-solid fa-pen-to-square cursor-pointer"></i></td>
+                            </tr>
+                            <tr>
+                                <th>Gender</th>
+                                <td><span x-text="user.gender"></span>
+                                    <i @click="changeGenderDialog"
+                                       class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></td>
+                            </tr>
+                            <tr>
+                                <th>Joined</th>
+                                <td x-text="joined"></td>
+                            </tr>
+                            <tr>
+                                <th>DOB</th>
+                                <td><span x-text="user.dob ? user.dob : 'Set date of birth'"></span>
+                                    <i @click="changeDobDialog"
+                                       class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></td>
+                            </tr>
+                            <tr>
+                                <th>Points</th>
+                                <td><i class="fa-solid fa-coins text-orange-400 mr-1"></i><span
+                                        x-text="user.points"></span></td>
+                            </tr>
+                            <tr>
+                                <th>Level</th>
+                                <td><i class="fa-solid fa-database text-orange-400 mr-1"></i><span
+                                        x-text="user.level"></span></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div x-show="tab===1" class="mt-1 text-black">
+                        <table class="table w-full border-separate">
+                            <tbody>
+                            <tr>
+                                <th>Chat Sound</th>
+                                <td>
+                                    <label class="switch">
+                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.chatSound">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Private Sound</th>
+                                <td>
+                                    <label class="switch">
+                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.pvtSound">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Username Sound</th>
+                                <td>
+                                    <label class="switch">
+                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.nameSound">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Notification Sound</th>
+                                <td>
+                                    <label class="switch">
+                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.notifSound">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div x-show="tab===2" class="mt-1 text-black flex flex-col">
+                        <table class="table w-full border-separate">
+                            <tbody>
+                            <tr>
+                                <th>Enable Private</th>
+                                <td><label class="switch"><input type="checkbox" x-model="user.private"><span
+                                        class="slider round"></span></label></td>
+                            </tr>
+                            <template x-if="rank.code!=='guest'">
+                                <tr @click="changePasswordDialog">
+                                    <th>
+                                        <div class="inline-flex items-center">
+                                            <i class="fa-solid fa-key"></i>
+                                            <p class="ml-2">Change Password</p>
+                                        </div>
+                                    </th>
+                                    <td></td>
+                                </tr>
+                            </template>
+                            <tr @click="changePasswordDialog">
+                                <th>
+                                    <div class="inline-flex items-center">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <p class="ml-2">Manage Blocks</p>
+                                    </div>
+                                </th>
+                                <td></td>
+                            </tr>
+                            <tr @click="changePasswordDialog">
+                                <th>
+                                    <div class="inline-flex items-center">
+                                        <i class="fa-solid fa-filter"></i>
+                                        <p class="ml-2">Emoji Spam Filter</p>
+                                    </div>
+                                </th>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

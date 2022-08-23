@@ -7,6 +7,7 @@ data class Permission(
     val id: Int? = null,
     val rankId: Int? = null,
     val name: Boolean = false,
+    val userName: Boolean = false,
     val nameColor: Boolean = false,
     val nameFont: Boolean = false,
     val nameGradient: Boolean = false,
@@ -22,7 +23,7 @@ data class Permission(
     val splEmo: Boolean = false,
     val status: Boolean = false,
     val delMsg: Boolean = false,
-    val seeReports: Boolean = false,
+    val reports: Boolean = false,
     val mute: Boolean = false,
     val kick: Boolean = false,
     val ban: Boolean = false

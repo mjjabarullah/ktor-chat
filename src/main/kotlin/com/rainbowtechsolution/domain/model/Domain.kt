@@ -19,6 +19,5 @@ data class Domain(
     val inactiveUserDelete: Int? = null,
     val chatChars: Int? = null,
     val pvtChars: Int? = null,
-    val offlineLimit: Int? = null,
-    var createdAt: String? = null,
+    val offlineLimit: Int? = null
 )

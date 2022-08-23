@@ -1,11 +1,11 @@
-<!--suppress ALL -->
 <div x-show="showRight" class="right-side-wrap"
      x-transition:enter="transition ease-in-out duration-50"
      x-transition:enter-start="opacity-0 transform scale-x-0 translate-x-1/2"
      x-transition:enter-end="opacity-100 transform scale-x-100 -translate-x-0"
      x-transition:leave="transition ease-in-out duration-50"
      x-transition:leave-start="opacity-100 transform scale-x-100 -translate-x-0"
-     x-transition:leave-end="opacity-0 transform scale-x-0 translate-x-1/2">
+     x-transition:leave-end="opacity-0 transform scale-x-0 translate-x-1/2"
+     xmlns:x-transition="http://www.w3.org/1999/xhtml">
     <div class="h-full w-full flex flex-col rounded-tl-xl lg:rounded-none absolute">
         <div x-cloak x-show="showMessages"
              class="shadow-lg shadow-primary-800/30 lg:shadow-none top-0 flex flex-col overflow-y-auto scrollbar overflow-x-hidden h-full w-full rounded-tl-xl rounded-bl-xl lg:rounded-none">
@@ -29,6 +29,9 @@
                                     <p x-text="user.mood" class="mood ellipsis clip"
                                        :class="[user.nameColor, user.nameFont]"></p>
                                 </div>
+                                <template x-if="user.muted">
+                                    <img class="gender flex-none" src="/images/actions/muted.webp">
+                                </template>
                                 <img class="gender flex-none"
                                      :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
                                 <img class="rank-icon" :src="user.rank.icon" :title="user.rank.name">
@@ -51,8 +54,8 @@
                                 <img class="avatar flex-none mx-1" :src="user.avatar">
                                 <div class="flex-1 px-1 whitespace-nowrap overflow-hidden">
                                     <p class="ellipsis">
-                                            <span x-text="user.name" class="username clip"
-                                                  :class="[user.nameColor, user.nameFont]"></span>
+                                        <span x-text="user.name" class="username clip"
+                                              :class="[user.nameColor, user.nameFont]"></span>
                                         <span x-text="'Lv.' + user.level" class="level"></span>
                                     </p>
                                     <p x-text="user.mood" class="mood ellipsis clip"

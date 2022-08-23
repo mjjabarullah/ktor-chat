@@ -74,7 +74,7 @@ class MessageController : MessageRepository {
         val expressions = listOf<Expression<*>>(
             Messages.id, Messages.content, Messages.image, Messages.audio, Messages.type, Messages.roomId,
             Messages.createdAt, Users.id, Users.name, Users.gender, Users.avatar, Users.nameFont, Users.nameColor,
-            Users.textFont, Users.textColor, Users.textBold, Ranks.icon
+            Users.textFont, Users.textColor, Users.textBold, Ranks.icon, Ranks.name
         )
         Messages
             .innerJoin(Users)
@@ -88,7 +88,7 @@ class MessageController : MessageRepository {
                     id = it[Users.id].value, avatar = it[Users.avatar], name = it[Users.name],
                     gender = it[Users.gender].name, nameFont = it[Users.nameFont], nameColor = it[Users.nameColor],
                     textColor = it[Users.textColor], textFont = it[Users.textFont], textBold = it[Users.textBold],
-                    rank = Rank(icon = it[Ranks.icon])
+                    rank = Rank(icon = it[Ranks.icon], name = it[Ranks.name])
                 )
                 Message(
                     id = it[Messages.id].value, content = it[Messages.content], audio = it[Messages.audio],
@@ -101,12 +101,11 @@ class MessageController : MessageRepository {
     }
 
     override suspend fun getPrivateMessages(sender: Long, receiver: Long): List<PvtMessage> = dbQuery {
-        val sTable = Users.slice(
+        val expressions = listOf<Expression<*>>(
             Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.private, Users.gender
-        ).selectAll().alias("sender")
-        val rTable = Users.slice(
-            Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.private, Users.gender
-        ).selectAll().alias("receiver")
+        )
+        val sTable = Users.slice(expressions).selectAll().alias("sender")
+        val rTable = Users.slice(expressions).selectAll().alias("receiver")
         PvtMessages
             .innerJoin(sTable, { PvtMessages.sender }, { sTable[Users.id] })
             .innerJoin(rTable, { PvtMessages.receiver }, { rTable[Users.id] })
@@ -126,8 +125,8 @@ class MessageController : MessageRepository {
             PvtMessages.slice(maxId, PvtMessages.sender, PvtMessages.receiver).selectAll()
                 .groupBy(PvtMessages.sender, PvtMessages.receiver).alias("b")
         PvtMessages
-            .join(usersAlias, JoinType.INNER, PvtMessages.id, usersAlias[PvtMessages.id])
-            .slice(userId, PvtMessages.createdAt)
+            .join(usersAlias, JoinType.INNER, PvtMessages.id, usersAlias[maxId])
+            .slice(userId)
             .select { (PvtMessages.sender eq id) or (PvtMessages.receiver eq id) }
             .limit(10)
             .orderBy(usersAlias[maxId], SortOrder.DESC)

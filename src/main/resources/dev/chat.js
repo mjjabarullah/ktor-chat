@@ -1,13 +1,23 @@
 "use strict"
 
 import Alpine from 'alpinejs'
+import disableDevtool from 'disable-devtool'
+
+
+//disableDevtool() /*TODO : Uncomment this in production*/
 
 window.axios = require('axios')
 window.Alpine = Alpine
 
+Object.freeze(domain)
+Object.freeze(room)
+Object.freeze(permission)
+Object.freeze(rank)
+
 const MicRecorder = require('mic-recorder-to-mp3')
 const MessageType = {
-    Join: 'Join', Chat: 'Chat', Leave: 'Leave', Delete: 'Delete', Report: 'Report', ActionTaken: 'ActionTaken'
+    Join: 'Join', Chat: 'Chat', Leave: 'Leave', Delete: 'Delete', Report: 'Report', ActionTaken: 'ActionTaken',
+    DataChanges: 'DataChanges', Mute: 'Mute', UnMute: 'UnMute', Kick: 'Kick', Ban: 'Ban'
 }
 const Status = {Stay: 'Stay', Online: 'Online', Away: 'Away', Busy: 'Busy'}
 const ReportType = {Chat: 'Chat', PvtChat: 'PvtChat', NewsFeed: 'NewsFeed'}
@@ -53,11 +63,14 @@ document.addEventListener('alpine:init', () => {
             dob: dob,
             points: points,
             level: level,
-            rankCode: rankCode,
-            rankName: rankName,
-            rankIcon: rankIcon,
+            private: pvt,
+            chatSound: chatSound,
+            pvtSound: pvtSound,
+            nameSound: nameSound,
+            notifiSound: notifiSound,
+            muted: muted
         },
-        u: {},
+        u: null,
         bgColors: bgColors,
         avatars: avatars,
         statusColor: '',
@@ -68,7 +81,7 @@ document.addEventListener('alpine:init', () => {
             password: '',
             errors: {}
         },
-        roomSocket: new WebSocket(`wss://${location.host}/chatroom/${roomId}`),
+        roomSocket: new WebSocket(`wss://${location.host}/chatroom/${room.id}`),
         userSocket: new WebSocket(`wss://${location.host}/member/${userId}`),
         onlineUsers: [],
         offlineUsers: [],
@@ -102,25 +115,19 @@ document.addEventListener('alpine:init', () => {
 
             this.reCheckPvtMessages()
 
-            this.getProfile()
-
             this.setStatusColor()
 
             this.getReports()
 
-            this.roomSocket.addEventListener('message', (e) => {
-                this.renderMessage(JSON.parse(e.data))
-            })
+            this.roomSocket.addEventListener('message', (e) => this.onMessageReceived(JSON.parse(e.data)))
 
             this.roomSocket.addEventListener('close', (e) => {
-                this.showAlertMsg('Room connection closed', 'error')
-            })
+            }/*location.reload()*/)
 
             this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
 
             this.userSocket.addEventListener('close', (e) => {
-                this.showAlertMsg('User connection closed', 'error')
-            })
+            } /*location.reload()*/)
 
             const isUGCShowed = localStorage.getItem('isUGCShowed')
             if (isUGCShowed !== "true") {
@@ -128,17 +135,19 @@ document.addEventListener('alpine:init', () => {
                 this.showUCGPolicyDialog()
             } else {
                 /*TODO: uncomment this*/
-                /*this.showLoader = true
-                setTimeout(() => {
-                    this.showLoader = false
-                    this.$refs.mainInput.focus()
-                    this.showMessages = true
-                }, 15e2)*/
+                /* this.showLoader = true
+                 setTimeout(() => {
+                     this.showLoader = false
+                     this.$refs.mainInput.focus()
+                     this.showMessages = true
+                 }, 15e2)*/
 
                 this.$refs.mainInput.focus()
                 this.showMessages = true
                 this.showLoader = false
             }
+
+            this.$refs.mainInput.disabled = this.user.muted
 
             this.$watch('user', () => {
                 const user = this.onlineUsers.find(user => user.id === userId)
@@ -149,6 +158,7 @@ document.addEventListener('alpine:init', () => {
                 user.nameFont = this.user.nameFont
                 user.gender = this.user.gender
             })
+
         },
         toggleLeft() {
             this.showLeft = !this.showLeft
@@ -168,11 +178,11 @@ document.addEventListener('alpine:init', () => {
             this.showModal = false
         },
         showImgModal(html) {
-            this.$refs.imgModalContent.innerHTML = html
+            this.$refs.fullImage.innerHTML = html
             this.showImage = true
         },
         closeImgModal() {
-            this.$refs.imgModalContent.innerText = ''
+            this.$refs.fullImage.innerText = ''
             this.showImage = false
         },
         showFullModal(html) {
@@ -181,9 +191,8 @@ document.addEventListener('alpine:init', () => {
         },
         closeFullModal() {
             this.showFulModal = false
-            setTimeout(() => {
-                this.$refs.fullModalContent.innerText = ''
-            }, 500)
+            let content = this.$refs.fullModalContent
+            setTimeout(() => content.innerHTML = '', 5e2)
         },
         showUCGPolicyDialog() {
             const html = `
@@ -248,91 +257,18 @@ document.addEventListener('alpine:init', () => {
                     break
             }
         },
-        getProfile() {
-            this.$refs.profileContent.innerHTML = `
-            <div class="profile text-gray-700 text-center">
-                <div class="flex rounded px-4 py-2 flex bg-skin-hover to-skin-hover text-white items-center relative">
-                    <div class="relative flex-none">
-                        <i @click="changeAvatarDialog" class="fa-solid fa-camera upload-icon"></i>
-                    </div>
-                    <img :src="user.avatar" src="" class="avatar" alt="">
-                    <div class="flex ml-4 flex-col flex-1 mt-auto">
-                        <p class="text-left">
-                            <span class="username" x-text="user.name"></span>
-                            <i @click="changeNameDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
-                            <i @click="customizeNameDialog" class="ml-1 fa-solid fa-palette cursor-pointer"></i>
-                        </p>
-                        <div class="flex text-left whitespace-wrap">
-                            <p class="mood" x-text="user.mood ? user.mood : 'Add your mood'"></p>
-                            <i @click="changeMoodDialog" class="ml-1 fa-solid fa-pen-to-square icon-sm my-auto"></i>
-                        </div>
-                    </div>
-                    <i @click="showProfile=false" class="fas fa-times-circle icon-white"></i>
-                </div>
-                <template x-if="user.rankCode === 'guest'">
-                    <p @click="showGuestRegisterDialog" class="p-2 w-full bg-green-500 text-white text-[12px] cursor-pointer">
-                    <i class="fa-solid fa-circle-info"></i> You are currently logged in as guest. Click here to register your account in order to access more features.</p> 
-                </template>
-                <div class="p-4 text-gray-900 text-left text-[14px]">
-                    <p class="font-bold"> About Me
-                        <i @click="changeAboutDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></p>
-                    <p class="font-normal" x-text="user.about ? user.about : ''"></p>
-                    <div class="flex py-1 items-center">
-                        <img class="rank-icon" :src="user.rankIcon" alt="" src="">
-                        <p class="font-bold text-[16px] ml-4" x-text="user.rankName"></p>
-                    </div>
-                    <template>
-                       <button x-if="user.rankCode==='guest'" @click="changePasswordDialog" class="btn">Change Password</button>
-                    </template>
-                    <div class="mt-1 text-black">
-                        <table class="table w-full border-separate">
-                            <tbody>
-                            <tr>
-                                <th>Status</th>
-                                <td ><span class="font-bold" x-text="user.status" :class="statusColor"></span>
-                                <i @click="changeStatusDialog" class="ml-1 text-black fa-solid fa-pen-to-square cursor-pointer"></i></td>
-                            </tr>
-                            <tr>
-                                <th>Gender</th>
-                                <td ><span x-text="user.gender"></span>
-                                <i @click="changeGenderDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></td>
-                            </tr>
-                            <tr>
-                                <th>Joined</th>
-                                <td x-text="joined"></td>
-                            </tr>
-                            <tr>
-                                <th>DOB</th>
-                                <td><span x-text="user.dob ? user.dob : 'Set date of birth'"></span>
-                                <i @click="changeDobDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></td>
-                            </tr>
-                            <tr>
-                                <th>Points</th>
-                                <td ><i class="fa-solid fa-coins text-orange-400 mr-1" ></i><span x-text="user.points"></span></td>
-                            </tr>
-                            <tr>
-                                <th>Level</th>
-                                <td > <i class="fa-solid fa-database text-orange-400 mr-1" ></i><span x-text="user.level"></span></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            `
-        },
         getMessages() {
-            axios.get(`/room/${roomId}/messages`).then(res => {
+            axios.get(`/room/${room.id}/messages`).then(res => {
                 const messages = res.data
                 this.$refs.chatMessages.innerHTML = ''
                 messages.forEach(message => {
-                    this.renderMessage(message)
+                    this.onMessageReceived(message)
                 })
             })
         },
         getReports() {
-            if (canSeeReports) {
-                axios.get(`/${domainId}/reports`).then(res => {
+            if (permission.reports) {
+                axios.get(`/${domain.id}/reports`).then(res => {
                     this.reports = res.data
                     this.reportNotificationCount = this.reports.length
                 })
@@ -367,7 +303,7 @@ document.addEventListener('alpine:init', () => {
             element.innerHTML = head + emos
         },
         getRoomUsers() {
-            axios.get(`/room/${roomId}/users?limit=${offlineLimit}`).then(res => {
+            axios.get(`/room/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
                 const users = res.data
                 const offline = []
                 const online = []
@@ -386,7 +322,7 @@ document.addEventListener('alpine:init', () => {
             })
         },
         showGuestRegisterDialog() {
-            if (rankCode !== 'guest') return
+            if (rank.code !== 'guest') return
             const html = `
             <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
@@ -450,84 +386,21 @@ document.addEventListener('alpine:init', () => {
             })
         },
         getUserProfile(id) {
+            if (mobile.matches) this.showRight = false
             if (id === userId) {
                 this.showProfile = true
                 return
             }
             axios.get(`/user/${id}`).then(res => {
                 this.u = res.data
-
                 this.setUserStatusColor()
-                this.$refs.userProfileContent.innerHTML = `
-                <div class="profile text-gray-700 text-center">
-                    <div class="flex rounded px-4 py-2 bg-skin-hover to-skin-hover text-white items-center relative">
-                        <img :src="u.avatar" src="" class="avatar" alt="">
-                        <div class="flex ml-4 flex-col flex-1 mt-auto">
-                            <p class="text-left">
-                                <span class="username" x-text="u.name"></span>
-                                <i @click="changeUserNameDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
-                            </p>
-                            <div class="flex text-left whitespace-wrap">
-                                <p class="mood" x-text="u.mood ? u.mood : 'Add your mood'"></p>
-                            </div>
-                        </div>
-                        <div class="actions"> 
-                            <template x-if="u.private"> 
-                                <i @click="openPvtDialog(u.id, u.name, u.avatar,u.nameColor, u.nameFont)" class="fa-solid fa-envelope icon-white"></i>
-                            </template>
-                            <i @click="closeUserProfile" class="fas fa-times-circle icon-white"></i> 
-                        </div>
-                    </div>
-                    <div class="p-4 text-gray-900 text-left text-[14px]">
-                        <p class="font-bold"> About Me</p>
-                        <p class="font-normal" x-text="u.about ? u.about : ''"></p>
-                        <div class="flex py-1 items-center">
-                            <img class="rank-icon" :src="u.rank.icon" alt="" src="">
-                            <p class="font-bold text-[16px] ml-4" x-text="u.rank.name"></p>
-                        </div>
-                        <template>
-                           <button x-if="u.rank.code==='guest'" @click="changeUserPasswordDialog" class="btn">Change Password</button>
-                        </template>
-                        <div class="mt-1 text-black">
-                            <table class="table w-full border-separate">
-                                <tbody>
-                                <tr>
-                                    <th>Status</th>
-                                    <td class="font-bold" x-text="u.status" :class="userStatusColor"></td>
-                                </tr>
-                                <tr>
-                                    <th>Gender</th>
-                                    <td x-text="u.gender">
-                                </tr>
-                                <tr>
-                                    <th>Joined</th>
-                                    <td x-text="joined"></td>
-                                </tr>
-                                <tr>
-                                    <th>DOB</th>
-                                    <td x-text="u.dob ? u.dob : 'Not set'"></td>
-                                </tr>
-                                <tr>
-                                    <th>Points</th>
-                                    <td ><i class="fa-solid fa-coins text-orange-400 mr-1" ></i><span x-text="u.points"></span></td>
-                                </tr>
-                                <tr>
-                                    <th>Level</th>
-                                    <td > <i class="fa-solid fa-database text-orange-400 mr-1" ></i><span x-text="u.level"></span></td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                `
                 this.showUserProfile = true
             }).catch(e => {
                 this.showAlertMsg(e.response.data, 'error')
             })
         },
         closeUserProfile() {
-            this.$refs.userProfileContent.innerHTML = ''
+            this.u = null
             this.showUserProfile = false
         },
         showLogoutDialog() {
@@ -564,7 +437,7 @@ document.addEventListener('alpine:init', () => {
                 </div> 
                 <div class="p-4">
                     Select an image
-                    <div class="w-full mt-1 mb-4 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar">
+                    <div class="w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar">
                       <template x-for="(avatar, index) in avatars " :key="index">
                           <div class="w-[50px] h-[50px] relative">
                             <img @click="setAvatar(index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar" alt=""> 
@@ -672,8 +545,9 @@ document.addEventListener('alpine:init', () => {
                 <div class="p-4">
                     <template x-if="user.nameFont"> 
                         <p class="w-full font-bold clip" :class="[user.nameFont, user.nameColor]" x-text="user.name"></p>
-                    </template>    
-                    <div class="w-full h-10 mb-4">
+                    </template>
+                    <template x-if="permission.nameFont"> 
+                        <div class="w-full h-10 mb-4">
                         <select x-model="user.nameFont" class="input-text">
                             <option>Select Font</option>
                             <option value="signika">Signika</option>
@@ -694,15 +568,18 @@ document.addEventListener('alpine:init', () => {
                             <option value="lobste">Lobster</option>
                         </select>
                     </div>
-                    <div class="w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar">
-                      <template x-for="(color, index) in bgColors " :key="index">
-                        <div @click="setNameColor(index)" class="h-6 w-10 cursor-pointer flex items-center justify-center" :class="color">
-                         <template x-if="isShowTickForName(index)">
-                            <i  class="fa-solid fa-check text-white text-center top-0 left-0"></i>
-                         </template>
-                        </div>
-                      </template>
-                    </div>   
+                    </template>
+                     <template x-if="permission.nameColor"> 
+                        <div class="w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar">
+                          <template x-for="(color, index) in bgColors " :key="index">
+                            <div @click="setNameColor(index)" class="h-6 w-10 cursor-pointer flex items-center justify-center" :class="color">
+                             <template x-if="isShowTickForName(index)">
+                                <i  class="fa-solid fa-check text-white text-center top-0 left-0"></i>
+                             </template>
+                            </div>
+                          </template>
+                        </div>   
+                    </template>
                     <button @click="customizeName" class="w-36 btn btn-skin text-center">Change<button>
                 </div>
             </div>
@@ -816,7 +693,7 @@ document.addEventListener('alpine:init', () => {
             })
         },
         changePasswordDialog() {
-            if (this.user.rankCode === 'guest') {
+            if (rank.code === 'guest') {
                 this.showAlertMsg('Guest does not have password', 'error')
                 return
             }
@@ -1058,6 +935,20 @@ document.addEventListener('alpine:init', () => {
                 this.showAlertMsg(e.response.data, 'error')
             })
         },
+        changeSoundSettings() {
+            const formData = new FormData()
+            formData.append('chatSound', this.user.chatSound)
+            formData.append('pvtSound', this.user.pvtSound)
+            formData.append('nameSound', this.user.nameSound)
+            formData.append('notifiSound', this.user.notifiSound)
+            axios.post(`/user/change-sound-settings`, formData).catch(e => {
+                this.user.chatSound = chatSound
+                this.user.pvtSound = pvtSound
+                this.user.notifSound = notifSound
+                this.user.nameSound = nameSound
+                this.showAlertMsg('Something went wrong', 'error')
+            })
+        },
         removeTopic() {
             const topic = document.getElementById('topic')
             topic.remove()
@@ -1086,6 +977,10 @@ document.addEventListener('alpine:init', () => {
             this.roomSocket.send(JSON.stringify(message))
         },
         sendMessage() {
+            if (this.user.muted) {
+                this.showAlertMsg('You are muted', 'error')
+                return
+            }
             const content = this.$refs.mainInput.value
             if (content === '') {
                 this.$refs.mainInput.focus()
@@ -1096,6 +991,10 @@ document.addEventListener('alpine:init', () => {
             this.$refs.mainInput.focus()
         },
         recordMainAudio() {
+            if (this.user.muted) {
+                this.showAlertMsg('You are muted', 'error')
+                return
+            }
             if (this.isRecording) {
                 this.showEmo = false
                 this.showOption = false
@@ -1142,6 +1041,10 @@ document.addEventListener('alpine:init', () => {
             }
         },
         uploadImage(event) {
+            if (this.user.muted) {
+                this.showAlertMsg('You are muted', 'error')
+                return
+            }
             this.showLoader = true
             const formData = new FormData()
             const file = event.target.files[0]
@@ -1177,7 +1080,7 @@ document.addEventListener('alpine:init', () => {
                 `
             this.showImgModal(html)
         },
-        renderMessage(message) {
+        onMessageReceived(message) {
             const chatMessages = this.$refs.chatMessages
             if (message.type === MessageType.Join) {
                 this.getRoomUsers()
@@ -1203,7 +1106,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
         deleteChat(id) {
-            if (canDelMsg) {
+            if (permission.delMsg) {
                 axios.delete(`/message/${id}/delete`).catch(e => {
                     if (e.response) {
 
@@ -1221,12 +1124,16 @@ document.addEventListener('alpine:init', () => {
                     'Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment'
                     ]}" class="text-gray-700 text-center">
                         <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
-                            <p class="text-md font-bold ">Report Chat</p>
+                        <div class="inline-flex items-center"> 
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+                            <p class="ml-2 text-md font-bold ">Report This Content</p>
+                        </div>
                             <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
                         </div> 
                         <div class="p-4">
+                            <p class="mb-4 text-[13px] text-start leading-[15px]">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>
                             <template x-for="(reason, index) in reasons" :key="index"> 
-                                 <div class="flex gap-2 items-center text-[14px] mb-2">
+                                 <div class="flex gap-2 items-center text-[13px] font-bold">
                                     <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" 
                                     :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
                                     <p x-text="reason"></p>
@@ -1242,8 +1149,8 @@ document.addEventListener('alpine:init', () => {
             const formData = new FormData()
             formData.append('targetId', targetId)
             formData.append('reason', reason)
-            formData.append('domainId', domainId)
-            formData.append('roomId', roomId)
+            formData.append('domainId', domain.id)
+            formData.append('roomId', room.id)
             formData.append('type', type)
             axios.post(`/reports/create`, formData).then(res => {
                 this.showAlertMsg('Message reported successfully', 'success')
@@ -1300,6 +1207,11 @@ document.addEventListener('alpine:init', () => {
             }
         },
         sendPvtMessage(id, input) {
+            const user = this.pvtUsers.find(user => user.id === id)
+            if (!user.private || !permission.private) {
+                this.showAlertMsg('You can\'t private to this user', 'error')
+                return
+            }
             const content = input.value
             if (content === '') {
                 input.focus()
@@ -1315,8 +1227,11 @@ document.addEventListener('alpine:init', () => {
             this.userSocket.send(JSON.stringify(message))
         },
         recordPvtAudio(id) {
-            let user = this.pvtUsers.find(user => user.id === id)
-            console.log(user)
+            const user = this.pvtUsers.find(user => user.id === id)
+            if (!user.private || !permission.private) {
+                this.showAlertMsg('You can\'t private to this user', 'error')
+                return
+            }
             if (!user.isRecording) {
                 user.recorder.start().then(() => {
                     user.interval = setInterval(() => {
@@ -1354,7 +1269,12 @@ document.addEventListener('alpine:init', () => {
                 user.remainingTime = RECORDING_TIME
             }
         },
-        uploadPvtImage(id, event, input) {
+        uploadPvtImage(id, event) {
+            const user = this.pvtUsers.find(user => user.id === id)
+            if (!user.private || !permission.private) {
+                this.showAlertMsg('You can\'t private to this user', 'error')
+                return
+            }
             this.showLoader = true
             const formData = new FormData()
             const file = event.target.files[0]
@@ -1366,11 +1286,8 @@ document.addEventListener('alpine:init', () => {
                 return
             }
             formData.append("image", file)
-            formData.append("content", input.value)
             axios.post(`/message/pvt/${id}/upload-image`, formData).then(res => {
                 this.sendToUser(res.data)
-                input.value = ''
-                input.focus()
                 this.showLoader = false
             }).catch(e => {
                 this.showLoader = false
@@ -1391,6 +1308,14 @@ document.addEventListener('alpine:init', () => {
                 this.setPvtNotificationCount()
             } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
                 this.getReports()
+            } else if (message.type === MessageType.DataChanges) {
+                location.reload()
+            } else if (message.type === MessageType.Mute) {
+                this.showAlertMsg('You have been muted', 'error')
+                setTimeout(() => location.reload(), 25e2)
+            } else if (message.type === MessageType.UnMute) {
+                this.showAlertMsg('You have been unmuted', 'success')
+                setTimeout(() => location.reload(), 25e2)
             }
         },
         reCheckPvtMessages() {
@@ -1409,7 +1334,7 @@ document.addEventListener('alpine:init', () => {
             })
         },
         openRoomsModal() {
-            axios.get(`/${domainId}/rooms`).then(res => {
+            axios.get(`/${domain.id}/rooms`).then(res => {
                 this.rooms = res.data
                 let html = `
                     <div class="text-skin-on-primary h-full">
@@ -1420,11 +1345,11 @@ document.addEventListener('alpine:init', () => {
                         <div class="p-[10px]">
                             <ul class="h-full">
                     `
-                this.rooms.forEach((room, index) => {
-                    const submitBtn = room.id === roomId ?
+                this.rooms.forEach((rm, index) => {
+                    const submitBtn = rm.id === room.id ?
                         '<p class="text-black text-[10px] font-bold">(Current Room)</p>' :
                         `<form class="flex-none" action="room/join" method="post">
-                                <input type="hidden" name="id" :value="${room.id}">
+                                <input type="hidden" name="id" :value="${rm.id}">
                                 <button type="submit" 
                                         class="text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin">
                                     Join&nbsp&nbsp<i class="fa-solid fa-angles-right"></i>
@@ -1434,9 +1359,9 @@ document.addEventListener('alpine:init', () => {
                         <li class="my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 ">
                             <i class="fa-solid fa-earth-americas text-3xl flex-none text-skin-hover"></i>
                             <div class="flex-1 text-left ml-2 text-black">
-                                <p class="font-bold text-[12px]">${room.name}</p>
+                                <p class="font-bold text-[12px]">${rm.name}</p>
                                 <div>
-                                    <i class="fa-solid fa-user-group "></i>&nbsp&nbsp${room.onlineUsers}
+                                    <i class="fa-solid fa-user-group "></i>&nbsp&nbsp${rm.onlineUsers}
                                 </div>
                             </div>
                             ${submitBtn}
@@ -1465,9 +1390,11 @@ document.addEventListener('alpine:init', () => {
                         </div>` : ''
                     const message = user.messages[0]
                     const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} : `
-                    let content = message != null ? user.messages[0].content : ''
-                    content = content !== '' ? appendEmojis(content) : ''
-                    content = content !== '' ? person + content : content
+                    let content = message != null ? appendEmojis(message.content) : ''
+                    if (message.image && content === '') content += '(Image)'
+                    if (message.audio && content === '') content += '(Audio)'
+                    content = person + content
+
                     html += `
                         <li @click="openPvtDialog(${user.id},'${user.name}','${user.avatar}', '${user.nameColor}', '${user.nameFont}')" class="pvt-user-wrap">
                            <div class="w-full gap-2">
@@ -1586,7 +1513,7 @@ document.addEventListener('alpine:init', () => {
                         if (e.response.status === 404) {
                             this.showAlertMsg(e.response.data, 'error')
                             const formData = new FormData()
-                            formData.append('domainId', domainId)
+                            formData.append('domainId', domain.id)
                             axios.delete(`/reports/${id}/delete`, {data: formData})
                         }
                         return
@@ -1602,8 +1529,8 @@ document.addEventListener('alpine:init', () => {
         takeAction(id, targetId, roomId, type) {
             const formData = new FormData()
             formData.append('targetId', targetId)
-            formData.append('domainId', domainId)
-            formData.append('roomId', roomId)
+            formData.append('domainId', domain.id)
+            formData.append('roomId', room.id)
             formData.append('type', type)
             axios.post(`/reports/${id}/take-action`, formData).then(res => {
                 this.closeSmallModal()
@@ -1611,12 +1538,170 @@ document.addEventListener('alpine:init', () => {
         },
         noAction(id, type) {
             const formData = new FormData()
-            formData.append('domainId', domainId)
+            formData.append('domainId', domain.id)
             formData.append('type', type)
             axios.post(`/reports/${id}/no-action`, formData).then(res => {
                 this.closeSmallModal()
             })
         },
+        changeUserNameDialog(id, name) {
+            if (!permission.userName) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            const html = `
+            <div x-data="{ name: '${name}' , id: ${id}}" class="text-gray-700 text-center">
+                <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                    <p class="text-md font-bold ">Change Username</p>
+                    <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                </div> 
+                <div class="p-4">
+                    <div class="h-10 mb-4">
+                        <label class="h-full">
+                            <input x-model="name" name="name" onkeypress="return /^[a-zA-Z\\d_-]*$/i.test(event.key)"
+                                   class="input-text" type="text" placeholder="Username"
+                                   autocomplete="off" required minlength="4" maxlength="12" autofocus>
+                        </label> 
+                    </div>    
+                    <button @click="changeUserName(id, name)" class="w-36 btn btn-skin text-center">Change<button>
+                </div>
+            </div>
+            `
+            this.showSmallModal(html)
+        },
+        changeUserName(id, name) {
+            if (!permission.userName) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            if (name.length < 4 || name.length > 12) {
+                this.showAlertMsg('Must have min 4 to max 12 letters', 'error')
+                return
+            }
+            const formData = new FormData()
+            formData.append('name', name)
+            formData.append('domainId', domain.id)
+            axios.post(`/user/${id}/update-name`, formData).then(res => {
+                this.showAlertMsg('Username has been changed', 'success')
+            }).catch(e => {
+                if (e.response) this.showAlertMsg(e.response.data, 'error')
+                else this.showAlertMsg('Something went wrong', 'error')
+            })
+            this.closeUserProfile()
+            this.closeSmallModal()
+        },
+        changeUserAvatarDialog(id) {
+            if (!permission.avatar) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            const html = `
+            <div  x-data="{id:${id}}" class="text-gray-700 text-center">
+                <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                    <p class="text-md font-bold ">Change Avatar</p>
+                    <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                </div> 
+                <div class="p-4">
+                    Select an image
+                    <div class="w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar">
+                      <template x-for="(avatar, index) in avatars " :key="index">
+                          <div class="w-[50px] h-[50px] relative">
+                            <img @click="setUserAvatar(id, index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar" alt=""> 
+                          </div>
+                      </template>
+                    </div> 
+                    Or 
+                    <div class="mt-1">
+                        <input x-ref='uploadUserAvatar' @change="changeUserAvatar(id, $el)" class="input-image" type="file"
+                                   accept="image/*">
+                        <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload<button>
+                    </div>  
+                </div>
+            </div>
+            `
+            this.showSmallModal(html)
+        },
+        setUserAvatar(id, index) {
+            if (!permission.avatar) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            this.showLoader = true
+            const data = new FormData()
+            data.append('avatar', avatars[index])
+            axios.post(`/user/${id}/update-default-avatar`, data).then(res => {
+                this.showLoader = false
+                this.showAlertMsg('Avatar has been changed.', 'success')
+            }).catch(e => {
+                this.showLoader = false
+                if (e.response) this.showAlertMsg(e.response.data, 'error')
+                else this.showAlertMsg('Something went wrong', 'error')
+            })
+            this.closeUserProfile()
+            this.closeSmallModal()
+        },
+        changeUserAvatar(id, el) {
+            if (!permission.avatar) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            this.showLoader = true
+            const formData = new FormData()
+            const file = el.files[0]
+            const pattern = /image-*/
+            if (file == null || file.type === 'undefined') return
+            if (!file.type.match(pattern)) {
+                this.showLoader = false
+                this.showAlertMsg('Invalid image format', 'error')
+                return
+            }
+            formData.append('avatar', file)
+            axios.post(`/user/${id}/update-avatar`, formData).then(res => {
+                this.showLoader = false
+                this.showAlertMsg('Avatar has been changed.', 'success')
+            }).catch(e => {
+                this.showLoader = false
+                if (e.response) this.showAlertMsg(e.response.data, 'error')
+                else this.showAlertMsg('Something went wrong', 'error')
+            })
+            this.closeUserProfile()
+            this.closeSmallModal()
+        },
+        actionMute() {
+            if (!permission.mute) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            if (this.u.muted) {
+                axios.post(`/user/${this.u.id}/mute`).then(res => {
+                    this.showAlertMsg('User muted successfully', 'success')
+                }).catch(e => {
+                    this.u.muted = false
+                    this.showAlertMsg('Something went wrong', 'error')
+                })
+            } else {
+                axios.post(`/user/${this.u.id}/unmute`).then(res => {
+                    this.showAlertMsg('User unmuted successfully', 'success')
+                }).catch(e => {
+                    this.u.muted = true
+                    this.showAlertMsg('Something went wrong', 'error')
+                })
+            }
+        },
+        kickUser(id) {
+            if (!permission.kick) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            axios.post(`/user/${id}/kick`)
+        },
+        banUser(id) {
+            if (!permission.ban) {
+                this.showAlertMsg('Permission denied', 'error')
+                return
+            }
+            axios.post(`/user/${id}/ban`)
+        }
     }))
 })
 
@@ -1639,7 +1724,7 @@ function renderReportChatMessage(message, id, targetId, roomId, type) {
                         </div>
                     </div>
                     <div class="pr-2">${image} ${audio}
-                        <p class="chat clip">${message.content}</p>
+                        <p class="chat clip text-start">${message.content}</p>
                     </div>
                 </div>
            </div>
@@ -1650,7 +1735,7 @@ function renderReportChatMessage(message, id, targetId, roomId, type) {
 }
 
 function renderWelcomeMessage() {
-    const topic = roomTopic.replace(/%ROOM%/g, roomName)
+    const topic = room.topic.replace(/%ROOM%/g, room.name)
     return `
          <li id="topic" class="w-full flex justify-center !bg-skin-primary/10 relative">
              <i @click="removeTopic" class="cursor-pointer fa-solid fa-circle-xmark absolute text-sm text-skin-primary top-2 right-4"></i>
@@ -1695,7 +1780,7 @@ function renderChatMessage(message) {
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
     const bold = message.user.textBold ? ' font-bold' : ' font-normal'
     const reportIcon = message.user.id !== userId ? `<i @click="reportDialog(${message.id}, 1)" class="fa-solid fa-font-awesome icon-sm"></i>` : ''
-    const delIcon = canDelMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-trash-can icon-sm"></i>` : ''
+    const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-trash-can icon-sm"></i>` : ''
     message.content = appendEmojis(message.content)
     message.content = message.content.replace(RegExp(`${name}`, 'gi'), `<span class="tag">${name}</span>`)
     return `
@@ -1727,6 +1812,7 @@ function renderChatMessage(message) {
 }
 
 function appendEmojis(content) {
+    if (content === '') return content
     let result = ''
     const words = content.split(" ")
     words.forEach(word => {

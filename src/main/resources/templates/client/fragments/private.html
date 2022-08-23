@@ -1,0 +1,125 @@
+<div class="pvt-wrap">
+    <div class="h-auto w-full flex flex-col">
+        <template x-for="pvtUser in pvtUsers" :key="pvtUser.id">
+            <template x-if="pvtUser.added">
+                <div class="w-full flex flex-col">
+                    <div class="flex justify-end w-full cursor-pointer">
+                        <div x-show="pvtUser.minimize" class=" w-12 h-12 relative rounded-full text-white">
+                            <p x-cloak x-show="pvtUser.unReadCount > 0" x-transition
+                               class="absolute top-0 right-0 bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20"
+                               x-text="pvtUser.unReadCount"></p>
+                            <img @click="maximize(pvtUser.id)" :src="pvtUser.avatar"
+                                 class="w-full h-full rounded-full shadow-lg shadow-black/20">
+                        </div>
+                    </div>
+                    <div @click.outside="makeItBehind($el)" @click="makeItBefore($el)"
+                         :id="'draggable-'+pvtUser.id" class="pvt-modal"
+                         x-data="{ pvtEmoTab:0, showPvtEmo:false, showPvtOption: false}"
+                         x-init="$nextTick(() => {getPvtEmojis($refs.pvtEmojis)})"
+                         x-show="!pvtUser.minimize;$nextTick(()=>$refs.pvtInput.focus())">
+                        <div class="flex flex-col justify-end h-full w-full">
+                            <div :id="'pvt-header-'+pvtUser.id" class="pvt-header">
+                                <div class="flex gap-2 items-center ml-2 h-full">
+                                    <img class="avatar" :src="pvtUser.avatar" alt="">
+                                    <p x-text="pvtUser.name" class="pvtUsername"></p>
+                                </div>
+                                <div class="flex gap-2 items-center mr-2 h-full">
+                                    <i @click="pvtUser.minimize = true" class="fa-solid fa-minus icon-white"></i>
+                                    <i @click="closePvtModal(pvtUser.id)"
+                                       class="fas fa-times-circle icon-white"></i>
+                                </div>
+                            </div>
+                            <div class="h-full w-full">
+                                <div class="z-10 relative h-full">
+                                    <ul x-cloak class="chat-container">
+                                        <template x-for="message in pvtUser.messages" :key="message.id">
+                                            <li :id="'pvt-chat-'+message.id" class="chat-wrap">
+                                                <div class="flex py-1 px-2 w-full"
+                                                     :class="message.sender.id !== userId ? 'flex-row-reverse' : ''">
+                                                    <img @click="getUserProfile(message.sender.id)"
+                                                         class="avatar flex-none cursor-pointer"
+                                                         :class="message.sender.gender === 'Male' ? 'male' : 'female'"
+                                                         :src="message.sender.avatar">
+                                                    <div class="flex flex-col mt-1 max-w-[80%]"
+                                                         :class="message.sender.id !== userId ? 'mr-2 ' : 'ml-2'">
+                                                        <div class="flex-1 rounded-b-md px-2 py-1 flex flex-col"
+                                                             :class="message.sender.id !== userId ? 'rounded-tl-md b-zinc-3' : 'rounded-tr-md bg-skin-primary'">
+                                                            <template x-if="message.audio">
+                                                                <audio preload="auto" controls class="w-[250px]"
+                                                                       controlslist="nodownload noplaybackrate">
+                                                                    <source :src="message.audio" type="audio/mpeg">
+                                                                </audio>
+                                                            </template>
+                                                            <template x-if="message.image">
+                                                                <img @click="showImageDialog($el)"
+                                                                     :src="message.image" alt=""
+                                                                     class="lobby-image">
+                                                            </template>
+                                                            <p class="chat text-skin-on-primary font-normal"
+                                                               x-html="message.content"></p>
+                                                        </div>
+                                                        <div class="flex items-center gap-2 mt-1"
+                                                             :class="message.sender.id !== userId ? 'justify-end' : 'justify-start'">
+                                                            <p class="date" x-text="message.createdAt"></p>
+                                                            <template x-if="message.sender.id !== userId">
+                                                                <i @click="reportPvtChat(message.id)"
+                                                                   class="fa-solid fa-font-awesome icon-sm"></i>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="main-input-wrap flex-none">
+                                <div x-transition x-cloak x-show="showPvtOption" class="options">
+                                    <div class="inline-flex p-2 gap-4">
+                                        <i @click="showDrawPad" class="fa-solid fa-paintbrush icon-skin"></i>
+                                        <div class="relative flex-none">
+                                            <input x-ref="pvtUpload"
+                                                   @change="uploadPvtImage(pvtUser.id, $event)"
+                                                   class="input-image" type="file" accept="image/*">
+                                            <i @click="$refs.pvtUpload.click(); showPvtOption=false"
+                                               class="fa-solid fa-image icon-skin"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-transition x-cloak x-show="pvtUser.isRecording"
+                                     class="z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1">
+                                    <div class="bg-white rounded-full w-[10px] h-[10px] animate-pulse mx-auto"></div>
+                                    <p class="text-white font-bold text-[12px] mx-auto"
+                                       x-text="'Rec '+ pvtUser.remainingTime"></p>
+                                </div>
+                                <div x-ref="pvtEmojis" x-transition x-show="showPvtEmo" class="pvt-emo-wrap"></div>
+                                <div class="w-full h-full gap-2 ">
+                                    <div class="flex items-center h-full px-2 w-full">
+                                        <i @click="showPvtOption=!showPvtOption;showPvtEmo=false"
+                                           class="mx-1 fa-solid fa-square-plus icon-skin"></i>
+                                        <i @click="showPvtEmo=!showPvtEmo;showPvtOption=false"
+                                           class="ml-1 fa-solid fa-face-grin-hearts icon-skin"></i>
+                                        <i @click="$nextTick(() => {recordPvtAudio(pvtUser.id)})"
+                                           class="mx-2 fa-solid fa-microphone-lines icon-skin"></i>
+                                        <div class="flex items-center flex-1">
+                                            <label class="h-10 flex w-full">
+                                                <input x-ref="pvtInput"
+                                                       @keyup.enter="sendPvtMessage(pvtUser.id , $refs.pvtInput)"
+                                                       class="input-message" type="text" spellcheck="false"
+                                                       placeholder="Write something here..." autocomplete="off">
+                                                <button @click="sendPvtMessage(pvtUser.id, $refs.pvtInput)"
+                                                        class="send"><i
+                                                        class="fa-solid fa-paper-plane"></i>
+                                                </button>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+    </div>
+</div>

@@ -55,7 +55,7 @@ module.exports = {
                 'orbitron': ['Orbitron','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
                 'quicksand': ['Quicksand','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
                 'lemonada': ['Lemonada','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'grenze': ['Grenze Gotisch','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
+                'grenze': ['Grenze Gotisch','cursive'],
                 'kalam': ['Kalam','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
                 'merienda': ['Merienda','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
                 'amita': ['Amita','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
