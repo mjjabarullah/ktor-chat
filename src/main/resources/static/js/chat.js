@@ -5481,7 +5481,8 @@ document.addEventListener('alpine:init', function () {
         pvtSound: pvtSound,
         nameSound: nameSound,
         notifiSound: notifiSound,
-        muted: muted
+        muted: muted,
+        hasActionPerm: permission.mute || permission.kick || permission.ban
       },
       u: null,
       bgColors: bgColors,
@@ -5496,14 +5497,19 @@ document.addEventListener('alpine:init', function () {
       },
       roomSocket: new WebSocket("wss://".concat(location.host, "/chatroom/").concat(room.id)),
       userSocket: new WebSocket("wss://".concat(location.host, "/member/").concat(userId)),
+      roomUsers: [],
       onlineUsers: [],
       offlineUsers: [],
       pvtUsers: [],
       rooms: [],
       reports: [],
-      pvtNotificationCount: 0,
-      reportNotificationCount: 0,
-      notificationCount: 0,
+      news: {
+        news: [],
+        unReadCount: 0
+      },
+      pvtNotifiCount: 0,
+      reportNotifiCount: 0,
+      notifiCount: 0,
       isRecording: false,
       remainingTime: RECORDING_TIME,
       init: function init() {
@@ -5529,8 +5535,12 @@ document.addEventListener('alpine:init', function () {
         this.reCheckPvtMessages();
         this.setStatusColor();
         this.getReports();
+        this.getNews();
         this.roomSocket.addEventListener('message', function (e) {
-          return _this.onMessageReceived(JSON.parse(e.data));
+          var message = JSON.parse(e.data);
+          if (message.type === MessageType.Chat && message.user.id !== userId) _this.$refs.chatSound.play();
+
+          _this.onMessageReceived(message);
         });
         this.roomSocket.addEventListener('close', function (e) {}
         /*location.reload()*/
@@ -5555,9 +5565,14 @@ document.addEventListener('alpine:init', function () {
                this.$refs.mainInput.focus()
                this.showMessages = true
            }, 15e2)*/
-          this.$refs.mainInput.focus();
           this.showMessages = true;
           this.showLoader = false;
+
+          if (rank.code === 'guest') {
+            this.showGuestDialog();
+          } else {
+            this.$refs.mainInput.focus();
+          }
         }
 
         this.$refs.mainInput.disabled = this.user.muted;
@@ -5614,11 +5629,19 @@ document.addEventListener('alpine:init', function () {
         var html = "\n                <div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Information</p>\n                        <i @click=\"closeUGCPolicy\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-4\">\n                        <i class=\"fa-solid fa-triangle-exclamation clIcons text-[70px]\" ></i>\n                        <p class=\"text-lg font-bold \">Do Not Spam / Abuse</p>\n                        <p class=\"pt-2 text-[14px] text-left\">To improve our chat room app we use UGC Policy to control abusive chat.</p>\n                        <p class=\"pt-2 text-[14px] text-left\">Our automatic abuse detection system can mark your message as spam and block or mute your account immediately.</p>\n                    </div>\n                </div>\n                ";
         this.showSmallModal(html);
       },
+      showGuestDialog: function showGuestDialog() {
+        var html = "\n                <div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-end items-center\">\n                        <i @click=\"closeSmallModal; $refs.mainInput.focus()\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-4 text-center \">\n                       <img class=\"w-20 h-20 mx-auto\" src=\"/images/defaults/happy.webp\" alt=\"\"> \n                        <p class=\"mt-2 text-2xl font-bold\">Welcome ".concat(this.user.name, "</p>\n                        <p class=\"mt-2 text-[13px] leading-[15px]\">You are currently logged in as guest. Click here to register your account in order to access more features.</p>\n                        <div class=\"text-center flex gap-2 justify-center mt-2\"> \n                            <button @click=\"closeSmallModal; $refs.mainInput.focus()\" class=\"px-2 btn btn-disabled text-center\">Close</button>\n                            <button @click=\"showGuestRegisterDialog\" class=\"px-2 btn btn-skin text-center\">Register</button>\n                        </div> \n                    </div>\n                </div>\n            ");
+        this.showSmallModal(html);
+      },
       closeUGCPolicy: function closeUGCPolicy() {
         this.closeSmallModal();
         this.showMessages = true;
         this.$refs.mainInput.focus();
         localStorage.setItem("isUGCShowed", "true");
+
+        if (rank.code === 'guest') {
+          this.showGuestDialog();
+        }
       },
       showAlertMsg: function showAlertMsg(msg, color) {
         var _this2 = this;
@@ -5646,6 +5669,9 @@ document.addEventListener('alpine:init', function () {
           case Status.Busy:
             this.statusColor = 'red';
             break;
+
+          default:
+            this.statusColor = '';
         }
       },
       setUserStatusColor: function setUserStatusColor() {
@@ -5680,9 +5706,16 @@ document.addEventListener('alpine:init', function () {
         if (permission.reports) {
           axios.get("/".concat(domain.id, "/reports")).then(function (res) {
             _this4.reports = res.data;
-            _this4.reportNotificationCount = _this4.reports.length;
+            _this4.reportNotifiCount = _this4.reports.length;
           });
         }
+      },
+      getNews: function getNews() {
+        var _this5 = this;
+
+        axios.get("/".concat(domain.id, "/news")).then(function (res) {
+          _this5.news = res.data;
+        });
       },
       getEmojis: function getEmojis() {
         var head = '<div class="emo-head">';
@@ -5711,31 +5744,33 @@ document.addEventListener('alpine:init', function () {
         element.innerHTML = head + emos;
       },
       getRoomUsers: function getRoomUsers() {
-        var _this5 = this;
+        var _this6 = this;
 
         axios.get("/room/".concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
-          var users = res.data;
+          _this6.roomUsers = res.data;
           var offline = [];
           var online = [];
-          users.forEach(function (user) {
+
+          _this6.roomUsers.forEach(function (user) {
             if (user.sessions > 0 || user.status === Status.Stay) {
               online.push(user);
             } else {
               offline.push(user);
             }
           });
-          _this5.onlineUsers = online;
-          _this5.offlineUsers = offline;
-          _this5.offlineUsers = _this5.offlineUsers.sort();
+
+          _this6.onlineUsers = online;
+          _this6.offlineUsers = offline;
+          _this6.offlineUsers = _this6.offlineUsers.sort();
         })["catch"](function (e) {});
       },
       showGuestRegisterDialog: function showGuestRegisterDialog() {
         if (rank.code !== 'guest') return;
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Register</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4 text-left\">\n                    <form class=\"w-full\" @submit.prevent=\"guestRegister\" method=\"post\">\n                        <template x-if=\"register.errors.default\"> \n                            <div x-text=\"register.errors.default\" class=\"error-default\"></div>\n                        </template>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.email\" name=\"email\"  class=\"input-text\"\n                                           type=\"email\" placeholder=\"Email Address\" autoComplete=\"off\" required>\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.email\"> \n                                <div  x-text=\"register.errors.email\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.password\" name=\"password\"  class=\"input-text\"\n                                           type=\"password\" placeholder=\"Password\" autoComplete=\"off\" required >\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.password\"> \n                                <div x-text=\"register.errors.password\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"text-center\"> \n                            <button type=\"submit\" class=\"w-36 btn btn-skin text-center\">Register </button>\n                        </div>  \n                    </form>\n                </div>\n            </div>";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Register</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4 text-left\">\n                    <form class=\"w-full\" @submit.prevent=\"guestRegister\" method=\"post\">\n                        <template x-if=\"register.errors.default\"> \n                            <div x-text=\"register.errors.default\" class=\"error-default\"></div>\n                        </template>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.email\" name=\"email\"  class=\"input-text\"\n                                           type=\"email\" placeholder=\"Email Address\" autoComplete=\"off\" required>\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.email\"> \n                                <div  x-text=\"register.errors.email\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"mb-4\">\n                            <div class=\"h-10\">\n                                <label class=\"h-full\">\n                                    <input x-model=\"register.password\" name=\"password\"  class=\"input-text\"\n                                           type=\"password\" placeholder=\"Password\" autoComplete=\"off\" required >\n                                </label>\n                            </div>\n                            <template x-if=\"register.errors.password\"> \n                                <div x-text=\"register.errors.password\" class=\"error-text\"></div>\n                            </template>\n                        </div>\n                        <div class=\"text-center\"> \n                            <button type=\"submit\" class=\"w-36 btn btn-skin text-center\">Register</button>\n                        </div>  \n                    </form>\n                </div>\n            </div>";
         this.showSmallModal(html);
       },
       guestRegister: function guestRegister() {
-        var _this6 = this;
+        var _this7 = this;
 
         this.showLoader = true;
         var form = new FormData();
@@ -5744,23 +5779,23 @@ document.addEventListener('alpine:init', function () {
         form.append('password', this.register.password);
         form.append('gender', gender);
         axios.post('/guest-register', form).then(function (res) {
-          _this6.showLoader = false;
+          _this7.showLoader = false;
 
-          _this6.closeSmallModal();
+          _this7.closeSmallModal();
 
           setTimeout(function () {
             location.reload();
           }, 2000);
 
-          _this6.showAlertMsg("Registration Successful", 'success');
+          _this7.showAlertMsg("Registration Successful", 'success');
         })["catch"](function (e) {
-          _this6.showLoader = false;
-          _this6.register.errors = {};
-          _this6.register.errors = e.response.data;
+          _this7.showLoader = false;
+          _this7.register.errors = {};
+          _this7.register.errors = e.response.data;
         });
       },
       getUserProfile: function getUserProfile(id) {
-        var _this7 = this;
+        var _this8 = this;
 
         if (mobile.matches) this.showRight = false;
 
@@ -5770,13 +5805,13 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios.get("/user/".concat(id)).then(function (res) {
-          _this7.u = res.data;
+          _this8.u = res.data;
 
-          _this7.setUserStatusColor();
+          _this8.setUserStatusColor();
 
-          _this7.showUserProfile = true;
+          _this8.showUserProfile = true;
         })["catch"](function (e) {
-          _this7.showAlertMsg(e.response.data, 'error');
+          _this8.showAlertMsg(e.response.data, 'error');
         });
       },
       closeUserProfile: function closeUserProfile() {
@@ -5788,12 +5823,12 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       logout: function logout() {
-        var _this8 = this;
+        var _this9 = this;
 
         axios.post('logout').then(function (res) {
           location.reload();
         })["catch"](function (e) {
-          _this8.showAlertMsg(e.response.data, 'error');
+          _this9.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAvatarDialog: function changeAvatarDialog() {
@@ -5801,28 +5836,28 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       setAvatar: function setAvatar(index) {
-        var _this9 = this;
+        var _this10 = this;
 
         this.showLoader = true;
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.post('/user/update-default-avatar', data).then(function (res) {
-          _this9.user.avatar = res.data.avatar;
-          _this9.showLoader = false;
+          _this10.user.avatar = res.data.avatar;
+          _this10.showLoader = false;
 
-          _this9.closeSmallModal();
+          _this10.closeSmallModal();
 
-          _this9.showAlertMsg('Avatar has been changed.', 'success');
+          _this10.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this9.showLoader = false;
+          _this10.showLoader = false;
 
-          _this9.closeSmallModal();
+          _this10.closeSmallModal();
 
-          _this9.showAlertMsg(e.response.data, 'error');
+          _this10.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAvatar: function changeAvatar(el) {
-        var _this10 = this;
+        var _this11 = this;
 
         this.showLoader = true;
         var formData = new FormData();
@@ -5838,18 +5873,18 @@ document.addEventListener('alpine:init', function () {
 
         formData.append('avatar', file);
         axios.post('/user/update-avatar', formData).then(function (res) {
-          _this10.user.avatar = res.data.avatar;
-          _this10.showLoader = false;
+          _this11.user.avatar = res.data.avatar;
+          _this11.showLoader = false;
 
-          _this10.closeSmallModal();
+          _this11.closeSmallModal();
 
-          _this10.showAlertMsg('Avatar has been changed.', 'success');
+          _this11.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this10.showLoader = false;
+          _this11.showLoader = false;
 
-          _this10.closeSmallModal();
+          _this11.closeSmallModal();
 
-          _this10.showAlertMsg(e.response.data, 'error');
+          _this11.showAlertMsg(e.response.data, 'error');
         });
       },
       changeNameDialog: function changeNameDialog() {
@@ -5861,7 +5896,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeName: function changeName() {
-        var _this11 = this;
+        var _this12 = this;
 
         if (this.user.name.length < 4 || this.user.name.length > 12) {
           this.showAlertMsg('Must have min 4 to max 12 letters', 'error');
@@ -5871,17 +5906,17 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('name', this.user.name);
         axios.post('/user/update-name', formData).then(function (res) {
-          name = res.data.name;
+          name = _this12.user.name;
 
-          _this11.closeSmallModal();
+          _this12.closeSmallModal();
 
-          _this11.showAlertMsg('Username has been changed', 'success');
+          _this12.showAlertMsg('Username has been changed', 'success');
         })["catch"](function (e) {
-          _this11.user.name = name;
+          _this12.user.name = name;
 
-          _this11.closeSmallModal();
+          _this12.closeSmallModal();
 
-          _this11.showAlertMsg(e.response.data, 'error');
+          if (e.response) _this12.showAlertMsg(e.response.data, 'error');
         });
       },
       customizeNameDialog: function customizeNameDialog() {
@@ -5900,7 +5935,7 @@ document.addEventListener('alpine:init', function () {
         return this.user.nameColor === textColors[index];
       },
       customizeName: function customizeName() {
-        var _this12 = this;
+        var _this13 = this;
 
         if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
           return;
@@ -5913,16 +5948,16 @@ document.addEventListener('alpine:init', function () {
           nameColor = res.data.nameColor;
           nameFont = res.data.nameFont;
 
-          _this12.closeSmallModal();
+          _this13.closeSmallModal();
 
-          _this12.showAlertMsg('Name customized.', 'success');
+          _this13.showAlertMsg('Name customized.', 'success');
         })["catch"](function (e) {
-          _this12.user.nameColor = nameColor;
-          _this12.user.nameFont = nameFont;
+          _this13.user.nameColor = nameColor;
+          _this13.user.nameFont = nameFont;
 
-          _this12.closeSmallModal();
+          _this13.closeSmallModal();
 
-          _this12.showAlertMsg(e.response.data, 'error');
+          _this13.showAlertMsg(e.response.data, 'error');
         });
       },
       changeMoodDialog: function changeMoodDialog() {
@@ -5934,7 +5969,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeMood: function changeMood() {
-        var _this13 = this;
+        var _this14 = this;
 
         if (this.user.mood.length >= 40) {
           this.showAlertMsg('Must have max 40 letters', 'error');
@@ -5946,15 +5981,15 @@ document.addEventListener('alpine:init', function () {
         axios.post('/user/update-mood', formData).then(function (res) {
           mood = res.data.mood;
 
-          _this13.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this13.showAlertMsg('Mood has been changed', 'success');
+          _this14.showAlertMsg('Mood has been changed', 'success');
         })["catch"](function (e) {
-          _this13.user.mood = mood;
+          _this14.user.mood = mood;
 
-          _this13.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this13.showAlertMsg(e.response.data, 'error');
+          _this14.showAlertMsg(e.response.data, 'error');
         });
       },
       changeAboutDialog: function changeAboutDialog() {
@@ -5966,22 +6001,22 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeAbout: function changeAbout() {
-        var _this14 = this;
+        var _this15 = this;
 
         var formData = new FormData();
         formData.append('about', this.user.about);
         axios.post('/user/update-about', formData).then(function (res) {
           about = res.data.about;
 
-          _this14.closeSmallModal();
+          _this15.closeSmallModal();
 
-          _this14.showAlertMsg('About me has been changed', 'success');
+          _this15.showAlertMsg('About me has been changed', 'success');
         })["catch"](function (e) {
-          _this14.user.about = about;
+          _this15.user.about = about;
 
-          _this14.closeSmallModal();
+          _this15.closeSmallModal();
 
-          _this14.showAlertMsg(e.response.data, 'error');
+          _this15.showAlertMsg(e.response.data, 'error');
         });
       },
       changePasswordDialog: function changePasswordDialog() {
@@ -5994,7 +6029,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       changePassword: function changePassword(password) {
-        var _this15 = this;
+        var _this16 = this;
 
         if (password.length < 8) {
           this.showAlertMsg('Must have min 8 letters', 'error');
@@ -6004,31 +6039,7 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('password', password);
         axios.post('/user/update-password', formData).then(function (res) {
-          _this15.showAlertMsg('Password has been changed', 'success');
-
-          _this15.closeSmallModal();
-        })["catch"](function (e) {
-          _this15.showAlertMsg(e.response.data, 'error');
-
-          _this15.closeSmallModal();
-        });
-      },
-      changeStatusDialog: function changeStatusDialog() {
-        var html = "\n            <div x-data=\"{status:''}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Status</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"status\" class=\"input-text\">\n                            <option value=\"-1\" selected>Select Status</option>\n                            <option value=\"0\">Stay</option>\n                            <option value=\"1\">Online</option>\n                            <option value=\"2\">Away</option>\n                            <option value=\"3\">Busy</option>\n                            <option value=\"4\">Eating</option>\n                            <option value=\"5\">Gaming</option>\n                            <option value=\"6\">Singing</option>\n                            <option value=\"7\">Listening</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeStatus(status)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
-        this.showSmallModal(html);
-      },
-      changeStatus: function changeStatus(status) {
-        var _this16 = this;
-
-        if (status === "" || status === "-1") return;
-        var formData = new FormData();
-        formData.append('status', status);
-        axios.post('/user/update-status', formData).then(function (res) {
-          _this16.showAlertMsg('Status has been changed', 'success');
-
-          _this16.user.status = res.data.status;
-
-          _this16.setStatusColor();
+          _this16.showAlertMsg('Password has been changed', 'success');
 
           _this16.closeSmallModal();
         })["catch"](function (e) {
@@ -6037,59 +6048,83 @@ document.addEventListener('alpine:init', function () {
           _this16.closeSmallModal();
         });
       },
-      changeGenderDialog: function changeGenderDialog() {
-        var html = "\n            <div x-data=\"{gender:''}\" class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Gender</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div>\n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"gender\" class=\"input-text\">\n                            <option value=\"\" selected=\"\">Select Gender</option>\n                            <option value=\"0\">Male</option>\n                            <option value=\"1\">Female</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeGender(gender)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+      changeStatusDialog: function changeStatusDialog() {
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Status</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"user.status\" class=\"input-text\">\n                            <option value=\"\" selected>Select Status</option>\n                            <option value=\"Stay\">Stay</option>\n                            <option value=\"Online\">Online</option>\n                            <option value=\"Away\">Away</option>\n                            <option value=\"Busy\">Busy</option>\n                            <option value=\"Eating\">Eating</option>\n                            <option value=\"Gaming\">Gaming</option>\n                            <option value=\"Singing\">Singing</option>\n                            <option value=\"Listening\">Listening</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeStatus\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
-      changeGender: function changeGender(gender) {
+      changeStatus: function changeStatus() {
         var _this17 = this;
 
-        if (gender === '') return;
+        if (this.user.status === '') return;
         var formData = new FormData();
-        formData.append('gender', gender);
-        axios.post('/user/update-gender', formData).then(function (res) {
-          _this17.user.gender = res.data.gender;
+        formData.append('status', this.user.status);
+        axios.post('/user/update-status', formData).then(function (res) {
+          _this17.showAlertMsg('Status has been changed', 'success');
+
+          _this17.user.status = res.data.status;
+
+          _this17.setStatusColor();
 
           _this17.closeSmallModal();
-
-          _this17.showAlertMsg('Gender has been changed', 'success');
         })["catch"](function (e) {
-          _this17.closeSmallModal();
-
           _this17.showAlertMsg(e.response.data, 'error');
+
+          _this17.closeSmallModal();
+        });
+      },
+      changeGenderDialog: function changeGenderDialog() {
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Gender</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div>\n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <select x-model=\"user.gender\" class=\"input-text\">\n                            <option value=\"\" selected=\"\">Select Gender</option>\n                            <option value=\"Male\">Male</option>\n                            <option value=\"Female\">Female</option>\n                        </select>\n                    </div>\n                    <button @click=\"changeGender\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+        this.showSmallModal(html);
+      },
+      changeGender: function changeGender() {
+        var _this18 = this;
+
+        if (this.user.gender === '') return;
+        var formData = new FormData();
+        formData.append('gender', this.user.gender);
+        axios.post('/user/update-gender', formData).then(function (res) {
+          _this18.user.gender = res.data.gender;
+
+          _this18.closeSmallModal();
+
+          _this18.showAlertMsg('Gender has been changed', 'success');
+        })["catch"](function (e) {
+          _this18.closeSmallModal();
+
+          _this18.showAlertMsg(e.response.data, 'error');
         });
       },
       changeDobDialog: function changeDobDialog() {
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Date of Birth</p>\n                    <i @click=\"closeDobDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div>\n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <input x-model=\"user.dob\" class=\"input-text\"  name=\"dob\" max=\"2010-12-31\" min=\"1970-12-31\" type=\"date\">\n                    </div>\n                    <button @click=\"changeDob(user.dob)\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Date of Birth</p>\n                    <i @click=\"closeDobDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div>\n                <div class=\"p-4\">\n                    <div class=\"w-full h-10 mb-4\">\n                        <input x-model=\"user.dob\" class=\"input-text\"  name=\"dob\" max=\"2010-12-31\" min=\"1970-12-31\" type=\"date\">\n                    </div>\n                    <button @click=\"changeDob\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       closeDobDialog: function closeDobDialog() {
         this.user.dob = dob;
         this.closeSmallModal();
       },
-      changeDob: function changeDob(dob) {
-        var _this18 = this;
+      changeDob: function changeDob() {
+        var _this19 = this;
 
-        if (dob === '') return;
+        if (this.user.dob === '') return;
         var formData = new FormData();
-        formData.append('dob', dob);
+        formData.append('dob', this.user.dob);
         axios.post('/user/update-dob', formData).then(function (res) {
-          _this18.showAlertMsg('DOB has been changed', 'success');
+          _this19.showAlertMsg('DOB has been changed', 'success');
 
-          _this18.user.dob = res.data.dob;
+          _this19.user.dob = res.data.dob;
           dob = res.data.dob;
 
-          _this18.closeSmallModal();
+          _this19.closeSmallModal();
         })["catch"](function (e) {
-          _this18.user.dob = dob;
+          _this19.user.dob = dob;
 
-          _this18.showAlertMsg(e.response.data, 'error');
+          _this19.showAlertMsg(e.response.data, 'error');
 
-          _this18.closeSmallModal();
+          _this19.closeSmallModal();
         });
       },
       customizeTextDialog: function customizeTextDialog() {
-        var html = "\n                <div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Change Chat Option</p>\n                        <i @click=\"closeCustomizeTextDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>\n                    <div class=\"p-4\">\n                        <template x-if=\"user.textFont\"> \n                            <p class=\"w-full clip\" :class=\"[user.textFont, user.textColor, user.textBold === 'true' ? 'font-bold' : 'font-normal' ]\">Sample Text</p>\n                        </template>    \n                        <div class=\"w-full h-10 mb-4\">\n                            <select x-model=\"user.textFont\" class=\"input-text\">\n                                <option>Select Font</option>\n                                <option value=\"signika\">Signika</option>\n                                <option value=\"grandstander\">Grandstander</option>\n                                <option value=\"comic\">Comic</option>\n                                <option value=\"orbitron\">Orbitron</option>\n                                <option value=\"quicksand\">Quicksand</option>\n                                <option value=\"lemonada\">Lemonada</option>\n                                <option value=\"grenze\">Grenze</option>\n                                <option value=\"kalam\">Kalam</option>\n                                <option value=\"merienda\">Merienda</option>\n                                <option value=\"amita\">Amita</option>\n                                <option value=\"averia\">Averia</option>\n                                <option value=\"turret\">Turret</option>\n                                <option value=\"sansita\">Sansita</option>\n                                <option value=\"comfortaa\">Comfortaa</option>\n                                <option value=\"charm\">Charm</option>\n                                <option value=\"lobste\">Lobster</option>\n                            </select>\n                        </div>\n                        <p class=\"text-left font-bold text-[12px]\">Text Bold</p>\n                        <div class=\"w-full h-10 mb-2\">\n                            <select x-model=\"user.textBold\" class=\"input-text\">\n                                <option value=\"true\">Yes</option>\n                                <option value=\"false\">No</option>\n                            </select>\n                        </div>\n                        <p class=\"text-left font-bold text-[12px]\">Text Color</p>\n                        <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                          <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                            <div @click=\"setTextColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                             <template x-if=\"isShowTick(index)\">\n                                <i  class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                             </template>\n                            </div>\n                          </template>\n                        </div>\n                        <button @click=\"customizeText\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                    </div>\n                </div>\n                ";
+        var html = "\n                <div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Change Chat Option</p>\n                        <i @click=\"closeCustomizeTextDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>\n                    <div class=\"p-4\">\n                        <template x-if=\"user.textFont\"> \n                            <p class=\"w-full clip\" :class=\"[user.textFont, user.textColor, user.textBold === 'true' ? 'font-bold' : 'font-normal' ]\">Sample Text</p>\n                        </template>    \n                        <div class=\"w-full h-10 mb-4\">\n                            <select x-model=\"user.textFont\" class=\"input-text\">\n                                <option>Select Font</option>\n                                <option value=\"signika\">Signika</option>\n                                <option value=\"grandstander\">Grandstander</option>\n                                <option value=\"comic\">Comic</option>\n                                <option value=\"orbitron\">Orbitron</option>\n                                <option value=\"quicksand\">Quicksand</option>\n                                <option value=\"lemonada\">Lemonada</option>\n                                <option value=\"grenze\">Grenze</option>\n                                <option value=\"kalam\">Kalam</option>\n                                <option value=\"merienda\">Merienda</option>\n                                <option value=\"amita\">Amita</option>\n                                <option value=\"averia\">Averia</option>\n                                <option value=\"turret\">Turret</option>\n                                <option value=\"sansita\">Sansita</option>\n                                <option value=\"comfortaa\">Comfortaa</option>\n                                <option value=\"charm\">Charm</option>\n                                <option value=\"lobster\">Lobster</option>\n                            </select>\n                        </div>\n                        <p class=\"text-left font-bold text-[12px]\">Text Bold</p>\n                        <div class=\"w-full h-10 mb-2\">\n                            <select x-model=\"user.textBold\" class=\"input-text\">\n                                <option value=\"true\">Yes</option>\n                                <option value=\"false\">No</option>\n                            </select>\n                        </div>\n                        <p class=\"text-left font-bold text-[12px]\">Text Color</p>\n                        <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                          <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                            <div @click=\"setTextColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                             <template x-if=\"isShowTick(index)\">\n                                <i  class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                             </template>\n                            </div>\n                          </template>\n                        </div>\n                        <button @click=\"customizeText\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                    </div>\n                </div>\n                ";
         this.showSmallModal(html);
       },
       closeCustomizeTextDialog: function closeCustomizeTextDialog() {
@@ -6109,7 +6144,7 @@ document.addEventListener('alpine:init', function () {
         this.showOption = false;
       },
       customizeText: function customizeText() {
-        var _this19 = this;
+        var _this20 = this;
 
         if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) {
           return;
@@ -6124,21 +6159,21 @@ document.addEventListener('alpine:init', function () {
           textBold = res.data.textBold;
           textFont = res.data.textFont;
 
-          _this19.closeSmallModal();
+          _this20.closeSmallModal();
 
-          _this19.showAlertMsg('Chat options has been changed', 'success');
+          _this20.showAlertMsg('Chat options has been changed', 'success');
         })["catch"](function (e) {
-          _this19.user.textColor = textColor;
-          _this19.user.textBold = textBold;
-          _this19.user.textFont = textFont;
+          _this20.user.textColor = textColor;
+          _this20.user.textBold = textBold;
+          _this20.user.textFont = textFont;
 
-          _this19.closeSmallModal();
+          _this20.closeSmallModal();
 
-          _this19.showAlertMsg(e.response.data, 'error');
+          _this20.showAlertMsg(e.response.data, 'error');
         });
       },
       changeSoundSettings: function changeSoundSettings() {
-        var _this20 = this;
+        var _this21 = this;
 
         var formData = new FormData();
         formData.append('chatSound', this.user.chatSound);
@@ -6146,12 +6181,23 @@ document.addEventListener('alpine:init', function () {
         formData.append('nameSound', this.user.nameSound);
         formData.append('notifiSound', this.user.notifiSound);
         axios.post("/user/change-sound-settings", formData)["catch"](function (e) {
-          _this20.user.chatSound = chatSound;
-          _this20.user.pvtSound = pvtSound;
-          _this20.user.notifSound = notifSound;
-          _this20.user.nameSound = nameSound;
+          _this21.user.chatSound = chatSound;
+          _this21.user.pvtSound = pvtSound;
+          _this21.user.notifSound = notifSound;
+          _this21.user.nameSound = nameSound;
 
-          _this20.showAlertMsg('Something went wrong', 'error');
+          _this21.showAlertMsg('Something went wrong', 'error');
+        });
+      },
+      changePrivate: function changePrivate() {
+        var _this22 = this;
+
+        var formData = new FormData();
+        formData.append('private', this.user["private"]);
+        axios.post("/user/change-private", formData)["catch"](function (e) {
+          _this22.user["private"] = pvt;
+
+          _this22.showAlertMsg('Something went wrong', 'error');
         });
       },
       removeTopic: function removeTopic() {
@@ -6202,7 +6248,7 @@ document.addEventListener('alpine:init', function () {
         this.$refs.mainInput.focus();
       },
       recordMainAudio: function recordMainAudio() {
-        var _this21 = this;
+        var _this23 = this;
 
         if (this.user.muted) {
           this.showAlertMsg('You are muted', 'error');
@@ -6233,15 +6279,15 @@ document.addEventListener('alpine:init', function () {
             });
             var formData = new FormData();
             formData.append('audio', audioFile);
-            var content = _this21.$refs.mainInput.value;
+            var content = _this23.$refs.mainInput.value;
             formData.append('content', content);
             axios.post('/room/upload-audio', formData).then(function (res) {
-              _this21.sendToRoom(res.data);
+              _this23.sendToRoom(res.data);
             })["catch"](function (err) {
-              _this21.showAlertMsg('Audio upload failed', 'error');
+              _this23.showAlertMsg('Audio upload failed', 'error');
             });
           })["catch"](function (e) {
-            _this21.showAlertMsg('Audio recording failed', 'error');
+            _this23.showAlertMsg('Audio recording failed', 'error');
           });
           this.isRecording = false;
           this.remainingTime = RECORDING_TIME;
@@ -6250,19 +6296,19 @@ document.addEventListener('alpine:init', function () {
           this.showEmo = false;
           this.showOption = false;
           this.recorder.start().then(function () {
-            _this21.mainInterval = setInterval(function () {
-              if (_this21.remainingTime === 1) {
-                _this21.recordMainAudio();
-              } else _this21.remainingTime--;
+            _this23.mainInterval = setInterval(function () {
+              if (_this23.remainingTime === 1) {
+                _this23.recordMainAudio();
+              } else _this23.remainingTime--;
             }, 1000);
-            _this21.isRecording = true;
+            _this23.isRecording = true;
           })["catch"](function (e) {
-            _this21.showAlertMsg('You haven\'t given mic permission', 'error');
+            _this23.showAlertMsg('You haven\'t given mic permission', 'error');
           });
         }
       },
       uploadImage: function uploadImage(event) {
-        var _this22 = this;
+        var _this24 = this;
 
         if (this.user.muted) {
           this.showAlertMsg('You are muted', 'error');
@@ -6285,15 +6331,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('image', file);
         formData.append('content', content);
         axios.post('/room/upload-image', formData).then(function (res) {
-          _this22.sendToRoom(res.data);
+          _this24.sendToRoom(res.data);
 
-          _this22.$refs.mainInput.value = '';
+          _this24.$refs.mainInput.value = '';
 
-          _this22.$refs.mainInput.focus();
+          _this24.$refs.mainInput.focus();
 
-          _this22.showLoader = false;
+          _this24.showLoader = false;
         })["catch"](function (e) {
-          _this22.showLoader = false;
+          _this24.showLoader = false;
         });
       },
       showImageDialog: function showImageDialog(el) {
@@ -6329,20 +6375,43 @@ document.addEventListener('alpine:init', function () {
         } else if (message.type === MessageType.Delete) {
           var li = document.getElementById("chat-".concat(message.id));
           li != null ? li.remove() : '';
+        } else if (message.type === MessageType.Mute) {
+          var user = this.roomUsers.find(function (user) {
+            return user.id === message.user.id;
+          });
+          if (user) user.muted = true;
+
+          if (message.user.id === userId) {
+            this.user.muted = true;
+            this.$refs.mainInput.disabled = this.user.muted;
+            this.showAlertMsg('You have been muted', 'error');
+          }
+        } else if (message.type === MessageType.UnMute) {
+          var _user = this.roomUsers.find(function (user) {
+            return user.id === message.user.id;
+          });
+
+          if (_user) _user.muted = false;
+
+          if (message.user.id === userId) {
+            this.user.muted = false;
+            this.$refs.mainInput.disabled = this.user.muted;
+            this.showAlertMsg('You have been unmuted', 'success');
+          }
         }
       },
       deleteChat: function deleteChat(id) {
-        var _this23 = this;
+        var _this25 = this;
 
         if (permission.delMsg) {
           axios["delete"]("/message/".concat(id, "/delete"))["catch"](function (e) {
             if (e.response) {
-              _this23.showAlertMsg(e.response.data, 'error');
+              _this25.showAlertMsg(e.response.data, 'error');
 
               return;
             }
 
-            _this23.showAlertMsg('Deleting message failed.', 'error');
+            _this25.showAlertMsg('Deleting message failed.', 'error');
           });
         } else this.showAlertMsg('Permission denied', 'error');
       },
@@ -6352,7 +6421,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       report: function report(targetId, reason, type) {
-        var _this24 = this;
+        var _this26 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
@@ -6361,14 +6430,14 @@ document.addEventListener('alpine:init', function () {
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/reports/create", formData).then(function (res) {
-          _this24.showAlertMsg('Message reported successfully', 'success');
+          _this26.showAlertMsg('Message reported successfully', 'success');
         })["catch"](function (e) {
-          _this24.showAlertMsg('Reporting message failed', 'error');
+          _this26.showAlertMsg('Reporting message failed', 'error');
         });
         this.closeSmallModal();
       },
       openPvtDialog: function openPvtDialog(id, name, avatar, nameColor, nameFont) {
-        var _this25 = this;
+        var _this27 = this;
 
         var user = {
           id: id,
@@ -6413,13 +6482,13 @@ document.addEventListener('alpine:init', function () {
           });
           user.interval = null;
 
-          _this25.pvtUsers.unshift(user);
+          _this27.pvtUsers.unshift(user);
 
-          _this25.showUserProfile = false;
+          _this27.showUserProfile = false;
         })["catch"](function (e) {
           console.log(e);
         });
-        this.setPvtNotificationCount();
+        this.setpvtNotifiCount();
       },
       closePvtModal: function closePvtModal(id) {
         var user = this.pvtUsers.find(function (user) {
@@ -6472,7 +6541,7 @@ document.addEventListener('alpine:init', function () {
         this.userSocket.send(JSON.stringify(message));
       },
       recordPvtAudio: function recordPvtAudio(id) {
-        var _this26 = this;
+        var _this28 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6487,12 +6556,12 @@ document.addEventListener('alpine:init', function () {
           user.recorder.start().then(function () {
             user.interval = setInterval(function () {
               if (user.remainingTime === 1) {
-                _this26.recordPvtAudio(id);
+                _this28.recordPvtAudio(id);
               } else user.remainingTime--;
             }, 1000);
             user.isRecording = true;
           })["catch"](function (e) {
-            _this26.showAlertMsg('You haven\'t given mic permission', 'error');
+            _this28.showAlertMsg('You haven\'t given mic permission', 'error');
           });
         } else {
           if (!(RECORDING_TIME - user.remainingTime > 10)) {
@@ -6516,12 +6585,12 @@ document.addEventListener('alpine:init', function () {
             var formData = new FormData();
             formData.append('audio', audioFile);
             axios.post("/message/pvt/".concat(id, "/upload-audio"), formData).then(function (res) {
-              _this26.sendToUser(res.data);
+              _this28.sendToUser(res.data);
             })["catch"](function (err) {
-              _this26.showAlertMsg('Audio upload failed', 'error');
+              _this28.showAlertMsg('Audio upload failed', 'error');
             });
           })["catch"](function (e) {
-            _this26.showAlertMsg('Audio recording failed', 'error');
+            _this28.showAlertMsg('Audio recording failed', 'error');
           });
           user.isRecording = false;
           clearInterval(user.interval);
@@ -6529,7 +6598,7 @@ document.addEventListener('alpine:init', function () {
         }
       },
       uploadPvtImage: function uploadPvtImage(id, event) {
-        var _this27 = this;
+        var _this29 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6554,11 +6623,11 @@ document.addEventListener('alpine:init', function () {
 
         formData.append("image", file);
         axios.post("/message/pvt/".concat(id, "/upload-image"), formData).then(function (res) {
-          _this27.sendToUser(res.data);
+          _this29.sendToUser(res.data);
 
-          _this27.showLoader = false;
+          _this29.showLoader = false;
         })["catch"](function (e) {
-          _this27.showLoader = false;
+          _this29.showLoader = false;
         });
       },
       onPvtMessageReceived: function onPvtMessageReceived(e) {
@@ -6575,33 +6644,25 @@ document.addEventListener('alpine:init', function () {
               message.seen = true;
               this.setPvtMessageSeen(message.id);
             }
+          } else {
+            this.$refs.pvtSound.play();
           }
 
           user.messages.unshift(message);
-          this.setPvtNotificationCount();
+          this.setpvtNotifiCount();
         } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
           this.getReports();
         } else if (message.type === MessageType.DataChanges) {
           location.reload();
-        } else if (message.type === MessageType.Mute) {
-          this.showAlertMsg('You have been muted', 'error');
-          setTimeout(function () {
-            return location.reload();
-          }, 25e2);
-        } else if (message.type === MessageType.UnMute) {
-          this.showAlertMsg('You have been unmuted', 'success');
-          setTimeout(function () {
-            return location.reload();
-          }, 25e2);
         }
       },
       reCheckPvtMessages: function reCheckPvtMessages() {
-        var _this28 = this;
+        var _this30 = this;
 
         axios.get('message/pvt/users').then(function (res) {
-          _this28.pvtUsers = res.data;
+          _this30.pvtUsers = res.data;
 
-          _this28.pvtUsers.forEach(function (user) {
+          _this30.pvtUsers.forEach(function (user) {
             user.minimize = false;
             user.added = false;
             user.isRecording = false;
@@ -6612,33 +6673,33 @@ document.addEventListener('alpine:init', function () {
             user.interval = null;
           });
 
-          _this28.setPvtNotificationCount();
+          _this30.setpvtNotifiCount();
         })["catch"](function (e) {});
       },
       openRoomsModal: function openRoomsModal() {
-        var _this29 = this;
+        var _this31 = this;
 
         axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
-          _this29.rooms = res.data;
+          _this31.rooms = res.data;
           var html = "\n                    <div class=\"text-skin-on-primary h-full\">\n                        <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                            <p class=\"text-md font-bold \">Room List</p>\n                            <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                        </div> \n                        <div class=\"p-[10px]\">\n                            <ul class=\"h-full\">\n                    ";
 
-          _this29.rooms.forEach(function (rm, index) {
+          _this31.rooms.forEach(function (rm, index) {
             var submitBtn = rm.id === room.id ? '<p class="text-black text-[10px] font-bold">(Current Room)</p>' : "<form class=\"flex-none\" action=\"room/join\" method=\"post\">\n                                <input type=\"hidden\" name=\"id\" :value=\"".concat(rm.id, "\">\n                                <button type=\"submit\" \n                                        class=\"text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin\">\n                                    Join&nbsp&nbsp<i class=\"fa-solid fa-angles-right\"></i>\n                                </button>\n                            </form>");
             html += "\n                        <li class=\"my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 \">\n                            <i class=\"fa-solid fa-earth-americas text-3xl flex-none text-skin-hover\"></i>\n                            <div class=\"flex-1 text-left ml-2 text-black\">\n                                <p class=\"font-bold text-[12px]\">".concat(rm.name, "</p>\n                                <div>\n                                    <i class=\"fa-solid fa-user-group \"></i>&nbsp&nbsp").concat(rm.onlineUsers, "\n                                </div>\n                            </div>\n                            ").concat(submitBtn, "\n                        </li>");
           });
 
           html += "</ul></div></div>";
 
-          _this29.showFullModal(html);
+          _this31.showFullModal(html);
 
-          if (mobile.matches) _this29.showLeft = false;
+          if (mobile.matches) _this31.showLeft = false;
         });
       },
       openMessageModal: function openMessageModal() {
         var html = "\n                <div class=\"text-skin-on-primary h-full\">\n                    <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                        <p class=\"text-md font-bold \">Messages</p>\n                        <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-[10px]\">\n                        <ul class=\"h-full \">\n                ";
 
         if (this.pvtUsers.length > 0) {
-          this.pvtUsers.forEach(function (user, index) {
+          this.pvtUsers.forEach(function (user) {
             var count = user.unReadCount > 0 ? "\n                        <div class=\"shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none\">\n                            <p class=\"font-bold text-[12px]\" >".concat(user.unReadCount, "</p>\n                        </div>") : '';
             var message = user.messages[0];
             var person = message != null && message.sender.id === userId ? 'You : ' : "".concat(user.name, " : ");
@@ -6656,10 +6717,10 @@ document.addEventListener('alpine:init', function () {
         this.showFullModal(html);
       },
       setAllSeen: function setAllSeen(sender) {
-        var _this30 = this;
+        var _this32 = this;
 
         axios.post("message/pvt/".concat(sender, "/all-seen")).then(function (res) {
-          var user = _this30.pvtUsers.find(function (user) {
+          var user = _this32.pvtUsers.find(function (user) {
             return user.id === sender;
           });
 
@@ -6667,10 +6728,10 @@ document.addEventListener('alpine:init', function () {
             return message.seen = true;
           });
 
-          _this30.setPvtNotificationCount();
+          _this32.setpvtNotifiCount();
         })["catch"](function (e) {});
       },
-      setPvtNotificationCount: function setPvtNotificationCount() {
+      setpvtNotifiCount: function setpvtNotifiCount() {
         var count = 0;
         this.pvtUsers.forEach(function (user) {
           user.unReadCount = 0;
@@ -6685,7 +6746,7 @@ document.addEventListener('alpine:init', function () {
           });
           if (unSeen === true) count++;
         });
-        this.pvtNotificationCount = count;
+        this.pvtNotifiCount = count;
       },
       setPvtMessageSeen: function setPvtMessageSeen(id) {
         axios.post("message/pvt/".concat(id, "/seen")).then(function (res) {})["catch"](function (e) {});
@@ -6711,7 +6772,7 @@ document.addEventListener('alpine:init', function () {
         this.showFullModal(html);
       },
       openReportActionDialog: function openReportActionDialog(id, targetId, roomId, type) {
-        var _this31 = this;
+        var _this33 = this;
 
         this.closeFullModal();
         var html = "<div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Report Action</p>\n                        <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>";
@@ -6720,11 +6781,11 @@ document.addEventListener('alpine:init', function () {
           axios.get("/message/".concat(targetId)).then(function (res) {
             html += renderReportChatMessage(res.data, id, targetId, roomId, type);
 
-            _this31.showSmallModal(html);
+            _this33.showSmallModal(html);
           })["catch"](function (e) {
             if (e.response) {
               if (e.response.status === 404) {
-                _this31.showAlertMsg(e.response.data, 'error');
+                _this33.showAlertMsg(e.response.data, 'error');
 
                 var formData = new FormData();
                 formData.append('domainId', domain.id);
@@ -6736,12 +6797,12 @@ document.addEventListener('alpine:init', function () {
               return;
             }
 
-            _this31.showAlertMsg('Something went wrong', 'error');
+            _this33.showAlertMsg('Something went wrong', 'error');
           });
         } else if (type === ReportType.PvtChat) {} else if (type === ReportType.NewsFeed) {}
       },
       takeAction: function takeAction(id, targetId, roomId, type) {
-        var _this32 = this;
+        var _this34 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
@@ -6749,17 +6810,36 @@ document.addEventListener('alpine:init', function () {
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/reports/".concat(id, "/take-action"), formData).then(function (res) {
-          _this32.closeSmallModal();
+          _this34.closeSmallModal();
         });
       },
       noAction: function noAction(id, type) {
-        var _this33 = this;
+        var _this35 = this;
 
         var formData = new FormData();
         formData.append('domainId', domain.id);
         formData.append('type', type);
         axios.post("/reports/".concat(id, "/no-action"), formData).then(function (res) {
-          _this33.closeSmallModal();
+          _this35.closeSmallModal();
+        });
+      },
+      openNewsModal: function openNewsModal() {
+        var _this36 = this;
+
+        var html = "\n                <div class=\"text-skin-on-primary h-full\">\n                    <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                        <p class=\"text-md font-bold \">Announcements</p>\n                        <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-[10px]\">\n                        <ul class=\"h-full \">\n                ";
+
+        if (this.news.news.length > 0) {
+          this.news.news.forEach(function (news) {
+            html += "\n                        <li  class=\"pvt-user-wrap\">\n                           <div class=\"w-full gap-2\">\n                                <div class=\"flex h-full w-full items-center\">\n                                    <img class=\"avatar flex-none mx-1\" src=\"".concat(news.user.avatar, "\">\n                                    <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                        <p class=\"ellipsis username clip ").concat(news.user.nameColor, " ").concat(news.user.nameFont, "\"> ").concat(news.user.name, "\n                                        <p class=\"flex items-center clip ellipsis text-gray-500 text-[12px]\">").concat(news.content, "</p>\n                                    </div>\n                                </div>\n                            </div>\n                        </li>\n                    ");
+          });
+        } else {
+          html += "\n                    <li class=\"pvt-user-wrap\">\n                       <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                            <img class=\"w-[40px]\" src=\"/images/defaults/announcement.webp\" alt=\"\">\n                            <p class=\"text-[12px] font-bold\" > No Announcements</p>\n                        </div>\n                    </li>\n               ";
+        }
+
+        html += "</ul></div></div>";
+        this.showFullModal(html);
+        axios.post("/".concat(domain.id, "/read-news")).then(function (res) {
+          _this36.news.unReadCount = 0;
         });
       },
       changeUserNameDialog: function changeUserNameDialog(id, name) {
@@ -6772,7 +6852,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       changeUserName: function changeUserName(id, name) {
-        var _this34 = this;
+        var _this37 = this;
 
         if (!permission.userName) {
           this.showAlertMsg('Permission denied', 'error');
@@ -6788,9 +6868,9 @@ document.addEventListener('alpine:init', function () {
         formData.append('name', name);
         formData.append('domainId', domain.id);
         axios.post("/user/".concat(id, "/update-name"), formData).then(function (res) {
-          _this34.showAlertMsg('Username has been changed', 'success');
+          _this37.showAlertMsg('Username has been changed', 'success');
         })["catch"](function (e) {
-          if (e.response) _this34.showAlertMsg(e.response.data, 'error');else _this34.showAlertMsg('Something went wrong', 'error');
+          if (e.response) _this37.showAlertMsg(e.response.data, 'error');else _this37.showAlertMsg('Something went wrong', 'error');
         });
         this.closeUserProfile();
         this.closeSmallModal();
@@ -6805,7 +6885,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       setUserAvatar: function setUserAvatar(id, index) {
-        var _this35 = this;
+        var _this38 = this;
 
         if (!permission.avatar) {
           this.showAlertMsg('Permission denied', 'error');
@@ -6816,18 +6896,18 @@ document.addEventListener('alpine:init', function () {
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.post("/user/".concat(id, "/update-default-avatar"), data).then(function (res) {
-          _this35.showLoader = false;
+          _this38.showLoader = false;
 
-          _this35.showAlertMsg('Avatar has been changed.', 'success');
+          _this38.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this35.showLoader = false;
-          if (e.response) _this35.showAlertMsg(e.response.data, 'error');else _this35.showAlertMsg('Something went wrong', 'error');
+          _this38.showLoader = false;
+          if (e.response) _this38.showAlertMsg(e.response.data, 'error');else _this38.showAlertMsg('Something went wrong', 'error');
         });
         this.closeUserProfile();
         this.closeSmallModal();
       },
       changeUserAvatar: function changeUserAvatar(id, el) {
-        var _this36 = this;
+        var _this39 = this;
 
         if (!permission.avatar) {
           this.showAlertMsg('Permission denied', 'error');
@@ -6848,18 +6928,18 @@ document.addEventListener('alpine:init', function () {
 
         formData.append('avatar', file);
         axios.post("/user/".concat(id, "/update-avatar"), formData).then(function (res) {
-          _this36.showLoader = false;
+          _this39.showLoader = false;
 
-          _this36.showAlertMsg('Avatar has been changed.', 'success');
+          _this39.showAlertMsg('Avatar has been changed.', 'success');
         })["catch"](function (e) {
-          _this36.showLoader = false;
-          if (e.response) _this36.showAlertMsg(e.response.data, 'error');else _this36.showAlertMsg('Something went wrong', 'error');
+          _this39.showLoader = false;
+          if (e.response) _this39.showAlertMsg(e.response.data, 'error');else _this39.showAlertMsg('Something went wrong', 'error');
         });
         this.closeUserProfile();
         this.closeSmallModal();
       },
       actionMute: function actionMute() {
-        var _this37 = this;
+        var _this40 = this;
 
         if (!permission.mute) {
           this.showAlertMsg('Permission denied', 'error');
@@ -6867,20 +6947,12 @@ document.addEventListener('alpine:init', function () {
         }
 
         if (this.u.muted) {
-          axios.post("/user/".concat(this.u.id, "/mute")).then(function (res) {
-            _this37.showAlertMsg('User muted successfully', 'success');
-          })["catch"](function (e) {
-            _this37.u.muted = false;
-
-            _this37.showAlertMsg('Something went wrong', 'error');
+          axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function (e) {
+            _this40.u.muted = false;
           });
         } else {
-          axios.post("/user/".concat(this.u.id, "/unmute")).then(function (res) {
-            _this37.showAlertMsg('User unmuted successfully', 'success');
-          })["catch"](function (e) {
-            _this37.u.muted = true;
-
-            _this37.showAlertMsg('Something went wrong', 'error');
+          axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function (e) {
+            _this40.u.muted = true;
           });
         }
       },

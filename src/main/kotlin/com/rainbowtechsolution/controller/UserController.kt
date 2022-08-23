@@ -225,6 +225,13 @@ class UserController : UserRepository {
         }
     }
 
+    override suspend fun changePrivate(id: Long, private: Boolean): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[Users.private] = private
+        }
+    }
+
     override suspend fun getStaffIdsByDomainId(domainId: Int): List<Long> = dbQuery {
         Users
             .slice(Users.id)

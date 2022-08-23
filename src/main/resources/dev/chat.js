@@ -26,7 +26,6 @@ const bgColors = ['b-red', 'b-red-1', 'b-red-2', 'b-red-3', 'b-orange', 'b-orang
 const avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp',]
 const emojis = [easy, modern, easy, modern]
 const RECORDING_TIME = 180
-
 const mobile = window.matchMedia('(max-width: 640px)')
 const tablet = window.matchMedia('(min-width: 768px)')
 const desktop = window.matchMedia('(min-width: 1024px)')
@@ -68,7 +67,8 @@ document.addEventListener('alpine:init', () => {
             pvtSound: pvtSound,
             nameSound: nameSound,
             notifiSound: notifiSound,
-            muted: muted
+            muted: muted,
+            hasActionPerm: permission.mute || permission.kick || permission.ban
         },
         u: null,
         bgColors: bgColors,
@@ -83,14 +83,16 @@ document.addEventListener('alpine:init', () => {
         },
         roomSocket: new WebSocket(`wss://${location.host}/chatroom/${room.id}`),
         userSocket: new WebSocket(`wss://${location.host}/member/${userId}`),
+        roomUsers: [],
         onlineUsers: [],
         offlineUsers: [],
         pvtUsers: [],
         rooms: [],
         reports: [],
-        pvtNotificationCount: 0,
-        reportNotificationCount: 0,
-        notificationCount: 0,
+        news: {news: [], unReadCount: 0},
+        pvtNotifiCount: 0,
+        reportNotifiCount: 0,
+        notifiCount: 0,
         isRecording: false,
         remainingTime: RECORDING_TIME,
         init() {
@@ -119,7 +121,13 @@ document.addEventListener('alpine:init', () => {
 
             this.getReports()
 
-            this.roomSocket.addEventListener('message', (e) => this.onMessageReceived(JSON.parse(e.data)))
+            this.getNews()
+
+            this.roomSocket.addEventListener('message', (e) => {
+                const message = JSON.parse(e.data)
+                if (message.type === MessageType.Chat && message.user.id !== userId) this.$refs.chatSound.play()
+                this.onMessageReceived(message)
+            })
 
             this.roomSocket.addEventListener('close', (e) => {
             }/*location.reload()*/)
@@ -142,9 +150,13 @@ document.addEventListener('alpine:init', () => {
                      this.showMessages = true
                  }, 15e2)*/
 
-                this.$refs.mainInput.focus()
                 this.showMessages = true
                 this.showLoader = false
+                if (rank.code === 'guest') {
+                    this.showGuestDialog()
+                } else {
+                    this.$refs.mainInput.focus()
+                }
             }
 
             this.$refs.mainInput.disabled = this.user.muted
@@ -211,11 +223,33 @@ document.addEventListener('alpine:init', () => {
                 `
             this.showSmallModal(html)
         },
+        showGuestDialog() {
+            const html = `
+                <div class="text-gray-700 text-center">
+                    <div class="px-4 py-1 flex justify-end items-center">
+                        <i @click="closeSmallModal; $refs.mainInput.focus()" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+                    </div> 
+                    <div class="p-4 text-center ">
+                       <img class="w-20 h-20 mx-auto" src="/images/defaults/happy.webp" alt=""> 
+                        <p class="mt-2 text-2xl font-bold">Welcome ${this.user.name}</p>
+                        <p class="mt-2 text-[13px] leading-[15px]">You are currently logged in as guest. Click here to register your account in order to access more features.</p>
+                        <div class="text-center flex gap-2 justify-center mt-2"> 
+                            <button @click="closeSmallModal; $refs.mainInput.focus()" class="px-2 btn btn-disabled text-center">Close</button>
+                            <button @click="showGuestRegisterDialog" class="px-2 btn btn-skin text-center">Register</button>
+                        </div> 
+                    </div>
+                </div>
+            `
+            this.showSmallModal(html)
+        },
         closeUGCPolicy() {
             this.closeSmallModal()
             this.showMessages = true
             this.$refs.mainInput.focus()
             localStorage.setItem("isUGCShowed", "true")
+            if (rank.code === 'guest') {
+                this.showGuestDialog()
+            }
         },
         showAlertMsg(msg, color) {
             this.$refs.alertMsg.classList.add(color)
@@ -242,6 +276,8 @@ document.addEventListener('alpine:init', () => {
                 case Status.Busy :
                     this.statusColor = 'red'
                     break
+                default:
+                    this.statusColor = ''
             }
         },
         setUserStatusColor() {
@@ -270,9 +306,14 @@ document.addEventListener('alpine:init', () => {
             if (permission.reports) {
                 axios.get(`/${domain.id}/reports`).then(res => {
                     this.reports = res.data
-                    this.reportNotificationCount = this.reports.length
+                    this.reportNotifiCount = this.reports.length
                 })
             }
+        },
+        getNews() {
+            axios.get(`/${domain.id}/news`).then(res => {
+                this.news = res.data
+            })
         },
         getEmojis() {
             let head = '<div class="emo-head">'
@@ -304,10 +345,10 @@ document.addEventListener('alpine:init', () => {
         },
         getRoomUsers() {
             axios.get(`/room/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
-                const users = res.data
+                this.roomUsers = res.data
                 const offline = []
                 const online = []
-                users.forEach(user => {
+                this.roomUsers.forEach(user => {
                     if (user.sessions > 0 || user.status === Status.Stay) {
                         online.push(user)
                     } else {
@@ -357,7 +398,7 @@ document.addEventListener('alpine:init', () => {
                             </template>
                         </div>
                         <div class="text-center"> 
-                            <button type="submit" class="w-36 btn btn-skin text-center">Register </button>
+                            <button type="submit" class="w-36 btn btn-skin text-center">Register</button>
                         </div>  
                     </form>
                 </div>
@@ -526,13 +567,13 @@ document.addEventListener('alpine:init', () => {
             const formData = new FormData()
             formData.append('name', this.user.name)
             axios.post('/user/update-name', formData).then(res => {
-                name = res.data.name
+                name = this.user.name
                 this.closeSmallModal()
                 this.showAlertMsg('Username has been changed', 'success')
             }).catch(e => {
                 this.user.name = name
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                if (e.response) this.showAlertMsg(e.response.data, 'error')
             })
         },
         customizeNameDialog() {
@@ -733,35 +774,35 @@ document.addEventListener('alpine:init', () => {
         },
         changeStatusDialog() {
             const html = `
-            <div x-data="{status:''}" class="text-gray-700 text-center">
+            <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Status</p>
                     <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
                 </div> 
                 <div class="p-4">
                     <div class="w-full h-10 mb-4">
-                        <select x-model="status" class="input-text">
-                            <option value="-1" selected>Select Status</option>
-                            <option value="0">Stay</option>
-                            <option value="1">Online</option>
-                            <option value="2">Away</option>
-                            <option value="3">Busy</option>
-                            <option value="4">Eating</option>
-                            <option value="5">Gaming</option>
-                            <option value="6">Singing</option>
-                            <option value="7">Listening</option>
+                        <select x-model="user.status" class="input-text">
+                            <option value="" selected>Select Status</option>
+                            <option value="Stay">Stay</option>
+                            <option value="Online">Online</option>
+                            <option value="Away">Away</option>
+                            <option value="Busy">Busy</option>
+                            <option value="Eating">Eating</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Singing">Singing</option>
+                            <option value="Listening">Listening</option>
                         </select>
                     </div>
-                    <button @click="changeStatus(status)" class="w-36 btn btn-skin text-center">Change<button>
+                    <button @click="changeStatus" class="w-36 btn btn-skin text-center">Change<button>
                 </div>
             </div>
             `
             this.showSmallModal(html)
         },
-        changeStatus(status) {
-            if (status === "" || status === "-1") return
+        changeStatus() {
+            if (this.user.status === '') return
             const formData = new FormData()
-            formData.append('status', status)
+            formData.append('status', this.user.status)
             axios.post('/user/update-status', formData).then(res => {
                 this.showAlertMsg('Status has been changed', 'success')
                 this.user.status = res.data.status
@@ -774,29 +815,29 @@ document.addEventListener('alpine:init', () => {
         },
         changeGenderDialog() {
             const html = `
-            <div x-data="{gender:''}" class="text-gray-700 text-center">
+            <div class="text-gray-700 text-center">
                 <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                     <p class="text-md font-bold ">Change Gender</p>
                     <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
                 </div>
                 <div class="p-4">
                     <div class="w-full h-10 mb-4">
-                        <select x-model="gender" class="input-text">
+                        <select x-model="user.gender" class="input-text">
                             <option value="" selected="">Select Gender</option>
-                            <option value="0">Male</option>
-                            <option value="1">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
-                    <button @click="changeGender(gender)" class="w-36 btn btn-skin text-center">Change<button>
+                    <button @click="changeGender" class="w-36 btn btn-skin text-center">Change<button>
                 </div>
             </div>
             `
             this.showSmallModal(html)
         },
-        changeGender(gender) {
-            if (gender === '') return
+        changeGender() {
+            if (this.user.gender === '') return
             const formData = new FormData()
-            formData.append('gender', gender)
+            formData.append('gender', this.user.gender)
             axios.post('/user/update-gender', formData).then(res => {
                 this.user.gender = res.data.gender
                 this.closeSmallModal()
@@ -817,7 +858,7 @@ document.addEventListener('alpine:init', () => {
                     <div class="w-full h-10 mb-4">
                         <input x-model="user.dob" class="input-text"  name="dob" max="2010-12-31" min="1970-12-31" type="date">
                     </div>
-                    <button @click="changeDob(user.dob)" class="w-36 btn btn-skin text-center">Change<button>
+                    <button @click="changeDob" class="w-36 btn btn-skin text-center">Change<button>
                 </div>
             </div>
             `
@@ -827,10 +868,10 @@ document.addEventListener('alpine:init', () => {
             this.user.dob = dob
             this.closeSmallModal()
         },
-        changeDob(dob) {
-            if (dob === '') return
+        changeDob() {
+            if (this.user.dob === '') return
             const formData = new FormData()
-            formData.append('dob', dob)
+            formData.append('dob', this.user.dob)
             axios.post('/user/update-dob', formData).then(res => {
                 this.showAlertMsg('DOB has been changed', 'success')
                 this.user.dob = res.data.dob
@@ -871,7 +912,7 @@ document.addEventListener('alpine:init', () => {
                                 <option value="sansita">Sansita</option>
                                 <option value="comfortaa">Comfortaa</option>
                                 <option value="charm">Charm</option>
-                                <option value="lobste">Lobster</option>
+                                <option value="lobster">Lobster</option>
                             </select>
                         </div>
                         <p class="text-left font-bold text-[12px]">Text Bold</p>
@@ -946,6 +987,14 @@ document.addEventListener('alpine:init', () => {
                 this.user.pvtSound = pvtSound
                 this.user.notifSound = notifSound
                 this.user.nameSound = nameSound
+                this.showAlertMsg('Something went wrong', 'error')
+            })
+        },
+        changePrivate() {
+            const formData = new FormData()
+            formData.append('private', this.user.private)
+            axios.post(`/user/change-private`, formData).catch(e => {
+                this.user.private = pvt
                 this.showAlertMsg('Something went wrong', 'error')
             })
         },
@@ -1103,6 +1152,22 @@ document.addEventListener('alpine:init', () => {
             } else if (message.type === MessageType.Delete) {
                 const li = document.getElementById(`chat-${message.id}`)
                 li != null ? li.remove() : ''
+            } else if (message.type === MessageType.Mute) {
+                const user = this.roomUsers.find(user => user.id === message.user.id)
+                if (user) user.muted = true
+                if (message.user.id === userId) {
+                    this.user.muted = true
+                    this.$refs.mainInput.disabled = this.user.muted
+                    this.showAlertMsg('You have been muted', 'error')
+                }
+            } else if (message.type === MessageType.UnMute) {
+                const user = this.roomUsers.find(user => user.id === message.user.id)
+                if (user) user.muted = false
+                if (message.user.id === userId) {
+                    this.user.muted = false
+                    this.$refs.mainInput.disabled = this.user.muted
+                    this.showAlertMsg('You have been unmuted', 'success')
+                }
             }
         },
         deleteChat(id) {
@@ -1192,7 +1257,7 @@ document.addEventListener('alpine:init', () => {
             }).catch(e => {
                 console.log(e)
             })
-            this.setPvtNotificationCount()
+            this.setpvtNotifiCount()
         },
         closePvtModal(id) {
             const user = this.pvtUsers.find(user => user.id === id)
@@ -1303,19 +1368,15 @@ document.addEventListener('alpine:init', () => {
                         message.seen = true
                         this.setPvtMessageSeen(message.id)
                     }
+                } else {
+                    this.$refs.pvtSound.play()
                 }
                 user.messages.unshift(message)
-                this.setPvtNotificationCount()
+                this.setpvtNotifiCount()
             } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
                 this.getReports()
             } else if (message.type === MessageType.DataChanges) {
                 location.reload()
-            } else if (message.type === MessageType.Mute) {
-                this.showAlertMsg('You have been muted', 'error')
-                setTimeout(() => location.reload(), 25e2)
-            } else if (message.type === MessageType.UnMute) {
-                this.showAlertMsg('You have been unmuted', 'success')
-                setTimeout(() => location.reload(), 25e2)
             }
         },
         reCheckPvtMessages() {
@@ -1329,7 +1390,7 @@ document.addEventListener('alpine:init', () => {
                     user.recorder = new MicRecorder({bitrate: 80})
                     user.interval = null
                 })
-                this.setPvtNotificationCount()
+                this.setpvtNotifiCount()
             }).catch(e => {
             })
         },
@@ -1383,7 +1444,7 @@ document.addEventListener('alpine:init', () => {
                         <ul class="h-full ">
                 `
             if (this.pvtUsers.length > 0) {
-                this.pvtUsers.forEach((user, index) => {
+                this.pvtUsers.forEach(user => {
                     let count = user.unReadCount > 0 ? `
                         <div class="shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none">
                             <p class="font-bold text-[12px]" >${user.unReadCount}</p>
@@ -1428,11 +1489,11 @@ document.addEventListener('alpine:init', () => {
             axios.post(`message/pvt/${sender}/all-seen`).then(res => {
                 const user = this.pvtUsers.find(user => user.id === sender)
                 user.messages.forEach(message => message.seen = true)
-                this.setPvtNotificationCount()
+                this.setpvtNotifiCount()
             }).catch(e => {
             })
         },
-        setPvtNotificationCount() {
+        setpvtNotifiCount() {
             let count = 0
             this.pvtUsers.forEach(user => {
                 user.unReadCount = 0
@@ -1446,7 +1507,7 @@ document.addEventListener('alpine:init', () => {
                 })
                 if (unSeen === true) count++
             })
-            this.pvtNotificationCount = count
+            this.pvtNotifiCount = count
         },
         setPvtMessageSeen(id) {
             axios.post(`message/pvt/${id}/seen`).then(res => {
@@ -1542,6 +1603,49 @@ document.addEventListener('alpine:init', () => {
             formData.append('type', type)
             axios.post(`/reports/${id}/no-action`, formData).then(res => {
                 this.closeSmallModal()
+            })
+        },
+        openNewsModal() {
+            let html = `
+                <div class="text-skin-on-primary h-full">
+                    <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
+                        <p class="text-md font-bold ">Announcements</p>
+                        <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+                    </div> 
+                    <div class="p-[10px]">
+                        <ul class="h-full ">
+                `
+            if (this.news.news.length > 0) {
+                this.news.news.forEach(news => {
+                    html += `
+                        <li  class="pvt-user-wrap">
+                           <div class="w-full gap-2">
+                                <div class="flex h-full w-full items-center">
+                                    <img class="avatar flex-none mx-1" src="${news.user.avatar}">
+                                    <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
+                                        <p class="ellipsis username clip ${news.user.nameColor} ${news.user.nameFont}"> ${news.user.name}
+                                        <p class="flex items-center clip ellipsis text-gray-500 text-[12px]">${news.content}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    `
+                })
+            } else {
+                html += `
+                    <li class="pvt-user-wrap">
+                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                            <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
+                            <p class="text-[12px] font-bold" > No Announcements</p>
+                        </div>
+                    </li>
+               `
+            }
+
+            html += `</ul></div></div>`
+            this.showFullModal(html)
+            axios.post(`/${domain.id}/read-news`).then(res => {
+                this.news.unReadCount = 0
             })
         },
         changeUserNameDialog(id, name) {
@@ -1673,18 +1777,12 @@ document.addEventListener('alpine:init', () => {
                 return
             }
             if (this.u.muted) {
-                axios.post(`/user/${this.u.id}/mute`).then(res => {
-                    this.showAlertMsg('User muted successfully', 'success')
-                }).catch(e => {
+                axios.post(`/user/${this.u.id}/mute`).catch(e => {
                     this.u.muted = false
-                    this.showAlertMsg('Something went wrong', 'error')
                 })
             } else {
-                axios.post(`/user/${this.u.id}/unmute`).then(res => {
-                    this.showAlertMsg('User unmuted successfully', 'success')
-                }).catch(e => {
+                axios.post(`/user/${this.u.id}/unmute`).catch(e => {
                     this.u.muted = true
-                    this.showAlertMsg('Something went wrong', 'error')
                 })
             }
         },

@@ -41,6 +41,7 @@ fun Route.domainRoutes(
     rankRepository: RankRepository,
     permissionRepository: PermissionRepository,
     reportRepository: ReportRepository,
+    newsRepository: NewsRepository,
 ) {
 
     if (domains.isEmpty()) return
@@ -108,11 +109,37 @@ fun Route.domainRoutes(
 
             get("/{id}/reports") {
                 try {
-                    val domainId = call.parameters["id"]?.toInt()
-                    val reports = reportRepository.getReportsByDomain(domainId!!)
+                    val domainId = call.parameters["id"]!!.toInt()
+                    val reports = reportRepository.getReportsByDomain(domainId)
                     call.respond(HttpStatusCode.OK, reports)
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
+                }
+            }
+
+            get("/{id}/news") {
+                try {
+                    val chatSession = call.sessions.get<ChatSession>()
+                    val userId = chatSession?.id!!
+                    val domainId = call.parameters["id"]!!.toInt()
+                    val news = newsRepository.getNews(domainId, userId)
+                    call.respond(HttpStatusCode.OK, news)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+
+            post("/{id}/read-news") {
+                try {
+                    val chatSession = call.sessions.get<ChatSession>()
+                    val userId = chatSession?.id!!
+                    val domainId = call.parameters["id"]!!.toInt()
+                    newsRepository.readNews(domainId, userId)
+                    call.respond(HttpStatusCode.OK)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
             }
 
@@ -296,7 +323,8 @@ fun Route.domainRoutes(
                         val id = call.parameters["id"]!!.toLong()
                         val userId = call.sessions.get<ChatSession>()?.id!!
                         val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                        val permission = permissionRepository.findPermissionByRank(user.rank?.id!!) ?: throw Exception()
+                        val permission =
+                            permissionRepository.findPermissionByRank(user.rank?.id!!) ?: throw Exception()
                         if (!permission.delMsg) throw PermissionDeniedException()
                         messageRepository.deleteMessage(id)
                         val message = Message(id = id, content = "", type = MessageType.Delete)
@@ -336,8 +364,9 @@ fun Route.domainRoutes(
                                 async { messageRepository.getPrivateMessages(it, userId) }
                             }.awaitAll()
                             val pvtUsers = pvtUsersId.mapIndexed { i, id ->
-                                val sender = if (usersMessages[i][0].receiver?.id == userId) usersMessages[i][0].sender
-                                else usersMessages[i][0].receiver
+                                val sender =
+                                    if (usersMessages[i][0].receiver?.id == userId) usersMessages[i][0].sender
+                                    else usersMessages[i][0].receiver
                                 PvtUser(
                                     id, sender?.name, sender?.avatar, sender?.nameColor, sender?.nameFont,
                                     sender?.private!!, usersMessages[i]
@@ -511,14 +540,15 @@ fun Route.domainRoutes(
                 post("/update-name") {
                     try {
                         val chatSession = call.sessions.get<ChatSession>()
+                        val id = chatSession?.id!!
                         val name = call.receiveParameters()["name"].toString()
                         if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
                         val slug = call.request.host().getDomain()
                         val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                         val isUserExists = userRepository.isUserExists(name, domain.id!!)
                         if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
-                        userRepository.updateName(chatSession?.id!!, name)
-                        val user = userRepository.findUserById(chatSession.id!!)
+                        userRepository.updateName(id, name)
+                        val user = userRepository.findUserById(id)
                         WsController.updateMember(user!!)
                         call.respond(HttpStatusCode.OK, user)
                     } catch (e: ValidationException) {
@@ -534,10 +564,11 @@ fun Route.domainRoutes(
                 post("/customize-name") {
                     try {
                         val chatSession = call.sessions.get<ChatSession>()
+                        val id = chatSession?.id!!
                         val nameColor = call.receiveParameters()["nameColor"]
                         val font = call.receiveParameters()["nameFont"]
-                        userRepository.customizeName(chatSession?.id!!, nameColor, font)
-                        val user = userRepository.findUserById(chatSession.id!!)
+                        userRepository.customizeName(id, nameColor, font)
+                        val user = userRepository.findUserById(id)
                         WsController.updateMember(user!!)
                         call.respond(HttpStatusCode.OK, user)
                     } catch (e: Exception) {
@@ -592,11 +623,10 @@ fun Route.domainRoutes(
                 post("/update-status") {
                     try {
                         val chatSession = call.sessions.get<ChatSession>()
-                        val param = call.receiveParameters()["status"]
-                        if (param == null || param.isEmpty() || param == "-1") throw Exception()
-                        val status = Status.values()[param.toInt()]
-                        userRepository.updateStatus(chatSession?.id!!, status)
-                        val user = userRepository.findUserById(chatSession.id!!)
+                        val id = chatSession?.id!!
+                        val status = call.receiveParameters()["status"].toString()
+                        userRepository.updateStatus(id, Status.valueOf(status))
+                        val user = userRepository.findUserById(id)
                         WsController.updateMember(user!!)
                         call.respond(HttpStatusCode.OK, user)
                     } catch (e: Exception) {
@@ -608,10 +638,10 @@ fun Route.domainRoutes(
                 post("/update-gender") {
                     try {
                         val chatSession = call.sessions.get<ChatSession>()
-                        val param = call.receiveParameters()["gender"]
-                        if (param == null || param.isEmpty()) throw Exception()
-                        userRepository.updateGender(chatSession?.id!!, Gender.values()[param.toInt()])
-                        val user = userRepository.findUserById(chatSession.id!!)
+                        val id = chatSession?.id!!
+                        val gender = call.receiveParameters()["gender"].toString()
+                        userRepository.updateGender(id, Gender.valueOf(gender))
+                        val user = userRepository.findUserById(id)
                         WsController.updateMember(user!!)
                         call.respond(HttpStatusCode.OK, user)
                     } catch (e: Exception) {
@@ -665,6 +695,19 @@ fun Route.domainRoutes(
                         call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
                     }
                 }
+
+                post("/change-private") {
+                    try {
+                        val chatSession = call.sessions.get<ChatSession>()
+                        val id = chatSession?.id!!
+                        val private = call.receiveParameters()["private"].toBoolean()
+                        userRepository.changePrivate(id, private)
+                        call.respond(HttpStatusCode.OK)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+                    }
+                }
             }
 
             post("/logout") {
@@ -679,6 +722,7 @@ fun Route.domainRoutes(
                     call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
                 }
             }
+
         }
 
         route("/register") {

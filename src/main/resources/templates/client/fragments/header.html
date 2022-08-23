@@ -3,31 +3,29 @@
     <div id="header" class="header">
         <div class="h-full flex gap-2 items-center">
             <i @click="toggleLeft" class="fa-solid fa-bars icon-white px-2 lg:hidden"></i>
-            <div @click="showDropDown = !showDropDown" class="flex gap-2 items-center cursor-pointer lg:ml-4">
-                <img class="avatar" :src="user.avatar" th:src="${user.avatar}" alt="">
-                <p x-text="user.name" class="username" th:text="${user.name}"></p>
+            <div class="flex gap-2 items-center cursor-pointer lg:ml-4">
+                <img @click="showDropDown = !showDropDown" class="avatar"
+                     :src="user.avatar" th:src="${user.avatar}" alt="">
+                <p class="room-name" th:text="'#'+${room.name}"></p>
             </div>
         </div>
         <div class="h-full flex lg:w-80 justify-end items-center gap-4 pr-4">
             <div th:if="${permission.reports}" @click="openReportsModal" class="relative">
                 <i class="fa-solid fa-flag icon-white"></i>
-                <p x-cloak x-show="reportNotificationCount > 0" x-transition class="count"
-                   x-text="reportNotificationCount"></p>
+                <p x-cloak x-show="reportNotifiCount > 0" x-transition class="count"
+                   x-text="reportNotifiCount"></p>
             </div>
             <div @click="openMessageModal" class="relative">
                 <i class="fa-solid fa-envelope icon-white"></i>
-                <p x-cloak x-show="pvtNotificationCount > 0" x-transition class="count" x-text="pvtNotificationCount">
+                <p x-cloak x-show="pvtNotifiCount > 0" x-transition class="count" x-text="pvtNotifiCount">
                 </p>
             </div>
             <div @click="openNotificationModal" class="relative">
                 <i class="fa-solid fa-bell icon-white"></i>
-                <p x-cloak x-show="notificationCount > 0" x-transition class="count" x-text="notificationCount"></p>
+                <p x-cloak x-show="notifiCount > 0" x-transition class="count" x-text="notifiCount"></p>
             </div>
             <i @click="toggleRight" class="fa-solid fa-user-group icon-white lg:hidden block"></i>
         </div>
-    </div>
-    <div class="z-[60] rounded-b fixed top-[39px] bg-skin-hover py-0.5 px-2 left-[50%] -translate-x-1/2 mx-auto">
-        <p th:text="'# '+${room.name}" class="text-white text-[12px]"></p>
     </div>
     <div x-transition x-show.transition.origin.top.left="showDropDown" x-cloak class="h-menu-wrap">
         <div @click="showProfile = true; showDropDown= false" class="h-menu">

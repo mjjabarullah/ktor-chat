@@ -984,7 +984,7 @@ body {
     @apply border-none
 }
 
-.header p.username {
+.room-name {
     @apply px-2 py-0.5 bg-white text-skin-hover rounded text-[12px]
 }
 
@@ -1085,11 +1085,11 @@ body {
 }
 
 .menu {
-    @apply flex justify-start items-center border-t-[3px] rounded shadow-md py-2 px-1
+    @apply flex justify-between items-center border-t-[3px] rounded shadow-md py-1 px-2
 }
 
 .menu-img {
-    @apply w-[30px] h-[30px] flex-none
+    @apply w-[30px] h-[30px]
 }
 
 .menu-text {

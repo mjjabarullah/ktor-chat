@@ -8,23 +8,32 @@
     <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none">
         <div class="left top-0 flex flex-col overflow-y-auto overflow-x-hidden h-full w-full">
             <ul class="flex flex-col ">
-                <li class="pt-4 px-1">
+                <li class="pt-2 px-1">
                     <div @click="openRoomsModal" class="menu-wrap">
                         <div class="menu border-red-600">
-                            <img class="menu-img" src="images/defaults/chatrooms.webp" alt="">
-                            <p class="menu-text">
-                                Room List
-                            </p>
+                            <div class="flex items-center">
+                                <img class="menu-img" src="/images/defaults/chatrooms.webp" alt="">
+                                <p class="menu-text">
+                                    Room List
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </li>
-                <li class="pt-4 px-1">
-                    <div class="menu-wrap">
+                <li class="pt-2 px-1">
+                    <div @click="openNewsModal" class="menu-wrap">
                         <div class="menu border-green-600">
-                            <img class="menu-img" src="images/defaults/announcement.webp" alt="">
-                            <p class="menu-text">
-                                Announcement
-                            </p>
+                            <div class="flex items-center ">
+                                <img class="menu-img" src="/images/defaults/announcement.webp" alt="">
+                                <p class="menu-text">
+                                    Announcement
+                                </p>
+                            </div>
+                            <template x-if="news.unReadCount>0">
+                                <div class="text-white shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none">
+                                    <p class="font-bold text-[12px]" x-text="news.unReadCount"></p>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </li>

@@ -2,6 +2,7 @@ package com.rainbowtechsolution.domain.mappers
 
 import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.domain.model.*
+import com.rainbowtechsolution.domain.model.Announcement
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.QueryAlias
@@ -165,5 +166,16 @@ fun ResultRow.toReportModel(): Report {
         reason = this[Reports.reason],
         roomId = this[Reports.roomId].value,
         createdAt = this[Reports.createdAt].format(),
+    )
+}
+
+
+fun ResultRow.toNewsModel(user: User): Announcement {
+    return Announcement(
+        id = this[Announcements.id].value,
+        content = this[Announcements.content],
+        image = this[Announcements.image],
+        user = user,
+        createdAt = this[Announcements.createdAt].format()
     )
 }

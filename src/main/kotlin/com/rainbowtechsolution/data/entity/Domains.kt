@@ -20,6 +20,7 @@ object Domains : IntIdTable("domains") {
     val pvtChars = integer("pvt_chars").default(300)
     val offlineLimit = integer("offline_limit").default(5)
     val radioUrl = varchar("radio_url", 255).nullable()
+    val cache = float("cache_version").default(1.00F)
     val createdAt = datetime("created_at")
 }
 

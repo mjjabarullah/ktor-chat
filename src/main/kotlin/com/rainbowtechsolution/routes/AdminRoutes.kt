@@ -209,9 +209,11 @@ fun Route.adminRotes(
                 post("/{id}/mute") {
                     try {
                         val id = call.parameters["id"]!!.toLong()
+                        val user = userRepository.findUserById(id)
+                        val roomId = user?.roomId!!
                         userRepository.mute(id)
-                        val message = PvtMessage(content = "", type = MessageType.Mute)
-                        WsController.broadCastToMember(id, message.encodeToString())
+                        val message = Message(user = User(id = id), content = "", type = MessageType.Mute)
+                        WsController.broadcastToRoom(roomId, message.encodeToString())
                         call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest)
@@ -221,9 +223,11 @@ fun Route.adminRotes(
                 post("/{id}/unmute") {
                     try {
                         val id = call.parameters["id"]!!.toLong()
+                        val user = userRepository.findUserById(id)
+                        val roomId = user?.roomId!!
                         userRepository.unMute(id)
-                        val message = PvtMessage(content = "", type = MessageType.UnMute)
-                        WsController.broadCastToMember(id, message.encodeToString())
+                        val message = Message(user = User(id = id), content = "", type = MessageType.UnMute)
+                        WsController.broadcastToRoom(roomId, message.encodeToString())
                         call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest)

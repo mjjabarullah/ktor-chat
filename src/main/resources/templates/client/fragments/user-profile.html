@@ -45,10 +45,12 @@
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
                                :class="tab===0? 'bg-skin-primary text-skin-on-primary': ' text-skin-hover' ">
                                 Account</p>
-                            <p @click="tab=1"
-                               class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                               :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                                Actions</p>
+                            <template x-if="user.hasActionPerm">
+                                <p @click="tab=1"
+                                   class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                                   :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
+                                    Actions</p>
+                            </template>
                             <p @click="tab=2"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
                                :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
@@ -86,45 +88,79 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div x-show="tab===1" class="mt-1 text-black">
+                        <template x-if="user.hasActionPerm">
+                            <div x-show="tab===1" class="mt-1 text-black">
+                                <table class="table w-full border-separate">
+                                    <tbody>
+                                    <template x-if="permission.mute">
+                                        <tr>
+                                            <th>Mute</th>
+                                            <td>
+                                                <label class="switch">
+                                                    <input @change="actionMute" type="checkbox" x-model="u.muted">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="permission.kick">
+                                        <tr>
+                                            <th>Kick</th>
+                                            <td>
+                                                <label class="switch">
+                                                    <input type="checkbox">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="permission.ban">
+                                        <tr>
+                                            <th>Ban</th>
+                                            <td>
+                                                <label class="switch">
+                                                    <input type="checkbox">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                        <div x-show="tab===2" class="mt-1 text-black">
                             <table class="table w-full border-separate">
                                 <tbody>
                                 <tr>
-                                    <th>Spammer</th>
-                                    <td>
-                                        <label class="switch">
-                                            <input type="checkbox">
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </td>
+                                    <th>
+                                        <div class="inline-flex items-center">
+                                            <i class="fa-solid fa-ban text-red-500"></i>
+                                            <p class="ml-2">Block</p>
+                                        </div>
+                                    </th>
+                                    <td></td>
                                 </tr>
                                 <tr>
-                                    <th>Mute</th>
-                                    <td>
-                                        <label class="switch">
-                                            <input @change="actionMute" type="checkbox" x-model="u.muted">
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </td>
+                                    <th>
+                                        <div class="inline-flex items-center">
+                                            <i class="fa-solid fa-flag text-red-500"></i>
+                                            <p class="ml-2">Report</p>
+                                        </div>
+                                    </th>
+                                    <td></td>
                                 </tr>
-                                <tr>
-                                    <th>Kick</th>
-                                    <td>
-                                        <label class="switch">
-                                            <input type="checkbox">
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Ban</th>
-                                    <td>
-                                        <label class="switch">
-                                            <input type="checkbox">
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </td>
-                                </tr>
+                                <template x-if="permission.delMsg">
+                                    <tr>
+                                        <th>
+                                            <div class="inline-flex items-center">
+                                                <i class="fa-solid fa-trash-can text-red-500"></i>
+                                                <p class="ml-2">Delete Account</p>
+                                            </div>
+                                        </th>
+                                        <td></td>
+                                    </tr>
+                                </template> <!--TODO change permission-->
                                 </tbody>
                             </table>
                         </div>
