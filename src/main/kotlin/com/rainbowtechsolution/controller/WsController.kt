@@ -25,6 +25,7 @@ class WsController(
 
     companion object {
         val roomMembers = ConcurrentHashMap<Int, HashMap<String, User>>()
+        val domainRoomMembers = ConcurrentHashMap<Int, HashMap<Int, HashMap<String, User>>>()
         val members = ConcurrentHashMap<String, User>()
 
         fun updateMember(user: User) {

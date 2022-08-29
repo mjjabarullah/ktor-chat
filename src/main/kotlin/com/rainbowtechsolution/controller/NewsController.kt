@@ -15,14 +15,18 @@ import java.time.LocalDateTime
 
 class NewsController : NewsRepository {
 
-    override suspend fun createNews(announcement: Announcement): Int = dbQuery {
-        Announcements.insertAndGetId {
-            it[content] = announcement.content!!
-            it[image] = announcement.image!!
-            it[userId] = announcement.user?.id!!
-            it[domainId] = announcement.domainId!!
-            it[createdAt] = LocalDateTime.now()
-        }.value
+    override suspend fun createNews(announcement: Announcement): Int {
+        val newsId = dbQuery {
+            Announcements.insertAndGetId {
+                it[content] = announcement.content!!
+                it[image] = announcement.image
+                it[userId] = announcement.user?.id!!
+                it[domainId] = announcement.domainId!!
+                it[createdAt] = LocalDateTime.now()
+            }.value
+        }
+        readNews(announcement.domainId!!, announcement.user?.id!!)
+        return newsId
     }
 
     override suspend fun getNews(domainId: Int, userId: Long): News = dbQuery {
@@ -57,7 +61,7 @@ class NewsController : NewsRepository {
     }
 
     override suspend fun readNews(domainId: Int, userId: Long): Unit = dbQuery {
-        Seen.update({ (Seen.domainId eq domainId) and (Seen.userId eq userId) }) {
+        Seen.update({ (Seen.domainId eq domainId) and (Seen.userId eq userId) and (Seen.type eq SeenType.News) }) {
             it[createdAt] = LocalDateTime.now()
         }
     }

@@ -1,24 +1,23 @@
-<div @click.outside="showDropDown = false" class="header-wrap"
-     th:object="${user}">
+<div @click.outside="showDropDown = false" class="header-wrap" th:object="${user}">
     <div id="header" class="header">
         <div class="h-full flex gap-2 items-center">
-            <i @click="toggleLeft" class="fa-solid fa-bars icon-white px-2 lg:hidden"></i>
+            <div @click="toggleLeft" class="relative mx-2 lg:hidden">
+                <i class="fa-solid fa-bars icon-white"></i>
+                <p x-cloak x-show="totalCount>0" x-transition x-text="totalCount" class="count"></p>
+            </div>
             <div class="flex gap-2 items-center cursor-pointer lg:ml-4">
-                <img @click="showDropDown = !showDropDown" class="avatar"
-                     :src="user.avatar" th:src="${user.avatar}" alt="">
+                <img @click="showDropDown = !showDropDown" class="avatar" :src="user.avatar" th:src="*{avatar}">
                 <p class="room-name" th:text="'#'+${room.name}"></p>
             </div>
         </div>
         <div class="h-full flex lg:w-80 justify-end items-center gap-4 pr-4">
             <div th:if="${permission.reports}" @click="openReportsModal" class="relative">
                 <i class="fa-solid fa-flag icon-white"></i>
-                <p x-cloak x-show="reportNotifiCount > 0" x-transition class="count"
-                   x-text="reportNotifiCount"></p>
+                <p x-cloak x-show="reportNotifiCount > 0" x-transition class="count" x-text="reportNotifiCount"></p>
             </div>
             <div @click="openMessageModal" class="relative">
                 <i class="fa-solid fa-envelope icon-white"></i>
-                <p x-cloak x-show="pvtNotifiCount > 0" x-transition class="count" x-text="pvtNotifiCount">
-                </p>
+                <p x-cloak x-show="pvtNotifiCount > 0" x-transition class="count" x-text="pvtNotifiCount"></p>
             </div>
             <div @click="openNotificationModal" class="relative">
                 <i class="fa-solid fa-bell icon-white"></i>
@@ -27,22 +26,22 @@
             <i @click="toggleRight" class="fa-solid fa-user-group icon-white lg:hidden block"></i>
         </div>
     </div>
-    <div x-transition x-show.transition.origin.top.left="showDropDown" x-cloak class="h-menu-wrap">
+    <div x-show.transition.origin.top.left="showDropDown" x-cloak class="h-menu-wrap">
         <div @click="showProfile = true; showDropDown= false" class="h-menu">
-            <i class="fa-solid fa-user-pen h-m-icon"></i>
-            <p class="h-menu-text">Profile</p>
+            <i class="fa-solid fa-user-pen"></i>
+            <p>Profile</p>
         </div>
         <div class="h-menu">
-            <i class="fa-solid fa-gear h-m-icon"></i>
-            <p class="h-menu-text">Room Settings</p>
+            <i class="fa-solid fa-gear"></i>
+            <p>Room Settings</p>
         </div>
         <div class="h-menu">
-            <i class="fa-solid fa-desktop h-m-icon"></i>
-            <p class="h-menu-text">Admin Panel</p>
+            <i class="fa-solid fa-desktop"></i>
+            <p>Admin Panel</p>
         </div>
         <div @click="showLogoutDialog; showDropDown=false;" class="h-menu">
-            <i class="fa-solid fa-right-from-bracket h-m-icon"></i>
-            <p class="h-menu-text">Logout</p>
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <p>Logout</p>
         </div>
     </div>
 </div>

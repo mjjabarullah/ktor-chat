@@ -48,6 +48,7 @@ object ChatDefaults {
     const val MAIN_AUDIO_UPLOAD_FOLDER = "uploads/main/audios/"
     const val PRIVATE_IMAGE_UPLOAD_FOLDER = "uploads/private/images/"
     const val PRIVATE_AUDIO_UPLOAD_FOLDER = "uploads/private/audios/"
+    const val NEWS_IMAGE_UPLOAD_FOLDER = "uploads/news/images/"
     const val AVATAR_FOLDER = "uploads/avatars/"
     const val COLOR = "black"
 

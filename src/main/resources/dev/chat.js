@@ -1,7 +1,6 @@
 "use strict"
 
 import Alpine from 'alpinejs'
-import disableDevtool from 'disable-devtool'
 
 
 //disableDevtool() /*TODO : Uncomment this in production*/
@@ -29,6 +28,12 @@ const RECORDING_TIME = 180
 const mobile = window.matchMedia('(max-width: 640px)')
 const tablet = window.matchMedia('(min-width: 768px)')
 const desktop = window.matchMedia('(min-width: 1024px)')
+
+const PERMISSION_DENIED = 'Permission denied'
+const SOMETHING_WENT_WRONG = 'Something went wrong'
+
+const SUCCESS = 'success'
+const ERROR = 'error'
 
 document.addEventListener('alpine:init', () => {
 
@@ -93,6 +98,10 @@ document.addEventListener('alpine:init', () => {
         pvtNotifiCount: 0,
         reportNotifiCount: 0,
         notifiCount: 0,
+        newsUnreadCount: 0,
+        adminShipUnreadCount: 0,
+        globalFeedUnreadCount: 0,
+        totalCount: 0,
         isRecording: false,
         remainingTime: RECORDING_TIME,
         init() {
@@ -100,12 +109,12 @@ document.addEventListener('alpine:init', () => {
             this.showRight = desktop.matches || tablet.matches
             this.showLeft = desktop.matches
 
-            desktop.onchange = (e) => {
+            desktop.onchange = () => {
                 this.showLeft = desktop.matches
                 this.showRight = desktop.matches || tablet.matches
             }
 
-            tablet.onchange = (e) => {
+            tablet.onchange = () => {
                 this.showRight = desktop.matches || tablet.matches
             }
 
@@ -169,6 +178,18 @@ document.addEventListener('alpine:init', () => {
                 user.nameColor = this.user.nameColor
                 user.nameFont = this.user.nameFont
                 user.gender = this.user.gender
+            })
+
+            this.$watch('newsUnreadCount', () => {
+                this.totalCount = this.newsUnreadCount + this.adminShipUnreadCount + this.globalFeedUnreadCount
+            })
+
+            this.$watch('adminShipUnreadCount', () => {
+                this.totalCount = this.newsUnreadCount + this.adminShipUnreadCount + this.globalFeedUnreadCount
+            })
+
+            this.$watch('globalFeedUnreadCount', () => {
+                this.totalCount = this.newsUnreadCount + this.adminShipUnreadCount + this.globalFeedUnreadCount
             })
 
         },
@@ -310,9 +331,12 @@ document.addEventListener('alpine:init', () => {
                 })
             }
         },
-        getNews() {
+        getNews(callback = () => {
+        }) {
             axios.get(`/${domain.id}/news`).then(res => {
                 this.news = res.data
+                this.newsUnreadCount = this.news.unReadCount
+                if (typeof callback === 'function') callback()
             })
         },
         getEmojis() {
@@ -321,8 +345,8 @@ document.addEventListener('alpine:init', () => {
             emojis.forEach((emoji, index) => {
                 emos += `<div x-show="emoTab === ${index}"  class="emojis">`
                 Object.keys(emoji).forEach(key => {
-                    if (key === 'head') head += `<img @click="emoTab=${index}" class="head" src="${emoji[key]}" :class="[emoTab==${index}?'active': '']" >`
-                    else emos += `<img @click="addMainEmo('${key}')" class="emoticon" src="${emoji[key]}"> `
+                    if (key === 'head') head += `<img @click="emoTab=${index}" class="head" src="${emoji[key]}" :class="[emoTab==${index}?'active': '']" alt="${key}">`
+                    else emos += `<img @click="addMainEmo('${key}')" class="emoticon" src="${emoji[key]}" alt="${key}"> `
                 })
                 emos += '</div>'
             })
@@ -335,8 +359,8 @@ document.addEventListener('alpine:init', () => {
             emojis.forEach((emoji, index) => {
                 emos += `<div x-show="pvtEmoTab == ${index}" class="pvt-emojis">`
                 Object.keys(emoji).forEach(key => {
-                    if (key === 'head') head += `<img @click="pvtEmoTab=${index}" class="head" src="${emoji[key]}" :class="[pvtEmoTab===${index}?'active': '']" >`
-                    else emos += `<img @click="addPvtEmo('${key}');showPvtEmo=false" class="emoticon" src="${emoji[key]}"> `
+                    if (key === 'head') head += `<img @click="pvtEmoTab=${index}" class="head" src="${emoji[key]}" :class="[pvtEmoTab===${index}?'active': '']" alt="${key}">`
+                    else emos += `<img @click="addPvtEmo('${key}');showPvtEmo=false" class="emoticon" src="${emoji[key]}" alt="${key}"> `
                 })
                 emos += '</div>'
             })
@@ -411,19 +435,16 @@ document.addEventListener('alpine:init', () => {
             form.append('name', name)
             form.append('email', this.register.email)
             form.append('password', this.register.password)
-            form.append('gender', gender)
+            form.append('gender', this.user.gender)
 
             axios.post('/guest-register', form).then(res => {
-                this.showLoader = false
+                this.showLoader = true
                 this.closeSmallModal()
-                setTimeout(() => {
-                    location.reload()
-                }, 2000)
-                this.showAlertMsg("Registration Successful", 'success')
+                setTimeout(() => location.reload(), 2000)
+                this.showAlertMsg(res.data, SUCCESS)
             }).catch(e => {
                 this.showLoader = false
-                this.register.errors = {}
-                this.register.errors = e.response.data
+                if (e.response) this.register.errors = e.response.data
             })
         },
         getUserProfile(id) {
@@ -437,7 +458,7 @@ document.addEventListener('alpine:init', () => {
                 this.setUserStatusColor()
                 this.showUserProfile = true
             }).catch(e => {
-                this.showAlertMsg(e.response.data, 'error')
+                if (e.response) this.showAlertMsg(e.response.data, ERROR)
             })
         },
         closeUserProfile() {
@@ -463,11 +484,7 @@ document.addEventListener('alpine:init', () => {
             this.showSmallModal(html)
         },
         logout() {
-            axios.post('logout').then(res => {
-                location.reload()
-            }).catch(e => {
-                this.showAlertMsg(e.response.data, 'error')
-            })
+            axios.post('logout').then(() => location.reload()).catch(e => e.response && this.showAlertMsg(e.response.data, ERROR))
         },
         changeAvatarDialog() {
             const html = `
@@ -481,7 +498,7 @@ document.addEventListener('alpine:init', () => {
                     <div class="w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar">
                       <template x-for="(avatar, index) in avatars " :key="index">
                           <div class="w-[50px] h-[50px] relative">
-                            <img @click="setAvatar(index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar" alt=""> 
+                            <img @click="setAvatar(index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar" alt="" src=""> 
                           </div>
                       </template>
                     </div> 
@@ -504,11 +521,11 @@ document.addEventListener('alpine:init', () => {
                 this.user.avatar = res.data.avatar
                 this.showLoader = false
                 this.closeSmallModal()
-                this.showAlertMsg('Avatar has been changed.', 'success')
+                this.showAlertMsg('Avatar has been changed.', SUCCESS)
             }).catch(e => {
                 this.showLoader = false
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                e.response && this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeAvatar(el) {
@@ -519,7 +536,7 @@ document.addEventListener('alpine:init', () => {
             if (file == null || file.type === 'undefined') return
             if (!file.type.match(pattern)) {
                 this.showLoader = false
-                this.showAlertMsg('Invalid image format', 'error')
+                this.showAlertMsg('Invalid image format', ERROR)
                 return
             }
             formData.append('avatar', file)
@@ -527,11 +544,11 @@ document.addEventListener('alpine:init', () => {
                 this.user.avatar = res.data.avatar
                 this.showLoader = false
                 this.closeSmallModal()
-                this.showAlertMsg('Avatar has been changed.', 'success')
+                this.showAlertMsg('Avatar has been changed.', SUCCESS)
             }).catch(e => {
                 this.showLoader = false
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                e.response && this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeNameDialog() {
@@ -561,7 +578,7 @@ document.addEventListener('alpine:init', () => {
         },
         changeName() {
             if (this.user.name.length < 4 || this.user.name.length > 12) {
-                this.showAlertMsg('Must have min 4 to max 12 letters', 'error')
+                this.showAlertMsg('Must have min 4 to max 12 letters', ERROR)
                 return
             }
             const formData = new FormData()
@@ -569,11 +586,11 @@ document.addEventListener('alpine:init', () => {
             axios.post('/user/update-name', formData).then(res => {
                 name = this.user.name
                 this.closeSmallModal()
-                this.showAlertMsg('Username has been changed', 'success')
+                this.showAlertMsg('Username has been changed', SUCCESS)
             }).catch(e => {
                 this.user.name = name
                 this.closeSmallModal()
-                if (e.response) this.showAlertMsg(e.response.data, 'error')
+                if (e.response) this.showAlertMsg(e.response.data, ERROR)
             })
         },
         customizeNameDialog() {
@@ -649,12 +666,12 @@ document.addEventListener('alpine:init', () => {
                 nameColor = res.data.nameColor
                 nameFont = res.data.nameFont
                 this.closeSmallModal()
-                this.showAlertMsg('Name customized.', 'success')
+                this.showAlertMsg('Name customized.', SUCCESS)
             }).catch(e => {
                 this.user.nameColor = nameColor
                 this.user.nameFont = nameFont
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeMoodDialog() {
@@ -684,7 +701,7 @@ document.addEventListener('alpine:init', () => {
         },
         changeMood() {
             if (this.user.mood.length >= 40) {
-                this.showAlertMsg('Must have max 40 letters', 'error')
+                this.showAlertMsg('Must have max 40 letters', ERROR)
                 return
             }
             const formData = new FormData()
@@ -692,11 +709,11 @@ document.addEventListener('alpine:init', () => {
             axios.post('/user/update-mood', formData).then(res => {
                 mood = res.data.mood
                 this.closeSmallModal()
-                this.showAlertMsg('Mood has been changed', 'success')
+                this.showAlertMsg('Mood has been changed', SUCCESS)
             }).catch(e => {
                 this.user.mood = mood
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeAboutDialog() {
@@ -707,8 +724,8 @@ document.addEventListener('alpine:init', () => {
                     <i @click="closeAboutDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
                 </div> 
                 <div class="p-4">
-                    <div class="h-[100px] max-h-[150px] mb-4">
-                        <textarea class="w-full input-text" x-model="user.about" type="text" maxlength="150" name="about" autofocus></textarea>
+                    <div class="mb-4">
+                        <textarea @keyup="textArea($el, 60)" class="text-area" x-model="user.about" type="text" maxlength="150" name="about" autofocus></textarea>
                     </div>
                     <button @click="changeAbout" class="w-36 btn btn-skin text-center">Change<button>
                 </div>
@@ -726,16 +743,16 @@ document.addEventListener('alpine:init', () => {
             axios.post('/user/update-about', formData).then(res => {
                 about = res.data.about
                 this.closeSmallModal()
-                this.showAlertMsg('About me has been changed', 'success')
+                this.showAlertMsg('About me has been changed', SUCCESS)
             }).catch(e => {
                 this.user.about = about
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changePasswordDialog() {
             if (rank.code === 'guest') {
-                this.showAlertMsg('Guest does not have password', 'error')
+                this.showAlertMsg('Guest does not have password', ERROR)
                 return
             }
             const html = `
@@ -759,16 +776,16 @@ document.addEventListener('alpine:init', () => {
         },
         changePassword(password) {
             if (password.length < 8) {
-                this.showAlertMsg('Must have min 8 letters', 'error')
+                this.showAlertMsg('Must have min 8 letters', ERROR)
                 return
             }
             const formData = new FormData()
             formData.append('password', password)
             axios.post('/user/update-password', formData).then(res => {
-                this.showAlertMsg('Password has been changed', 'success')
+                this.showAlertMsg('Password has been changed', SUCCESS)
                 this.closeSmallModal()
             }).catch(e => {
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
                 this.closeSmallModal()
             })
         },
@@ -804,12 +821,12 @@ document.addEventListener('alpine:init', () => {
             const formData = new FormData()
             formData.append('status', this.user.status)
             axios.post('/user/update-status', formData).then(res => {
-                this.showAlertMsg('Status has been changed', 'success')
+                this.showAlertMsg('Status has been changed', SUCCESS)
                 this.user.status = res.data.status
                 this.setStatusColor()
                 this.closeSmallModal()
             }).catch(e => {
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
                 this.closeSmallModal()
             })
         },
@@ -841,10 +858,10 @@ document.addEventListener('alpine:init', () => {
             axios.post('/user/update-gender', formData).then(res => {
                 this.user.gender = res.data.gender
                 this.closeSmallModal()
-                this.showAlertMsg('Gender has been changed', 'success')
+                this.showAlertMsg('Gender has been changed', SUCCESS)
             }).catch(e => {
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeDobDialog() {
@@ -873,13 +890,12 @@ document.addEventListener('alpine:init', () => {
             const formData = new FormData()
             formData.append('dob', this.user.dob)
             axios.post('/user/update-dob', formData).then(res => {
-                this.showAlertMsg('DOB has been changed', 'success')
+                this.showAlertMsg('DOB has been changed', SUCCESS)
                 this.user.dob = res.data.dob
-                dob = res.data.dob
                 this.closeSmallModal()
             }).catch(e => {
                 this.user.dob = dob
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
                 this.closeSmallModal()
             })
         },
@@ -967,13 +983,13 @@ document.addEventListener('alpine:init', () => {
                 textBold = res.data.textBold
                 textFont = res.data.textFont
                 this.closeSmallModal()
-                this.showAlertMsg('Chat options has been changed', 'success')
+                this.showAlertMsg('Chat options has been changed', SUCCESS)
             }).catch(e => {
                 this.user.textColor = textColor
                 this.user.textBold = textBold
                 this.user.textFont = textFont
                 this.closeSmallModal()
-                this.showAlertMsg(e.response.data, 'error')
+                this.showAlertMsg(e.response.data, ERROR)
             })
         },
         changeSoundSettings() {
@@ -987,7 +1003,7 @@ document.addEventListener('alpine:init', () => {
                 this.user.pvtSound = pvtSound
                 this.user.notifSound = notifSound
                 this.user.nameSound = nameSound
-                this.showAlertMsg('Something went wrong', 'error')
+                this.showAlertMsg('Something went wrong', ERROR)
             })
         },
         changePrivate() {
@@ -995,7 +1011,7 @@ document.addEventListener('alpine:init', () => {
             formData.append('private', this.user.private)
             axios.post(`/user/change-private`, formData).catch(e => {
                 this.user.private = pvt
-                this.showAlertMsg('Something went wrong', 'error')
+                this.showAlertMsg('Something went wrong', ERROR)
             })
         },
         removeTopic() {
@@ -1027,7 +1043,7 @@ document.addEventListener('alpine:init', () => {
         },
         sendMessage() {
             if (this.user.muted) {
-                this.showAlertMsg('You are muted', 'error')
+                this.showAlertMsg('You are muted', ERROR)
                 return
             }
             const content = this.$refs.mainInput.value
@@ -1041,7 +1057,7 @@ document.addEventListener('alpine:init', () => {
         },
         recordMainAudio() {
             if (this.user.muted) {
-                this.showAlertMsg('You are muted', 'error')
+                this.showAlertMsg('You are muted', ERROR)
                 return
             }
             if (this.isRecording) {
@@ -1052,7 +1068,7 @@ document.addEventListener('alpine:init', () => {
                     this.isRecording = false
                     this.remainingTime = RECORDING_TIME
                     clearInterval(this.mainInterval)
-                    this.showAlertMsg('Record length at least 10 seconds', 'error')
+                    this.showAlertMsg('Record length at least 10 seconds', ERROR)
                     return
                 }
                 this.recorder.stop().getMp3().then(([buffer, blob]) => {
@@ -1064,10 +1080,10 @@ document.addEventListener('alpine:init', () => {
                     axios.post('/room/upload-audio', formData).then(res => {
                         this.sendToRoom(res.data)
                     }).catch(err => {
-                        this.showAlertMsg('Audio upload failed', 'error')
+                        this.showAlertMsg('Audio upload failed', ERROR)
                     })
                 }).catch((e) => {
-                    this.showAlertMsg('Audio recording failed', 'error')
+                    this.showAlertMsg('Audio recording failed', ERROR)
                 })
                 this.isRecording = false
                 this.remainingTime = RECORDING_TIME
@@ -1084,14 +1100,14 @@ document.addEventListener('alpine:init', () => {
 
                     this.isRecording = true
                 }).catch((e) => {
-                    this.showAlertMsg('You haven\'t given mic permission', 'error')
+                    this.showAlertMsg('You haven\'t given mic permission', ERROR)
                 })
 
             }
         },
         uploadImage(event) {
             if (this.user.muted) {
-                this.showAlertMsg('You are muted', 'error')
+                this.showAlertMsg('You are muted', ERROR)
                 return
             }
             this.showLoader = true
@@ -1101,7 +1117,7 @@ document.addEventListener('alpine:init', () => {
             const content = this.$refs.mainInput.value
             if (file == null || file.type === 'undefined') return
             if (!file.type.match(pattern)) {
-                this.showAlertMsg('Invalid image format', 'error')
+                this.showAlertMsg('Invalid image format', ERROR)
                 this.showLoader = false
                 return
             }
@@ -1158,7 +1174,7 @@ document.addEventListener('alpine:init', () => {
                 if (message.user.id === userId) {
                     this.user.muted = true
                     this.$refs.mainInput.disabled = this.user.muted
-                    this.showAlertMsg('You have been muted', 'error')
+                    this.showAlertMsg('You have been muted', ERROR)
                 }
             } else if (message.type === MessageType.UnMute) {
                 const user = this.roomUsers.find(user => user.id === message.user.id)
@@ -1166,7 +1182,7 @@ document.addEventListener('alpine:init', () => {
                 if (message.user.id === userId) {
                     this.user.muted = false
                     this.$refs.mainInput.disabled = this.user.muted
-                    this.showAlertMsg('You have been unmuted', 'success')
+                    this.showAlertMsg('You have been unmuted', SUCCESS)
                 }
             }
         },
@@ -1175,12 +1191,12 @@ document.addEventListener('alpine:init', () => {
                 axios.delete(`/message/${id}/delete`).catch(e => {
                     if (e.response) {
 
-                        this.showAlertMsg(e.response.data, 'error')
+                        this.showAlertMsg(e.response.data, ERROR)
                         return
                     }
-                    this.showAlertMsg('Deleting message failed.', 'error')
+                    this.showAlertMsg('Deleting message failed.', ERROR)
                 })
-            } else this.showAlertMsg('Permission denied', 'error')
+            } else this.showAlertMsg('Permission denied', ERROR)
         },
         reportDialog(id, type) {
             const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
@@ -1218,9 +1234,9 @@ document.addEventListener('alpine:init', () => {
             formData.append('roomId', room.id)
             formData.append('type', type)
             axios.post(`/reports/create`, formData).then(res => {
-                this.showAlertMsg('Message reported successfully', 'success')
+                this.showAlertMsg('Message reported successfully', SUCCESS)
             }).catch(e => {
-                this.showAlertMsg('Reporting message failed', 'error')
+                this.showAlertMsg('Reporting message failed', ERROR)
             })
             this.closeSmallModal()
         },
@@ -1257,7 +1273,7 @@ document.addEventListener('alpine:init', () => {
             }).catch(e => {
                 console.log(e)
             })
-            this.setpvtNotifiCount()
+            this.setPvtNotifiCount()
         },
         closePvtModal(id) {
             const user = this.pvtUsers.find(user => user.id === id)
@@ -1274,7 +1290,7 @@ document.addEventListener('alpine:init', () => {
         sendPvtMessage(id, input) {
             const user = this.pvtUsers.find(user => user.id === id)
             if (!user.private || !permission.private) {
-                this.showAlertMsg('You can\'t private to this user', 'error')
+                this.showAlertMsg('You can\'t private to this user', ERROR)
                 return
             }
             const content = input.value
@@ -1294,7 +1310,7 @@ document.addEventListener('alpine:init', () => {
         recordPvtAudio(id) {
             const user = this.pvtUsers.find(user => user.id === id)
             if (!user.private || !permission.private) {
-                this.showAlertMsg('You can\'t private to this user', 'error')
+                this.showAlertMsg('You can\'t private to this user', ERROR)
                 return
             }
             if (!user.isRecording) {
@@ -1306,7 +1322,7 @@ document.addEventListener('alpine:init', () => {
                     }, 1000)
                     user.isRecording = true
                 }).catch((e) => {
-                    this.showAlertMsg('You haven\'t given mic permission', 'error')
+                    this.showAlertMsg('You haven\'t given mic permission', ERROR)
                 })
             } else {
                 if (!(RECORDING_TIME - user.remainingTime > 10)) {
@@ -1314,7 +1330,7 @@ document.addEventListener('alpine:init', () => {
                     user.isRecording = false
                     clearInterval(user.interval)
                     user.remainingTime = RECORDING_TIME
-                    this.showAlertMsg('Record length at least 10 seconds', 'error')
+                    this.showAlertMsg('Record length at least 10 seconds', ERROR)
                     return
                 }
                 user.recorder.stop().getMp3().then(([buffer, blob]) => {
@@ -1324,10 +1340,10 @@ document.addEventListener('alpine:init', () => {
                     axios.post(`/message/pvt/${id}/upload-audio`, formData).then(res => {
                         this.sendToUser(res.data)
                     }).catch(err => {
-                        this.showAlertMsg('Audio upload failed', 'error')
+                        this.showAlertMsg('Audio upload failed', ERROR)
                     })
                 }).catch((e) => {
-                    this.showAlertMsg('Audio recording failed', 'error')
+                    this.showAlertMsg('Audio recording failed', ERROR)
                 })
                 user.isRecording = false
                 clearInterval(user.interval)
@@ -1337,7 +1353,7 @@ document.addEventListener('alpine:init', () => {
         uploadPvtImage(id, event) {
             const user = this.pvtUsers.find(user => user.id === id)
             if (!user.private || !permission.private) {
-                this.showAlertMsg('You can\'t private to this user', 'error')
+                this.showAlertMsg('You can\'t private to this user', ERROR)
                 return
             }
             this.showLoader = true
@@ -1346,7 +1362,7 @@ document.addEventListener('alpine:init', () => {
             const pattern = /image-*/
             if (file == null || file.type === 'undefined') return
             if (!file.type.match(pattern)) {
-                this.showAlertMsg('Invalid image format', 'error')
+                this.showAlertMsg('Invalid image format', ERROR)
                 this.showLoader = false
                 return
             }
@@ -1372,7 +1388,7 @@ document.addEventListener('alpine:init', () => {
                     this.$refs.pvtSound.play()
                 }
                 user.messages.unshift(message)
-                this.setpvtNotifiCount()
+                this.setPvtNotifiCount()
             } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
                 this.getReports()
             } else if (message.type === MessageType.DataChanges) {
@@ -1390,7 +1406,7 @@ document.addEventListener('alpine:init', () => {
                     user.recorder = new MicRecorder({bitrate: 80})
                     user.interval = null
                 })
-                this.setpvtNotifiCount()
+                this.setPvtNotifiCount()
             }).catch(e => {
             })
         },
@@ -1489,11 +1505,11 @@ document.addEventListener('alpine:init', () => {
             axios.post(`message/pvt/${sender}/all-seen`).then(res => {
                 const user = this.pvtUsers.find(user => user.id === sender)
                 user.messages.forEach(message => message.seen = true)
-                this.setpvtNotifiCount()
+                this.setPvtNotifiCount()
             }).catch(e => {
             })
         },
-        setpvtNotifiCount() {
+        setPvtNotifiCount() {
             let count = 0
             this.pvtUsers.forEach(user => {
                 user.unReadCount = 0
@@ -1572,14 +1588,14 @@ document.addEventListener('alpine:init', () => {
                 }).catch(e => {
                     if (e.response) {
                         if (e.response.status === 404) {
-                            this.showAlertMsg(e.response.data, 'error')
+                            this.showAlertMsg(e.response.data, ERROR)
                             const formData = new FormData()
                             formData.append('domainId', domain.id)
                             axios.delete(`/reports/${id}/delete`, {data: formData})
                         }
                         return
                     }
-                    this.showAlertMsg('Something went wrong', 'error')
+                    this.showAlertMsg('Something went wrong', ERROR)
                 })
             } else if (type === ReportType.PvtChat) {
 
@@ -1606,51 +1622,34 @@ document.addEventListener('alpine:init', () => {
             })
         },
         openNewsModal() {
-            let html = `
-                <div class="text-skin-on-primary h-full">
-                    <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
-                        <p class="text-md font-bold ">Announcements</p>
-                        <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
-                    </div> 
-                    <div class="p-[10px]">
-                        <ul class="h-full ">
-                `
-            if (this.news.news.length > 0) {
-                this.news.news.forEach(news => {
-                    html += `
-                        <li  class="pvt-user-wrap">
-                           <div class="w-full gap-2">
-                                <div class="flex h-full w-full items-center">
-                                    <img class="avatar flex-none mx-1" src="${news.user.avatar}">
-                                    <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
-                                        <p class="ellipsis username clip ${news.user.nameColor} ${news.user.nameFont}"> ${news.user.name}
-                                        <p class="flex items-center clip ellipsis text-gray-500 text-[12px]">${news.content}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    `
-                })
-            } else {
-                html += `
-                    <li class="pvt-user-wrap">
-                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                            <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
-                            <p class="text-[12px] font-bold" > No Announcements</p>
-                        </div>
-                    </li>
-               `
-            }
-
-            html += `</ul></div></div>`
-            this.showFullModal(html)
-            axios.post(`/${domain.id}/read-news`).then(res => {
+            if (mobile.matches) this.showLeft = false
+            this.showFullModal(newsModalHtml(this))
+            if (this.newsUnreadCount !== 0) axios.post(`/${domain.id}/news/read`).then(res => {
                 this.news.unReadCount = 0
+                this.newsUnreadCount = this.news.unReadCount
             })
+        },
+        writeNewsDialog() {
+            if (!permission.writeNews) {
+                this.showAlertMsg(PERMISSION_DENIED, ERROR)
+                return
+            }
+            this.showSmallModal(writeNewsDialogHtml())
+        },
+        delNews(id) {
+            if (!permission.delNews) {
+                this.showAlertMsg(PERMISSION_DENIED, ERROR)
+                return
+            }
+            axios.delete(`/${domain.id}/news/${id}/delete`).then(() => {
+                this.showAlertMsg('Announcement deleted successfully', SUCCESS)
+                this.news.news = this.news.news.filter(news => news.id !== id)
+                this.openNewsModal()
+            }).catch(e => getErrorMsg(e))
         },
         changeUserNameDialog(id, name) {
             if (!permission.userName) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             const html = `
@@ -1675,28 +1674,28 @@ document.addEventListener('alpine:init', () => {
         },
         changeUserName(id, name) {
             if (!permission.userName) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             if (name.length < 4 || name.length > 12) {
-                this.showAlertMsg('Must have min 4 to max 12 letters', 'error')
+                this.showAlertMsg('Must have min 4 to max 12 letters', ERROR)
                 return
             }
             const formData = new FormData()
             formData.append('name', name)
             formData.append('domainId', domain.id)
             axios.post(`/user/${id}/update-name`, formData).then(res => {
-                this.showAlertMsg('Username has been changed', 'success')
+                this.showAlertMsg('Username has been changed', SUCCESS)
             }).catch(e => {
-                if (e.response) this.showAlertMsg(e.response.data, 'error')
-                else this.showAlertMsg('Something went wrong', 'error')
+                if (e.response) this.showAlertMsg(e.response.data, ERROR)
+                else this.showAlertMsg('Something went wrong', ERROR)
             })
             this.closeUserProfile()
             this.closeSmallModal()
         },
         changeUserAvatarDialog(id) {
             if (!permission.avatar) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             const html = `
@@ -1727,7 +1726,7 @@ document.addEventListener('alpine:init', () => {
         },
         setUserAvatar(id, index) {
             if (!permission.avatar) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             this.showLoader = true
@@ -1735,18 +1734,17 @@ document.addEventListener('alpine:init', () => {
             data.append('avatar', avatars[index])
             axios.post(`/user/${id}/update-default-avatar`, data).then(res => {
                 this.showLoader = false
-                this.showAlertMsg('Avatar has been changed.', 'success')
+                this.showAlertMsg('Avatar has been changed.', SUCCESS)
             }).catch(e => {
                 this.showLoader = false
-                if (e.response) this.showAlertMsg(e.response.data, 'error')
-                else this.showAlertMsg('Something went wrong', 'error')
+                e.response ? this.showAlertMsg(e.response.data, ERROR) : this.showAlertMsg('Something went wrong', ERROR)
             })
             this.closeUserProfile()
             this.closeSmallModal()
         },
         changeUserAvatar(id, el) {
             if (!permission.avatar) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             this.showLoader = true
@@ -1756,51 +1754,82 @@ document.addEventListener('alpine:init', () => {
             if (file == null || file.type === 'undefined') return
             if (!file.type.match(pattern)) {
                 this.showLoader = false
-                this.showAlertMsg('Invalid image format', 'error')
+                this.showAlertMsg('Invalid image format', ERROR)
                 return
             }
             formData.append('avatar', file)
             axios.post(`/user/${id}/update-avatar`, formData).then(res => {
                 this.showLoader = false
-                this.showAlertMsg('Avatar has been changed.', 'success')
+                this.showAlertMsg('Avatar has been changed.', SUCCESS)
             }).catch(e => {
                 this.showLoader = false
-                if (e.response) this.showAlertMsg(e.response.data, 'error')
-                else this.showAlertMsg('Something went wrong', 'error')
+                this.showAlertMsg(getErrorMsg(e), ERROR)
             })
             this.closeUserProfile()
             this.closeSmallModal()
         },
         actionMute() {
             if (!permission.mute) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg(PERMISSION_DENIED, ERROR)
                 return
             }
-            if (this.u.muted) {
-                axios.post(`/user/${this.u.id}/mute`).catch(e => {
-                    this.u.muted = false
-                })
-            } else {
-                axios.post(`/user/${this.u.id}/unmute`).catch(e => {
-                    this.u.muted = true
-                })
-            }
+            this.u.muted ? axios.post(`/user/${this.u.id}/mute`).catch(() => this.u.muted = false)
+                : axios.post(`/user/${this.u.id}/unmute`).catch(() => this.u.muted = true)
         },
         kickUser(id) {
             if (!permission.kick) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             axios.post(`/user/${id}/kick`)
         },
         banUser(id) {
             if (!permission.ban) {
-                this.showAlertMsg('Permission denied', 'error')
+                this.showAlertMsg('Permission denied', ERROR)
                 return
             }
             axios.post(`/user/${id}/ban`)
-        }
+        },
+        textArea(el, height) {
+            el.style.height = `${height}px`
+            el.style.height = `${el.scrollHeight}px`
+        },
+
     }))
+
+    Alpine.data('announcement', () => {
+        return {
+            content: '',
+            image: '',
+            addImage(el) {
+                const reader = new FileReader()
+                reader.onload = e => {
+                    this.image = e.target.result
+                }
+                reader.readAsDataURL(el.files[0])
+            },
+            writeNews(input) {
+                if (!permission.writeNews) {
+                    this.showAlertMsg(PERMISSION_DENIED, ERROR)
+                    return
+                }
+                if (this.content === '') {
+                    this.showAlertMsg('Content cannot be empty', ERROR)
+                    return
+                }
+                const formData = new FormData()
+                formData.append('content', this.content)
+                if (this.image !== '') formData.append('image', input.files[0])
+                axios.post(`/${domain.id}/news/create`, formData).then(() => {
+                    this.closeSmallModal()
+                    this.showAlertMsg('Announcement created successfully', SUCCESS)
+                    this.getNews(() => {
+                        this.openNewsModal()
+                    })
+                }).catch(e => getErrorMsg(e))
+            }
+        }
+    })
 })
 
 Alpine.start()
@@ -1967,8 +1996,85 @@ function dragElement(el, id) {
     }
 }
 
+function newsModalHtml(obj) {
+    let addNew = permission.writeNews ?
+        '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : ''
+    let html = `
+        <div x-data="{image:'hello'}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Announcements</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (obj.news.news.length > 0) {
+        obj.news.news.forEach(news => {
+            let user = news.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : ''
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between"> 
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>  
+                           <div class="flex items-center gap-2">
+                                <p class="date">${news.createdAt}</p>
+                                <i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>
+                           </div>                       
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${news.content}</p>${image}
+                       </div>  
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
+                    <p class="text-[12px] font-bold" > No Announcements</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+}
 
+function writeNewsDialogHtml() {
+    return `
+        <div x-data="announcement" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold ">Write Announcement</p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <div class="mb-4">
+                   <textarea @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
+                        maxlength="3000" placeholder="write announcement"></textarea>
+                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
+                </div>
+                <div class="flex justify-end gap-2 items-center"> 
+                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
+                 <button @click.once="writeNews($refs.input)" class="btn btn-skin text-center">Post<button>
+                </div>
+            </div>
+        </div>
+    `
+}
 
+/*utils*/
+function getErrorMsg(e) {
+    return e.response ? e.response.data : SOMETHING_WENT_WRONG
+}
 
 
 

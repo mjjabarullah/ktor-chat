@@ -5384,8 +5384,6 @@ module.exports = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var alpinejs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alpinejs */ "./node_modules/alpinejs/dist/module.esm.js");
-/* harmony import */ var disable_devtool__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! disable-devtool */ "./node_modules/disable-devtool/disable-devtool.min.js");
-/* harmony import */ var disable_devtool__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(disable_devtool__WEBPACK_IMPORTED_MODULE_1__);
 
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -5399,7 +5397,6 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 
  //disableDevtool() /*TODO : Uncomment this in production*/
 
@@ -5444,6 +5441,10 @@ var RECORDING_TIME = 180;
 var mobile = window.matchMedia('(max-width: 640px)');
 var tablet = window.matchMedia('(min-width: 768px)');
 var desktop = window.matchMedia('(min-width: 1024px)');
+var PERMISSION_DENIED = 'Permission denied';
+var SOMETHING_WENT_WRONG = 'Something went wrong';
+var SUCCESS = 'success';
+var ERROR = 'error';
 document.addEventListener('alpine:init', function () {
   alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('chat', function () {
     return {
@@ -5510,6 +5511,10 @@ document.addEventListener('alpine:init', function () {
       pvtNotifiCount: 0,
       reportNotifiCount: 0,
       notifiCount: 0,
+      newsUnreadCount: 0,
+      adminShipUnreadCount: 0,
+      globalFeedUnreadCount: 0,
+      totalCount: 0,
       isRecording: false,
       remainingTime: RECORDING_TIME,
       init: function init() {
@@ -5518,12 +5523,12 @@ document.addEventListener('alpine:init', function () {
         this.showRight = desktop.matches || tablet.matches;
         this.showLeft = desktop.matches;
 
-        desktop.onchange = function (e) {
+        desktop.onchange = function () {
           _this.showLeft = desktop.matches;
           _this.showRight = desktop.matches || tablet.matches;
         };
 
-        tablet.onchange = function (e) {
+        tablet.onchange = function () {
           _this.showRight = desktop.matches || tablet.matches;
         };
 
@@ -5587,6 +5592,15 @@ document.addEventListener('alpine:init', function () {
           user.nameColor = _this.user.nameColor;
           user.nameFont = _this.user.nameFont;
           user.gender = _this.user.gender;
+        });
+        this.$watch('newsUnreadCount', function () {
+          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
+        });
+        this.$watch('adminShipUnreadCount', function () {
+          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
+        });
+        this.$watch('globalFeedUnreadCount', function () {
+          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
         });
       },
       toggleLeft: function toggleLeft() {
@@ -5713,8 +5727,11 @@ document.addEventListener('alpine:init', function () {
       getNews: function getNews() {
         var _this5 = this;
 
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
         axios.get("/".concat(domain.id, "/news")).then(function (res) {
           _this5.news = res.data;
+          _this5.newsUnreadCount = _this5.news.unReadCount;
+          if (typeof callback === 'function') callback();
         });
       },
       getEmojis: function getEmojis() {
@@ -5723,7 +5740,7 @@ document.addEventListener('alpine:init', function () {
         emojis.forEach(function (emoji, index) {
           emos += "<div x-show=\"emoTab === ".concat(index, "\"  class=\"emojis\">");
           Object.keys(emoji).forEach(function (key) {
-            if (key === 'head') head += "<img @click=\"emoTab=".concat(index, "\" class=\"head\" src=\"").concat(emoji[key], "\" :class=\"[emoTab==").concat(index, "?'active': '']\" >");else emos += "<img @click=\"addMainEmo('".concat(key, "')\" class=\"emoticon\" src=\"").concat(emoji[key], "\"> ");
+            if (key === 'head') head += "<img @click=\"emoTab=".concat(index, "\" class=\"head\" src=\"").concat(emoji[key], "\" :class=\"[emoTab==").concat(index, "?'active': '']\" alt=\"").concat(key, "\">");else emos += "<img @click=\"addMainEmo('".concat(key, "')\" class=\"emoticon\" src=\"").concat(emoji[key], "\" alt=\"").concat(key, "\"> ");
           });
           emos += '</div>';
         });
@@ -5736,7 +5753,7 @@ document.addEventListener('alpine:init', function () {
         emojis.forEach(function (emoji, index) {
           emos += "<div x-show=\"pvtEmoTab == ".concat(index, "\" class=\"pvt-emojis\">");
           Object.keys(emoji).forEach(function (key) {
-            if (key === 'head') head += "<img @click=\"pvtEmoTab=".concat(index, "\" class=\"head\" src=\"").concat(emoji[key], "\" :class=\"[pvtEmoTab===").concat(index, "?'active': '']\" >");else emos += "<img @click=\"addPvtEmo('".concat(key, "');showPvtEmo=false\" class=\"emoticon\" src=\"").concat(emoji[key], "\"> ");
+            if (key === 'head') head += "<img @click=\"pvtEmoTab=".concat(index, "\" class=\"head\" src=\"").concat(emoji[key], "\" :class=\"[pvtEmoTab===").concat(index, "?'active': '']\" alt=\"").concat(key, "\">");else emos += "<img @click=\"addPvtEmo('".concat(key, "');showPvtEmo=false\" class=\"emoticon\" src=\"").concat(emoji[key], "\" alt=\"").concat(key, "\"> ");
           });
           emos += '</div>';
         });
@@ -5777,21 +5794,20 @@ document.addEventListener('alpine:init', function () {
         form.append('name', name);
         form.append('email', this.register.email);
         form.append('password', this.register.password);
-        form.append('gender', gender);
+        form.append('gender', this.user.gender);
         axios.post('/guest-register', form).then(function (res) {
-          _this7.showLoader = false;
+          _this7.showLoader = true;
 
           _this7.closeSmallModal();
 
           setTimeout(function () {
-            location.reload();
+            return location.reload();
           }, 2000);
 
-          _this7.showAlertMsg("Registration Successful", 'success');
+          _this7.showAlertMsg(res.data, SUCCESS);
         })["catch"](function (e) {
           _this7.showLoader = false;
-          _this7.register.errors = {};
-          _this7.register.errors = e.response.data;
+          if (e.response) _this7.register.errors = e.response.data;
         });
       },
       getUserProfile: function getUserProfile(id) {
@@ -5811,7 +5827,7 @@ document.addEventListener('alpine:init', function () {
 
           _this8.showUserProfile = true;
         })["catch"](function (e) {
-          _this8.showAlertMsg(e.response.data, 'error');
+          if (e.response) _this8.showAlertMsg(e.response.data, ERROR);
         });
       },
       closeUserProfile: function closeUserProfile() {
@@ -5825,14 +5841,14 @@ document.addEventListener('alpine:init', function () {
       logout: function logout() {
         var _this9 = this;
 
-        axios.post('logout').then(function (res) {
-          location.reload();
+        axios.post('logout').then(function () {
+          return location.reload();
         })["catch"](function (e) {
-          _this9.showAlertMsg(e.response.data, 'error');
+          return e.response && _this9.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeAvatarDialog: function changeAvatarDialog() {
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Avatar</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    Select an image\n                    <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                          <div class=\"w-[50px] h-[50px] relative\">\n                            <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                          </div>\n                      </template>\n                    </div> \n                    Or \n                    <div class=\"mt-1\">\n                        <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                                   accept=\"image/*\">\n                        <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                    </div>  \n                </div>\n            </div>\n            ";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change Avatar</p>\n                    <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    Select an image\n                    <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                          <div class=\"w-[50px] h-[50px] relative\">\n                            <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\" src=\"\"> \n                          </div>\n                      </template>\n                    </div> \n                    Or \n                    <div class=\"mt-1\">\n                        <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                                   accept=\"image/*\">\n                        <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                    </div>  \n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       setAvatar: function setAvatar(index) {
@@ -5847,13 +5863,13 @@ document.addEventListener('alpine:init', function () {
 
           _this10.closeSmallModal();
 
-          _this10.showAlertMsg('Avatar has been changed.', 'success');
+          _this10.showAlertMsg('Avatar has been changed.', SUCCESS);
         })["catch"](function (e) {
           _this10.showLoader = false;
 
           _this10.closeSmallModal();
 
-          _this10.showAlertMsg(e.response.data, 'error');
+          e.response && _this10.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeAvatar: function changeAvatar(el) {
@@ -5867,7 +5883,7 @@ document.addEventListener('alpine:init', function () {
 
         if (!file.type.match(pattern)) {
           this.showLoader = false;
-          this.showAlertMsg('Invalid image format', 'error');
+          this.showAlertMsg('Invalid image format', ERROR);
           return;
         }
 
@@ -5878,13 +5894,13 @@ document.addEventListener('alpine:init', function () {
 
           _this11.closeSmallModal();
 
-          _this11.showAlertMsg('Avatar has been changed.', 'success');
+          _this11.showAlertMsg('Avatar has been changed.', SUCCESS);
         })["catch"](function (e) {
           _this11.showLoader = false;
 
           _this11.closeSmallModal();
 
-          _this11.showAlertMsg(e.response.data, 'error');
+          e.response && _this11.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeNameDialog: function changeNameDialog() {
@@ -5899,7 +5915,7 @@ document.addEventListener('alpine:init', function () {
         var _this12 = this;
 
         if (this.user.name.length < 4 || this.user.name.length > 12) {
-          this.showAlertMsg('Must have min 4 to max 12 letters', 'error');
+          this.showAlertMsg('Must have min 4 to max 12 letters', ERROR);
           return;
         }
 
@@ -5910,13 +5926,13 @@ document.addEventListener('alpine:init', function () {
 
           _this12.closeSmallModal();
 
-          _this12.showAlertMsg('Username has been changed', 'success');
+          _this12.showAlertMsg('Username has been changed', SUCCESS);
         })["catch"](function (e) {
           _this12.user.name = name;
 
           _this12.closeSmallModal();
 
-          if (e.response) _this12.showAlertMsg(e.response.data, 'error');
+          if (e.response) _this12.showAlertMsg(e.response.data, ERROR);
         });
       },
       customizeNameDialog: function customizeNameDialog() {
@@ -5950,14 +5966,14 @@ document.addEventListener('alpine:init', function () {
 
           _this13.closeSmallModal();
 
-          _this13.showAlertMsg('Name customized.', 'success');
+          _this13.showAlertMsg('Name customized.', SUCCESS);
         })["catch"](function (e) {
           _this13.user.nameColor = nameColor;
           _this13.user.nameFont = nameFont;
 
           _this13.closeSmallModal();
 
-          _this13.showAlertMsg(e.response.data, 'error');
+          _this13.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeMoodDialog: function changeMoodDialog() {
@@ -5972,7 +5988,7 @@ document.addEventListener('alpine:init', function () {
         var _this14 = this;
 
         if (this.user.mood.length >= 40) {
-          this.showAlertMsg('Must have max 40 letters', 'error');
+          this.showAlertMsg('Must have max 40 letters', ERROR);
           return;
         }
 
@@ -5983,17 +5999,17 @@ document.addEventListener('alpine:init', function () {
 
           _this14.closeSmallModal();
 
-          _this14.showAlertMsg('Mood has been changed', 'success');
+          _this14.showAlertMsg('Mood has been changed', SUCCESS);
         })["catch"](function (e) {
           _this14.user.mood = mood;
 
           _this14.closeSmallModal();
 
-          _this14.showAlertMsg(e.response.data, 'error');
+          _this14.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeAboutDialog: function changeAboutDialog() {
-        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change About Me</p>\n                    <i @click=\"closeAboutDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"h-[100px] max-h-[150px] mb-4\">\n                        <textarea class=\"w-full input-text\" x-model=\"user.about\" type=\"text\" maxlength=\"150\" name=\"about\" autofocus></textarea>\n                    </div>\n                    <button @click=\"changeAbout\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
+        var html = "\n            <div class=\"text-gray-700 text-center\">\n                <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                    <p class=\"text-md font-bold \">Change About Me</p>\n                    <i @click=\"closeAboutDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                </div> \n                <div class=\"p-4\">\n                    <div class=\"mb-4\">\n                        <textarea @keyup=\"textArea($el, 60)\" class=\"text-area\" x-model=\"user.about\" type=\"text\" maxlength=\"150\" name=\"about\" autofocus></textarea>\n                    </div>\n                    <button @click=\"changeAbout\" class=\"w-36 btn btn-skin text-center\">Change<button>\n                </div>\n            </div>\n            ";
         this.showSmallModal(html);
       },
       closeAboutDialog: function closeAboutDialog() {
@@ -6010,18 +6026,18 @@ document.addEventListener('alpine:init', function () {
 
           _this15.closeSmallModal();
 
-          _this15.showAlertMsg('About me has been changed', 'success');
+          _this15.showAlertMsg('About me has been changed', SUCCESS);
         })["catch"](function (e) {
           _this15.user.about = about;
 
           _this15.closeSmallModal();
 
-          _this15.showAlertMsg(e.response.data, 'error');
+          _this15.showAlertMsg(e.response.data, ERROR);
         });
       },
       changePasswordDialog: function changePasswordDialog() {
         if (rank.code === 'guest') {
-          this.showAlertMsg('Guest does not have password', 'error');
+          this.showAlertMsg('Guest does not have password', ERROR);
           return;
         }
 
@@ -6032,18 +6048,18 @@ document.addEventListener('alpine:init', function () {
         var _this16 = this;
 
         if (password.length < 8) {
-          this.showAlertMsg('Must have min 8 letters', 'error');
+          this.showAlertMsg('Must have min 8 letters', ERROR);
           return;
         }
 
         var formData = new FormData();
         formData.append('password', password);
         axios.post('/user/update-password', formData).then(function (res) {
-          _this16.showAlertMsg('Password has been changed', 'success');
+          _this16.showAlertMsg('Password has been changed', SUCCESS);
 
           _this16.closeSmallModal();
         })["catch"](function (e) {
-          _this16.showAlertMsg(e.response.data, 'error');
+          _this16.showAlertMsg(e.response.data, ERROR);
 
           _this16.closeSmallModal();
         });
@@ -6059,7 +6075,7 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('status', this.user.status);
         axios.post('/user/update-status', formData).then(function (res) {
-          _this17.showAlertMsg('Status has been changed', 'success');
+          _this17.showAlertMsg('Status has been changed', SUCCESS);
 
           _this17.user.status = res.data.status;
 
@@ -6067,7 +6083,7 @@ document.addEventListener('alpine:init', function () {
 
           _this17.closeSmallModal();
         })["catch"](function (e) {
-          _this17.showAlertMsg(e.response.data, 'error');
+          _this17.showAlertMsg(e.response.data, ERROR);
 
           _this17.closeSmallModal();
         });
@@ -6087,11 +6103,11 @@ document.addEventListener('alpine:init', function () {
 
           _this18.closeSmallModal();
 
-          _this18.showAlertMsg('Gender has been changed', 'success');
+          _this18.showAlertMsg('Gender has been changed', SUCCESS);
         })["catch"](function (e) {
           _this18.closeSmallModal();
 
-          _this18.showAlertMsg(e.response.data, 'error');
+          _this18.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeDobDialog: function changeDobDialog() {
@@ -6109,16 +6125,15 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('dob', this.user.dob);
         axios.post('/user/update-dob', formData).then(function (res) {
-          _this19.showAlertMsg('DOB has been changed', 'success');
+          _this19.showAlertMsg('DOB has been changed', SUCCESS);
 
           _this19.user.dob = res.data.dob;
-          dob = res.data.dob;
 
           _this19.closeSmallModal();
         })["catch"](function (e) {
           _this19.user.dob = dob;
 
-          _this19.showAlertMsg(e.response.data, 'error');
+          _this19.showAlertMsg(e.response.data, ERROR);
 
           _this19.closeSmallModal();
         });
@@ -6161,7 +6176,7 @@ document.addEventListener('alpine:init', function () {
 
           _this20.closeSmallModal();
 
-          _this20.showAlertMsg('Chat options has been changed', 'success');
+          _this20.showAlertMsg('Chat options has been changed', SUCCESS);
         })["catch"](function (e) {
           _this20.user.textColor = textColor;
           _this20.user.textBold = textBold;
@@ -6169,7 +6184,7 @@ document.addEventListener('alpine:init', function () {
 
           _this20.closeSmallModal();
 
-          _this20.showAlertMsg(e.response.data, 'error');
+          _this20.showAlertMsg(e.response.data, ERROR);
         });
       },
       changeSoundSettings: function changeSoundSettings() {
@@ -6186,7 +6201,7 @@ document.addEventListener('alpine:init', function () {
           _this21.user.notifSound = notifSound;
           _this21.user.nameSound = nameSound;
 
-          _this21.showAlertMsg('Something went wrong', 'error');
+          _this21.showAlertMsg('Something went wrong', ERROR);
         });
       },
       changePrivate: function changePrivate() {
@@ -6197,7 +6212,7 @@ document.addEventListener('alpine:init', function () {
         axios.post("/user/change-private", formData)["catch"](function (e) {
           _this22.user["private"] = pvt;
 
-          _this22.showAlertMsg('Something went wrong', 'error');
+          _this22.showAlertMsg('Something went wrong', ERROR);
         });
       },
       removeTopic: function removeTopic() {
@@ -6229,7 +6244,7 @@ document.addEventListener('alpine:init', function () {
       },
       sendMessage: function sendMessage() {
         if (this.user.muted) {
-          this.showAlertMsg('You are muted', 'error');
+          this.showAlertMsg('You are muted', ERROR);
           return;
         }
 
@@ -6251,7 +6266,7 @@ document.addEventListener('alpine:init', function () {
         var _this23 = this;
 
         if (this.user.muted) {
-          this.showAlertMsg('You are muted', 'error');
+          this.showAlertMsg('You are muted', ERROR);
           return;
         }
 
@@ -6264,7 +6279,7 @@ document.addEventListener('alpine:init', function () {
             this.isRecording = false;
             this.remainingTime = RECORDING_TIME;
             clearInterval(this.mainInterval);
-            this.showAlertMsg('Record length at least 10 seconds', 'error');
+            this.showAlertMsg('Record length at least 10 seconds', ERROR);
             return;
           }
 
@@ -6284,10 +6299,10 @@ document.addEventListener('alpine:init', function () {
             axios.post('/room/upload-audio', formData).then(function (res) {
               _this23.sendToRoom(res.data);
             })["catch"](function (err) {
-              _this23.showAlertMsg('Audio upload failed', 'error');
+              _this23.showAlertMsg('Audio upload failed', ERROR);
             });
           })["catch"](function (e) {
-            _this23.showAlertMsg('Audio recording failed', 'error');
+            _this23.showAlertMsg('Audio recording failed', ERROR);
           });
           this.isRecording = false;
           this.remainingTime = RECORDING_TIME;
@@ -6303,7 +6318,7 @@ document.addEventListener('alpine:init', function () {
             }, 1000);
             _this23.isRecording = true;
           })["catch"](function (e) {
-            _this23.showAlertMsg('You haven\'t given mic permission', 'error');
+            _this23.showAlertMsg('You haven\'t given mic permission', ERROR);
           });
         }
       },
@@ -6311,7 +6326,7 @@ document.addEventListener('alpine:init', function () {
         var _this24 = this;
 
         if (this.user.muted) {
-          this.showAlertMsg('You are muted', 'error');
+          this.showAlertMsg('You are muted', ERROR);
           return;
         }
 
@@ -6323,7 +6338,7 @@ document.addEventListener('alpine:init', function () {
         if (file == null || file.type === 'undefined') return;
 
         if (!file.type.match(pattern)) {
-          this.showAlertMsg('Invalid image format', 'error');
+          this.showAlertMsg('Invalid image format', ERROR);
           this.showLoader = false;
           return;
         }
@@ -6384,7 +6399,7 @@ document.addEventListener('alpine:init', function () {
           if (message.user.id === userId) {
             this.user.muted = true;
             this.$refs.mainInput.disabled = this.user.muted;
-            this.showAlertMsg('You have been muted', 'error');
+            this.showAlertMsg('You have been muted', ERROR);
           }
         } else if (message.type === MessageType.UnMute) {
           var _user = this.roomUsers.find(function (user) {
@@ -6396,7 +6411,7 @@ document.addEventListener('alpine:init', function () {
           if (message.user.id === userId) {
             this.user.muted = false;
             this.$refs.mainInput.disabled = this.user.muted;
-            this.showAlertMsg('You have been unmuted', 'success');
+            this.showAlertMsg('You have been unmuted', SUCCESS);
           }
         }
       },
@@ -6406,14 +6421,14 @@ document.addEventListener('alpine:init', function () {
         if (permission.delMsg) {
           axios["delete"]("/message/".concat(id, "/delete"))["catch"](function (e) {
             if (e.response) {
-              _this25.showAlertMsg(e.response.data, 'error');
+              _this25.showAlertMsg(e.response.data, ERROR);
 
               return;
             }
 
-            _this25.showAlertMsg('Deleting message failed.', 'error');
+            _this25.showAlertMsg('Deleting message failed.', ERROR);
           });
-        } else this.showAlertMsg('Permission denied', 'error');
+        } else this.showAlertMsg('Permission denied', ERROR);
       },
       reportDialog: function reportDialog(id, type) {
         var reportType = type === 1 ? ReportType.Chat : type === 2 ? ReportType.PvtChat : ReportType.NewsFeed;
@@ -6430,9 +6445,9 @@ document.addEventListener('alpine:init', function () {
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/reports/create", formData).then(function (res) {
-          _this26.showAlertMsg('Message reported successfully', 'success');
+          _this26.showAlertMsg('Message reported successfully', SUCCESS);
         })["catch"](function (e) {
-          _this26.showAlertMsg('Reporting message failed', 'error');
+          _this26.showAlertMsg('Reporting message failed', ERROR);
         });
         this.closeSmallModal();
       },
@@ -6488,7 +6503,7 @@ document.addEventListener('alpine:init', function () {
         })["catch"](function (e) {
           console.log(e);
         });
-        this.setpvtNotifiCount();
+        this.setPvtNotifiCount();
       },
       closePvtModal: function closePvtModal(id) {
         var user = this.pvtUsers.find(function (user) {
@@ -6513,7 +6528,7 @@ document.addEventListener('alpine:init', function () {
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg('You can\'t private to this user', 'error');
+          this.showAlertMsg('You can\'t private to this user', ERROR);
           return;
         }
 
@@ -6548,7 +6563,7 @@ document.addEventListener('alpine:init', function () {
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg('You can\'t private to this user', 'error');
+          this.showAlertMsg('You can\'t private to this user', ERROR);
           return;
         }
 
@@ -6561,7 +6576,7 @@ document.addEventListener('alpine:init', function () {
             }, 1000);
             user.isRecording = true;
           })["catch"](function (e) {
-            _this28.showAlertMsg('You haven\'t given mic permission', 'error');
+            _this28.showAlertMsg('You haven\'t given mic permission', ERROR);
           });
         } else {
           if (!(RECORDING_TIME - user.remainingTime > 10)) {
@@ -6569,7 +6584,7 @@ document.addEventListener('alpine:init', function () {
             user.isRecording = false;
             clearInterval(user.interval);
             user.remainingTime = RECORDING_TIME;
-            this.showAlertMsg('Record length at least 10 seconds', 'error');
+            this.showAlertMsg('Record length at least 10 seconds', ERROR);
             return;
           }
 
@@ -6587,10 +6602,10 @@ document.addEventListener('alpine:init', function () {
             axios.post("/message/pvt/".concat(id, "/upload-audio"), formData).then(function (res) {
               _this28.sendToUser(res.data);
             })["catch"](function (err) {
-              _this28.showAlertMsg('Audio upload failed', 'error');
+              _this28.showAlertMsg('Audio upload failed', ERROR);
             });
           })["catch"](function (e) {
-            _this28.showAlertMsg('Audio recording failed', 'error');
+            _this28.showAlertMsg('Audio recording failed', ERROR);
           });
           user.isRecording = false;
           clearInterval(user.interval);
@@ -6605,7 +6620,7 @@ document.addEventListener('alpine:init', function () {
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg('You can\'t private to this user', 'error');
+          this.showAlertMsg('You can\'t private to this user', ERROR);
           return;
         }
 
@@ -6616,7 +6631,7 @@ document.addEventListener('alpine:init', function () {
         if (file == null || file.type === 'undefined') return;
 
         if (!file.type.match(pattern)) {
-          this.showAlertMsg('Invalid image format', 'error');
+          this.showAlertMsg('Invalid image format', ERROR);
           this.showLoader = false;
           return;
         }
@@ -6649,7 +6664,7 @@ document.addEventListener('alpine:init', function () {
           }
 
           user.messages.unshift(message);
-          this.setpvtNotifiCount();
+          this.setPvtNotifiCount();
         } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
           this.getReports();
         } else if (message.type === MessageType.DataChanges) {
@@ -6673,7 +6688,7 @@ document.addEventListener('alpine:init', function () {
             user.interval = null;
           });
 
-          _this30.setpvtNotifiCount();
+          _this30.setPvtNotifiCount();
         })["catch"](function (e) {});
       },
       openRoomsModal: function openRoomsModal() {
@@ -6728,10 +6743,10 @@ document.addEventListener('alpine:init', function () {
             return message.seen = true;
           });
 
-          _this32.setpvtNotifiCount();
+          _this32.setPvtNotifiCount();
         })["catch"](function (e) {});
       },
-      setpvtNotifiCount: function setpvtNotifiCount() {
+      setPvtNotifiCount: function setPvtNotifiCount() {
         var count = 0;
         this.pvtUsers.forEach(function (user) {
           user.unReadCount = 0;
@@ -6785,7 +6800,7 @@ document.addEventListener('alpine:init', function () {
           })["catch"](function (e) {
             if (e.response) {
               if (e.response.status === 404) {
-                _this33.showAlertMsg(e.response.data, 'error');
+                _this33.showAlertMsg(e.response.data, ERROR);
 
                 var formData = new FormData();
                 formData.append('domainId', domain.id);
@@ -6797,7 +6812,7 @@ document.addEventListener('alpine:init', function () {
               return;
             }
 
-            _this33.showAlertMsg('Something went wrong', 'error');
+            _this33.showAlertMsg('Something went wrong', ERROR);
           });
         } else if (type === ReportType.PvtChat) {} else if (type === ReportType.NewsFeed) {}
       },
@@ -6826,25 +6841,44 @@ document.addEventListener('alpine:init', function () {
       openNewsModal: function openNewsModal() {
         var _this36 = this;
 
-        var html = "\n                <div class=\"text-skin-on-primary h-full\">\n                    <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                        <p class=\"text-md font-bold \">Announcements</p>\n                        <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n                    </div> \n                    <div class=\"p-[10px]\">\n                        <ul class=\"h-full \">\n                ";
-
-        if (this.news.news.length > 0) {
-          this.news.news.forEach(function (news) {
-            html += "\n                        <li  class=\"pvt-user-wrap\">\n                           <div class=\"w-full gap-2\">\n                                <div class=\"flex h-full w-full items-center\">\n                                    <img class=\"avatar flex-none mx-1\" src=\"".concat(news.user.avatar, "\">\n                                    <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                        <p class=\"ellipsis username clip ").concat(news.user.nameColor, " ").concat(news.user.nameFont, "\"> ").concat(news.user.name, "\n                                        <p class=\"flex items-center clip ellipsis text-gray-500 text-[12px]\">").concat(news.content, "</p>\n                                    </div>\n                                </div>\n                            </div>\n                        </li>\n                    ");
-          });
-        } else {
-          html += "\n                    <li class=\"pvt-user-wrap\">\n                       <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                            <img class=\"w-[40px]\" src=\"/images/defaults/announcement.webp\" alt=\"\">\n                            <p class=\"text-[12px] font-bold\" > No Announcements</p>\n                        </div>\n                    </li>\n               ";
+        if (mobile.matches) this.showLeft = false;
+        this.showFullModal(newsModalHtml(this));
+        if (this.newsUnreadCount !== 0) axios.post("/".concat(domain.id, "/news/read")).then(function (res) {
+          _this36.news.unReadCount = 0;
+          _this36.newsUnreadCount = _this36.news.unReadCount;
+        });
+      },
+      writeNewsDialog: function writeNewsDialog() {
+        if (!permission.writeNews) {
+          this.showAlertMsg(PERMISSION_DENIED, ERROR);
+          return;
         }
 
-        html += "</ul></div></div>";
-        this.showFullModal(html);
-        axios.post("/".concat(domain.id, "/read-news")).then(function (res) {
-          _this36.news.unReadCount = 0;
+        this.showSmallModal(writeNewsDialogHtml());
+      },
+      delNews: function delNews(id) {
+        var _this37 = this;
+
+        if (!permission.delNews) {
+          this.showAlertMsg(PERMISSION_DENIED, ERROR);
+          return;
+        }
+
+        axios["delete"]("/".concat(domain.id, "/news/").concat(id, "/delete")).then(function () {
+          _this37.showAlertMsg('Announcement deleted successfully', SUCCESS);
+
+          _this37.news.news = _this37.news.news.filter(function (news) {
+            return news.id !== id;
+          });
+
+          _this37.openNewsModal();
+        })["catch"](function (e) {
+          return getErrorMsg(e);
         });
       },
       changeUserNameDialog: function changeUserNameDialog(id, name) {
         if (!permission.userName) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
@@ -6852,15 +6886,15 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       changeUserName: function changeUserName(id, name) {
-        var _this37 = this;
+        var _this38 = this;
 
         if (!permission.userName) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
         if (name.length < 4 || name.length > 12) {
-          this.showAlertMsg('Must have min 4 to max 12 letters', 'error');
+          this.showAlertMsg('Must have min 4 to max 12 letters', ERROR);
           return;
         }
 
@@ -6868,16 +6902,16 @@ document.addEventListener('alpine:init', function () {
         formData.append('name', name);
         formData.append('domainId', domain.id);
         axios.post("/user/".concat(id, "/update-name"), formData).then(function (res) {
-          _this37.showAlertMsg('Username has been changed', 'success');
+          _this38.showAlertMsg('Username has been changed', SUCCESS);
         })["catch"](function (e) {
-          if (e.response) _this37.showAlertMsg(e.response.data, 'error');else _this37.showAlertMsg('Something went wrong', 'error');
+          if (e.response) _this38.showAlertMsg(e.response.data, ERROR);else _this38.showAlertMsg('Something went wrong', ERROR);
         });
         this.closeUserProfile();
         this.closeSmallModal();
       },
       changeUserAvatarDialog: function changeUserAvatarDialog(id) {
         if (!permission.avatar) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
@@ -6885,10 +6919,10 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(html);
       },
       setUserAvatar: function setUserAvatar(id, index) {
-        var _this38 = this;
+        var _this39 = this;
 
         if (!permission.avatar) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
@@ -6896,21 +6930,21 @@ document.addEventListener('alpine:init', function () {
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.post("/user/".concat(id, "/update-default-avatar"), data).then(function (res) {
-          _this38.showLoader = false;
+          _this39.showLoader = false;
 
-          _this38.showAlertMsg('Avatar has been changed.', 'success');
+          _this39.showAlertMsg('Avatar has been changed.', SUCCESS);
         })["catch"](function (e) {
-          _this38.showLoader = false;
-          if (e.response) _this38.showAlertMsg(e.response.data, 'error');else _this38.showAlertMsg('Something went wrong', 'error');
+          _this39.showLoader = false;
+          e.response ? _this39.showAlertMsg(e.response.data, ERROR) : _this39.showAlertMsg('Something went wrong', ERROR);
         });
         this.closeUserProfile();
         this.closeSmallModal();
       },
       changeUserAvatar: function changeUserAvatar(id, el) {
-        var _this39 = this;
+        var _this40 = this;
 
         if (!permission.avatar) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
@@ -6922,43 +6956,40 @@ document.addEventListener('alpine:init', function () {
 
         if (!file.type.match(pattern)) {
           this.showLoader = false;
-          this.showAlertMsg('Invalid image format', 'error');
+          this.showAlertMsg('Invalid image format', ERROR);
           return;
         }
 
         formData.append('avatar', file);
         axios.post("/user/".concat(id, "/update-avatar"), formData).then(function (res) {
-          _this39.showLoader = false;
+          _this40.showLoader = false;
 
-          _this39.showAlertMsg('Avatar has been changed.', 'success');
+          _this40.showAlertMsg('Avatar has been changed.', SUCCESS);
         })["catch"](function (e) {
-          _this39.showLoader = false;
-          if (e.response) _this39.showAlertMsg(e.response.data, 'error');else _this39.showAlertMsg('Something went wrong', 'error');
+          _this40.showLoader = false;
+
+          _this40.showAlertMsg(getErrorMsg(e), ERROR);
         });
         this.closeUserProfile();
         this.closeSmallModal();
       },
       actionMute: function actionMute() {
-        var _this40 = this;
+        var _this41 = this;
 
         if (!permission.mute) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg(PERMISSION_DENIED, ERROR);
           return;
         }
 
-        if (this.u.muted) {
-          axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function (e) {
-            _this40.u.muted = false;
-          });
-        } else {
-          axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function (e) {
-            _this40.u.muted = true;
-          });
-        }
+        this.u.muted ? axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function () {
+          return _this41.u.muted = false;
+        }) : axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function () {
+          return _this41.u.muted = true;
+        });
       },
       kickUser: function kickUser(id) {
         if (!permission.kick) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
@@ -6966,11 +6997,60 @@ document.addEventListener('alpine:init', function () {
       },
       banUser: function banUser(id) {
         if (!permission.ban) {
-          this.showAlertMsg('Permission denied', 'error');
+          this.showAlertMsg('Permission denied', ERROR);
           return;
         }
 
         axios.post("/user/".concat(id, "/ban"));
+      },
+      textArea: function textArea(el, height) {
+        el.style.height = "".concat(height, "px");
+        el.style.height = "".concat(el.scrollHeight, "px");
+      }
+    };
+  });
+  alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('announcement', function () {
+    return {
+      content: '',
+      image: '',
+      addImage: function addImage(el) {
+        var _this42 = this;
+
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          _this42.image = e.target.result;
+        };
+
+        reader.readAsDataURL(el.files[0]);
+      },
+      writeNews: function writeNews(input) {
+        var _this43 = this;
+
+        if (!permission.writeNews) {
+          this.showAlertMsg(PERMISSION_DENIED, ERROR);
+          return;
+        }
+
+        if (this.content === '') {
+          this.showAlertMsg('Content cannot be empty', ERROR);
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('content', this.content);
+        if (this.image !== '') formData.append('image', input.files[0]);
+        axios.post("/".concat(domain.id, "/news/create"), formData).then(function () {
+          _this43.closeSmallModal();
+
+          _this43.showAlertMsg('Announcement created successfully', SUCCESS);
+
+          _this43.getNews(function () {
+            _this43.openNewsModal();
+          });
+        })["catch"](function (e) {
+          return getErrorMsg(e);
+        });
       }
     };
   });
@@ -7068,6 +7148,35 @@ function dragElement(el, id) {
     document.onmouseup = null;
     document.onmousemove = null;
   }
+}
+
+function newsModalHtml(obj) {
+  var addNew = permission.writeNews ? '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : '';
+  var html = "\n        <div x-data=\"{image:'hello'}\" class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Announcements</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">".concat(addNew, "\n                    <ul>\n        ");
+
+  if (obj.news.news.length > 0) {
+    obj.news.news.forEach(function (news) {
+      var user = news.user;
+      var fontStyle = user.textBold ? 'font-bold' : 'font-normal';
+      var image = news.image != null ? "<img @click=\"showImageDialog($el)\" src=\"".concat(news.image, "\" alt=\"\" class=\"w-full mt-2 cursor-pointer\">") : '';
+      html += "\n                <li class=\"card-wrap\" xmlns=\"http://www.w3.org/1999/html\">\n                   <div class=\"flex flex-col w-full\">\n                       <div class=\"flex items-center justify-between\"> \n                           <div class=\"flex items-center gap-2\">\n                               <img @click=\"getUserProfile(".concat(user.id, ")\" class=\"avatar flex-none cursor-pointer\" src=\"").concat(user.avatar, "\" alt=\"\">\n                               <p class=\"username clip ").concat(user.nameColor, " ").concat(user.nameFont, "\">").concat(user.name, "</p>\n                           </div>  \n                           <div class=\"flex items-center gap-2\">\n                                <p class=\"date\">").concat(news.createdAt, "</p>\n                                <i @click=\"delNews(").concat(news.id, ")\" class=\"fa-solid fa-trash-can icon-sm\"></i>\n                           </div>                       \n                       </div>\n                       <div class=\"text-start mt-2\">\n                           <p class=\"chat clip ").concat(user.textColor, " ").concat(fontStyle, " ").concat(user.textFont, "\">").concat(news.content, "</p>").concat(image, "\n                       </div>  \n                   </div>\n                </li>\n            ");
+    });
+  } else {
+    html += "\n            <li class=\"card-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <img class=\"w-[40px]\" src=\"/images/defaults/announcement.webp\" alt=\"\">\n                    <p class=\"text-[12px] font-bold\" > No Announcements</p>\n                </div>\n            </li>\n       ";
+  }
+
+  html += "</ul></div></div></div>";
+  return html;
+}
+
+function writeNewsDialogHtml() {
+  return "\n        <div x-data=\"announcement\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Announcement</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeNews($refs.input)\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
+}
+/*utils*/
+
+
+function getErrorMsg(e) {
+  return e.response ? e.response.data : SOMETHING_WENT_WRONG;
 }
 
 /***/ }),
@@ -9030,16 +9139,6 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-
-/***/ }),
-
-/***/ "./node_modules/disable-devtool/disable-devtool.min.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/disable-devtool/disable-devtool.min.js ***!
-  \*************************************************************/
-/***/ (function(module) {
-
-!function(n,e){ true?module.exports=e():0}(this,(function(){return function(n){var e={};function t(o){if(e[o])return e[o].exports;var i=e[o]={i:o,l:!1,exports:{}};return n[o].call(i.exports,i,i.exports,t),i.l=!0,i.exports}return t.m=n,t.c=e,t.d=function(n,e,o){t.o(n,e)||Object.defineProperty(n,e,{enumerable:!0,get:o})},t.r=function(n){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(n,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(n,"__esModule",{value:!0})},t.t=function(n,e){if(1&e&&(n=t(n)),8&e)return n;if(4&e&&"object"==typeof n&&n&&n.__esModule)return n;var o=Object.create(null);if(t.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:n}),2&e&&"string"!=typeof n)for(var i in n)t.d(o,i,function(e){return n[e]}.bind(null,i));return o},t.n=function(n){var e=n&&n.__esModule?function(){return n.default}:function(){return n};return t.d(e,"a",e),e},t.o=function(n,e){return Object.prototype.hasOwnProperty.call(n,e)},t.p="",t(t.s=0)}([function(n,e,t){"use strict";function o(n){return-1!==navigator.userAgent.toLocaleLowerCase().indexOf(n)}t.r(e);var i=function(){try{return window.self!==window.top}catch(n){return!0}}(),r=o("qqbrowser"),u=o("firefox"),c=o("macintosh"),a=o("edge"),l=a&&!o("chrome")||o("trident")||o("msie"),f=o("crios"),d=o("edgios"),v={UNKONW:-1,REG_TO_STRING:0,DEFINE_ID:1,SIZE:2,DATE_TO_STRING:3,FUNC_TO_STRING:4,DEBUGGER:5};var s=!1;var w,p={};for(var y in v)p[v[y]]=!1;function m(n){p[n]=!0}function b(n){p[n]=!1}function h(){for(var n in p)if(p[n])return s=!0,!0;return s=!1,!1}function g(){var n=function(){if(T(window.devicePixelRatio))return window.devicePixelRatio;var n=window.screen;if(T(n))return!1;if(n.deviceXDPI&&n.logicalXDPI)return n.deviceXDPI/n.logicalXDPI;return!1}();if(!1===n)return!0;var e=v.SIZE,t=window.outerWidth-window.innerWidth*n>200,o=window.outerHeight-window.innerHeight*n>300;return t||o?(G(e),!1):(b(e),!0)}function T(n){return null!=n}function E(n){throw new Error('"'+n+'" is read-only')}function D(n,e,t){return e in n?Object.defineProperty(n,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):n[e]=t,n}var I,_=(D(w={},v.REG_TO_STRING,r||u),D(w,v.DEFINE_ID,!0),D(w,v.SIZE,!i&&!a),D(w,v.DATE_TO_STRING,!f&&!d),D(w,v.FUNC_TO_STRING,!f&&!d),D(w,v.DEBUGGER,f||d),w);function O(n,e,t){return e in n?Object.defineProperty(n,e,{value:t,enumerable:!0,configurable:!0,writable:!0}):n[e]=t,n}var S=(O(I={},v.REG_TO_STRING,(function(){var n=v.REG_TO_STRING,e=0,t=/./;z(t),t.toString=function(){if(r){var t=(new Date).getTime();e&&t-e<100?G(n):e=t}else u&&G(n);return""},A(n,(function(){z(t)}))})),O(I,v.DEFINE_ID,(function(){var n=v.DEFINE_ID,e=document.createElement("div");e.__defineGetter__("id",(function(){G(n)})),Object.defineProperty(e,"id",{get:function(){G(n)}}),A(n,(function(){z(e)}))})),O(I,v.SIZE,(function(){g(),window.addEventListener("resize",(function(){setTimeout(g,100)}),!0)})),O(I,v.DATE_TO_STRING,(function(){var n=v.DATE_TO_STRING,e=0,t=new Date;t.toString=function(){return e++,""},A(n,(function(){e=0,z(t),X(),e>=2&&G(n)}))})),O(I,v.FUNC_TO_STRING,(function(n){if(!n){var e=v.FUNC_TO_STRING,t=0,o=function(){};o.toString=function(){return t++,""};A(e,(function(){t=0,z(o),X(),t>=2&&G(e)}))}})),O(I,v.DEBUGGER,(function(n){if(n){var e=v.DEBUGGER;A(e,(function(){var n=Date.now();Date.now()-n>100&&G(e)}))}})),I);function N(){("all"===F.detectors?Object.keys(S):F.detectors).forEach((function(n){!function(n,e){if("function"==typeof e){var t=_[n];void 0===t?(E("value"),t=!0):"function"==typeof t&&(E("value"),t=t()),!0===t&&e()}}(n,S[n])}))}function G(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:v.UNKONW;console.warn("You ar not allow to use DEVTOOL! 【type = ".concat(n,"】")),F.clearIntervalWhenDevOpenTrigger&&L(),U(),F.ondevtoolopen(n,K),m(n)}function R(){if("function"==typeof F.ondevtoolclose){var n=s;!h()&&n&&F.ondevtoolclose()}}var x=null,j=null,C=[],P=0;function k(){var n,e,t,o,i,r,u=!1,c=function(){u=!0},a=function(){u=!1};n=c,e=a,t=window.alert,o=window.confirm,i=window.prompt,r=function(t){return function(){n&&n(),t.apply(void 0,arguments),e&&e()}},window.alert=r(t),window.confirm=r(o),window.prompt=r(i),function(n,e){var t,o,i;void 0!==document.hidden?(t="hidden",i="visibilitychange",o="visibilityState"):void 0!==document.mozHidden?(t="mozHidden",i="mozvisibilitychange",o="mozVisibilityState"):void 0!==document.msHidden?(t="msHidden",i="msvisibilitychange",o="msVisibilityState"):void 0!==document.webkitHidden&&(t="webkitHidden",i="webkitvisibilitychange",o="webkitVisibilityState");var r=function(){document[o]===t?e():n()};document.removeEventListener(i,r,!1),document.addEventListener(i,r,!1)}(a,c),x=window.setInterval((function(){u||(C.forEach((function(n){var e=n.type,t=n.handle;b(e),t(P++)})),X(),R())}),F.interval),j=setTimeout((function(){/(iphone|ipad|ipod|ios|android)/i.test(navigator.userAgent.toLowerCase())&&L()}),F.stopIntervalTime)}function A(n,e){C.push({type:n,handle:e})}function L(){window.clearInterval(x)}function U(){window.clearTimeout(j)}function K(){if(L(),F.url)window.location.href=F.url;else{try{window.opener=null,window.open("","_self"),window.close(),window.history.back()}catch(n){console.log(n)}setTimeout((function(){window.location.href="https://tackchen.gitee.io/404.html?h=".concat(encodeURIComponent(location.host))}),500)}}function W(n){return(W="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(n){return typeof n}:function(n){return n&&"function"==typeof Symbol&&n.constructor===Symbol&&n!==Symbol.prototype?"symbol":typeof n})(n)}var F={md5:"",ondevtoolopen:K,ondevtoolclose:null,url:"",tkName:"ddtk",interval:200,disableMenu:!0,stopIntervalTime:5e3,clearIntervalWhenDevOpenTrigger:!1,detectors:"all",clearLog:!0,disableSelect:!1,disableCopy:!1,disableCut:!1},H=["detectors","ondevtoolclose"];function V(){"function"==typeof F.ondevtoolclose&&!0===F.clearIntervalWhenDevOpenTrigger&&(F.clearIntervalWhenDevOpenTrigger=!1,console.warn("【DISABLE-DEVTOOL】clearIntervalWhenDevOpenTrigger 在使用 ondevtoolclose 时无效"))}var M=window.console||{log:function(){}},z=l?function(){return M.log.apply(M,arguments)}:M.log,B=l?function(){return M.clear()}:M.clear;function X(){F.clearLog&&B()}function Z(){var n=73,e=85,t=83,o=123,i=c?function(e,t){return e.metaKey&&e.altKey&&t===n}:function(e,t){return e.ctrlKey&&e.shiftKey&&t===n},r=c?function(n,o){return n.metaKey&&n.altKey&&o===e||n.metaKey&&o===t}:function(n,o){return n.ctrlKey&&(o===t||o===e)};window.addEventListener("keydown",(function(n){var e=(n=n||window.event).keyCode||n.which;if(e===o||i(n,e)||r(n,e))return n.returnValue=!1,n.preventDefault(),!1}),!0),F.disableMenu&&q(window,"contextmenu"),F.disableSelect&&q(window,"selectstart"),F.disableCopy&&q(window,"copy"),F.disableCut&&q(window,"cut")}function q(n,e){n.addEventListener(e,(function(n){return(n=n||window.event).returnValue=!1,n.preventDefault(),!1}))}function Y(n,e,t,o,i,r){return en((u=en(en(e,n),en(o,r)))<<(c=i)|u>>>32-c,t);var u,c}function $(n,e,t,o,i,r,u){return Y(e&t|~e&o,n,e,i,r,u)}function J(n,e,t,o,i,r,u){return Y(e&o|t&~o,n,e,i,r,u)}function Q(n,e,t,o,i,r,u){return Y(e^t^o,n,e,i,r,u)}function nn(n,e,t,o,i,r,u){return Y(t^(e|~o),n,e,i,r,u)}function en(n,e){var t=(65535&n)+(65535&e);return(n>>16)+(e>>16)+(t>>16)<<16|65535&t}var tn=function(n){return function(n){for(var e="0123456789abcdef",t="",o=0;o<4*n.length;o++)t+=e.charAt(n[o>>2]>>o%4*8+4&15)+e.charAt(n[o>>2]>>o%4*8&15);return t}(function(n,e){n[e>>5]|=128<<e%32,n[14+(e+64>>>9<<4)]=e;for(var t=1732584193,o=-271733879,i=-1732584194,r=271733878,u=0;u<n.length;u+=16){var c=t,a=o,l=i,f=r;t=$(t,o,i,r,n[u+0],7,-680876936),r=$(r,t,o,i,n[u+1],12,-389564586),i=$(i,r,t,o,n[u+2],17,606105819),o=$(o,i,r,t,n[u+3],22,-1044525330),t=$(t,o,i,r,n[u+4],7,-176418897),r=$(r,t,o,i,n[u+5],12,1200080426),i=$(i,r,t,o,n[u+6],17,-1473231341),o=$(o,i,r,t,n[u+7],22,-45705983),t=$(t,o,i,r,n[u+8],7,1770035416),r=$(r,t,o,i,n[u+9],12,-1958414417),i=$(i,r,t,o,n[u+10],17,-42063),o=$(o,i,r,t,n[u+11],22,-1990404162),t=$(t,o,i,r,n[u+12],7,1804603682),r=$(r,t,o,i,n[u+13],12,-40341101),i=$(i,r,t,o,n[u+14],17,-1502002290),o=$(o,i,r,t,n[u+15],22,1236535329),t=J(t,o,i,r,n[u+1],5,-165796510),r=J(r,t,o,i,n[u+6],9,-1069501632),i=J(i,r,t,o,n[u+11],14,643717713),o=J(o,i,r,t,n[u+0],20,-373897302),t=J(t,o,i,r,n[u+5],5,-701558691),r=J(r,t,o,i,n[u+10],9,38016083),i=J(i,r,t,o,n[u+15],14,-660478335),o=J(o,i,r,t,n[u+4],20,-405537848),t=J(t,o,i,r,n[u+9],5,568446438),r=J(r,t,o,i,n[u+14],9,-1019803690),i=J(i,r,t,o,n[u+3],14,-187363961),o=J(o,i,r,t,n[u+8],20,1163531501),t=J(t,o,i,r,n[u+13],5,-1444681467),r=J(r,t,o,i,n[u+2],9,-51403784),i=J(i,r,t,o,n[u+7],14,1735328473),o=J(o,i,r,t,n[u+12],20,-1926607734),t=Q(t,o,i,r,n[u+5],4,-378558),r=Q(r,t,o,i,n[u+8],11,-2022574463),i=Q(i,r,t,o,n[u+11],16,1839030562),o=Q(o,i,r,t,n[u+14],23,-35309556),t=Q(t,o,i,r,n[u+1],4,-1530992060),r=Q(r,t,o,i,n[u+4],11,1272893353),i=Q(i,r,t,o,n[u+7],16,-155497632),o=Q(o,i,r,t,n[u+10],23,-1094730640),t=Q(t,o,i,r,n[u+13],4,681279174),r=Q(r,t,o,i,n[u+0],11,-358537222),i=Q(i,r,t,o,n[u+3],16,-722521979),o=Q(o,i,r,t,n[u+6],23,76029189),t=Q(t,o,i,r,n[u+9],4,-640364487),r=Q(r,t,o,i,n[u+12],11,-421815835),i=Q(i,r,t,o,n[u+15],16,530742520),o=Q(o,i,r,t,n[u+2],23,-995338651),t=nn(t,o,i,r,n[u+0],6,-198630844),r=nn(r,t,o,i,n[u+7],10,1126891415),i=nn(i,r,t,o,n[u+14],15,-1416354905),o=nn(o,i,r,t,n[u+5],21,-57434055),t=nn(t,o,i,r,n[u+12],6,1700485571),r=nn(r,t,o,i,n[u+3],10,-1894986606),i=nn(i,r,t,o,n[u+10],15,-1051523),o=nn(o,i,r,t,n[u+1],21,-2054922799),t=nn(t,o,i,r,n[u+8],6,1873313359),r=nn(r,t,o,i,n[u+15],10,-30611744),i=nn(i,r,t,o,n[u+6],15,-1560198380),o=nn(o,i,r,t,n[u+13],21,1309151649),t=nn(t,o,i,r,n[u+4],6,-145523070),r=nn(r,t,o,i,n[u+11],10,-1120210379),i=nn(i,r,t,o,n[u+2],15,718787259),o=nn(o,i,r,t,n[u+9],21,-343485551),t=en(t,c),o=en(o,a),i=en(i,l),r=en(r,f)}return Array(t,o,i,r)}(function(n){for(var e=Array(),t=0;t<8*n.length;t+=8)e[t>>5]|=(255&n.charCodeAt(t/8))<<t%32;return e}(n),8*n.length))};function on(n){!function(){var n=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{};for(var e in F)void 0===n[e]||W(F[e])!==W(n[e])&&-1===H.indexOf(e)||(F[e]=n[e]);V()}(n),function(){if(F.md5){var n=function(n){var e=window.location.search,t=window.location.hash;if(""===e&&""!==t&&(e="?".concat(t.split("?")[1])),""!==e&&void 0!==e){var o=new RegExp("(^|&)"+n+"=([^&]*)(&|$)","i"),i=e.substr(1).match(o);if(null!=i)return unescape(i[2])}return""}(F.tkName);if(tn(n)===F.md5)return!0}return!1}()||(k(),Z(),N())}on.md5=tn,on.version="0.2.5",on.DETECTOR_TYPE=v,on.isDevToolOpened=h,function(){if("undefined"!=typeof document){var n=document.querySelector("[disable-devtool-auto]");if(n){var e={};["md5","url","tk-name","interval","disable-menu","detectors"].forEach((function(t){var o=n.getAttribute(t);null!==o&&("interval"===t?o=parseInt(o):"disable-menu"===t?o="false"!==o:"detector"===t&&"all"!==o&&(o=o.split(" ")),e[function(n){if(-1===n.indexOf("-"))return n;var e=!1;return n.split("").map((function(n){return"-"===n?(e=!0,""):e?(e=!1,n.toUpperCase()):n})).join("")}(t)]=o)})),on(e)}}}();e.default=on}]).default}));
 
 /***/ }),
 
@@ -25388,18 +25487,6 @@ process.umask = function() { return 0; };
 /******/ 				}
 /******/ 			}
 /******/ 			return result;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
 /******/ 		};
 /******/ 	})();
 /******/ 	

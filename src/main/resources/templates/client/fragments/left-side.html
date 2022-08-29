@@ -8,32 +8,58 @@
     <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none">
         <div class="left top-0 flex flex-col overflow-y-auto overflow-x-hidden h-full w-full">
             <ul class="flex flex-col ">
-                <li class="pt-2 px-1">
+                <li class="pt-[10px] px-1">
                     <div @click="openRoomsModal" class="menu-wrap">
                         <div class="menu border-red-600">
                             <div class="flex items-center">
                                 <img class="menu-img" src="/images/defaults/chatrooms.webp" alt="">
-                                <p class="menu-text">
-                                    Room List
-                                </p>
+                                <p class="menu-text">Room List</p>
                             </div>
                         </div>
                     </div>
                 </li>
-                <li class="pt-2 px-1">
+                <li class="pt-[10px] px-1">
                     <div @click="openNewsModal" class="menu-wrap">
                         <div class="menu border-green-600">
                             <div class="flex items-center ">
                                 <img class="menu-img" src="/images/defaults/announcement.webp" alt="">
-                                <p class="menu-text">
-                                    Announcement
-                                </p>
+                                <p class="menu-text">Announcement</p>
                             </div>
-                            <template x-if="news.unReadCount>0">
-                                <div class="text-white shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto text-[10px] w-6 h-6 flex-none">
-                                    <p class="font-bold text-[12px]" x-text="news.unReadCount"></p>
-                                </div>
-                            </template>
+                            <p x-cloak x-show="newsUnreadCount>0" x-text="newsUnreadCount" class="count-md"></p>
+                        </div>
+                    </div>
+                </li>
+                <li th:if="${user.rank.code != 'guest'}" class="pt-[10px] px-1">
+                    <div @click="openGlobalFeedModal" class="menu-wrap">
+                        <div class="menu border-blue-600">
+                            <div class="flex items-center ">
+                                <img class="menu-img" src="/images/defaults/global-feed.webp" alt="">
+                                <p class="menu-text">Global Feed</p>
+                            </div>
+                            <p x-cloak x-show="globalFeedUnreadCount>0" x-text="globalFeedUnreadCount"
+                               class="count-md"></p>
+                        </div>
+                    </div>
+                </li>
+                <li th:if="${permission.adminship}" class="pt-[10px] px-1">
+                    <div @click="openAdminShipModal" class="menu-wrap">
+                        <div class="menu border-yellow-600">
+                            <div class="flex items-center ">
+                                <img class="menu-img" src="/images/defaults/adminship.webp" alt="">
+                                <p class="menu-text">AdminShip</p>
+                            </div>
+                            <p x-cloak x-show="adminShipUnreadCount>0" x-text="adminShipUnreadCount"
+                               class="count-md"></p>
+                        </div>
+                    </div>
+                </li>
+                <li th:if="${user.rank.code != 'guest'}" class="pt-[10px] px-1">
+                    <div @click="openTopPointsModal" class="menu-wrap">
+                        <div class="menu border-cyan-600">
+                            <div class="flex items-center ">
+                                <img class="menu-img" src="/images/defaults/top-points.webp" alt="">
+                                <p class="menu-text">Top Points</p>
+                            </div>
                         </div>
                     </div>
                 </li>

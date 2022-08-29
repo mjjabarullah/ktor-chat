@@ -33,15 +33,9 @@ import java.io.IOException
 import java.util.*
 
 fun Route.domainRoutes(
-    domains: List<String>,
-    roomRepository: RoomRepository,
-    userRepository: UserRepository,
-    messageRepository: MessageRepository,
-    domainRepository: DomainRepository,
-    rankRepository: RankRepository,
-    permissionRepository: PermissionRepository,
-    reportRepository: ReportRepository,
-    newsRepository: NewsRepository,
+    domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
+    messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
+    permissionRepository: PermissionRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
 ) {
 
     if (domains.isEmpty()) return
@@ -117,29 +111,31 @@ fun Route.domainRoutes(
                 }
             }
 
-            get("/{id}/news") {
-                try {
-                    val chatSession = call.sessions.get<ChatSession>()
-                    val userId = chatSession?.id!!
-                    val domainId = call.parameters["id"]!!.toInt()
-                    val news = newsRepository.getNews(domainId, userId)
-                    call.respond(HttpStatusCode.OK, news)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    call.respond(HttpStatusCode.InternalServerError)
+            route("/{id}/news") {
+                get {
+                    try {
+                        val chatSession = call.sessions.get<ChatSession>()
+                        val userId = chatSession?.id!!
+                        val domainId = call.parameters["id"]!!.toInt()
+                        val news = newsRepository.getNews(domainId, userId)
+                        call.respond(HttpStatusCode.OK, news)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
-            }
 
-            post("/{id}/read-news") {
-                try {
-                    val chatSession = call.sessions.get<ChatSession>()
-                    val userId = chatSession?.id!!
-                    val domainId = call.parameters["id"]!!.toInt()
-                    newsRepository.readNews(domainId, userId)
-                    call.respond(HttpStatusCode.OK)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    call.respond(HttpStatusCode.InternalServerError)
+                post("/read") {
+                    try {
+                        val chatSession = call.sessions.get<ChatSession>()
+                        val userId = chatSession?.id!!
+                        val domainId = call.parameters["id"]!!.toInt()
+                        newsRepository.readNews(domainId, userId)
+                        call.respond(HttpStatusCode.OK)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
 
@@ -168,7 +164,7 @@ fun Route.domainRoutes(
                     val rankId = rankRepository.findRankByCode(RankNames.USER, domain.id!!)?.id ?: throw Exception()
 
                     userRepository.guestRegister(user, rankId)
-                    call.respond(HttpStatusCode.OK)
+                    call.respond(HttpStatusCode.OK, "Registration Successful")
                 } catch (e: UserAlreadyFoundException) {
                     err["default"] = e.message ?: "Something went wrong. Try again"
                     call.respond(HttpStatusCode.InternalServerError, err)

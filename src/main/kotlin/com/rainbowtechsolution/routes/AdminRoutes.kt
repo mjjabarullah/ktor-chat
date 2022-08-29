@@ -25,14 +25,9 @@ import java.io.IOException
 
 
 fun Route.adminRotes(
-    domains: List<String>,
-    domainRepository: DomainRepository,
-    userRepository: UserRepository,
-    rankRepository: RankRepository,
-    permissionRepository: PermissionRepository,
-    roomRepository: RoomRepository,
-    messageRepository: MessageRepository,
-    reportRepository: ReportRepository
+    domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
+    rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
+    messageRepository: MessageRepository, reportRepository: ReportRepository, newsRepository: NewsRepository
 ) {
 
 
@@ -255,6 +250,60 @@ fun Route.adminRotes(
                         call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest)
+                    }
+                }
+            }
+
+            route("/{domainId}/news") {
+
+                post("/create") {
+                    try {
+                        val chatSession = call.sessions.get<ChatSession>()
+                        val userId = chatSession?.id!!
+                        val domainId = call.parameters["domainId"]!!.toInt()
+                        val parts = call.receiveMultipart()
+                        var content = ""
+                        var filePath: String?
+                        val renderFormat = "webp"
+                        val imageName = "${getUUID()}.$renderFormat"
+                        filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+                        val uploadDir = File(filePath)
+                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                        }
+                        filePath += imageName
+                        var hasImage = false
+                        parts.forEachPart { part ->
+                            when (part) {
+                                is PartData.FormItem -> content = part.value
+                                is PartData.FileItem -> {
+                                    hasImage = true
+                                    part.saveImage(filePath, renderFormat)
+                                }
+                                else -> Unit
+                            }
+                        }
+                        val image = if (hasImage) filePath else null
+                        val announcement = Announcement(
+                            content = content, image = image, user = User(userId), domainId = domainId
+                        )
+                        newsRepository.createNews(announcement)
+
+                        call.respond(HttpStatusCode.OK)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
+                }
+
+                delete("/{id}/delete") {
+                    try {
+                        val id = call.parameters["id"]!!.toInt()
+                        newsRepository.deleteNews(id)
+                        call.respond(HttpStatusCode.OK)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
                     }
                 }
             }

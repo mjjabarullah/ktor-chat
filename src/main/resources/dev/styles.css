@@ -844,7 +844,7 @@ body {
     @apply text-xl text-white cursor-pointer
 }
 
-.h-m-icon {
+.h-menu i {
     @apply text-base text-skin-hover
 }
 
@@ -888,6 +888,10 @@ body {
     @apply bg-skin-primary/5 rounded-md h-full w-full px-2 text-[12px] lg:text-[14px] border focus:ring-skin-primary focus:border-skin-primary block outline-none
 }
 
+.text-area {
+    @apply w-full bg-skin-primary/5 rounded-md px-2 text-[12px] lg:text-[14px] border focus:ring-skin-primary focus:border-skin-primary block outline-none overflow-hidden resize-none
+}
+
 .input-message {
     @apply rounded-none rounded-l-lg bg-gray-50 border border-gray-300 ml-1 w-full px-2 md:px-3 outline-none text-[12px] lg:text-[14px]
 }
@@ -902,6 +906,10 @@ body {
 
 .btn {
     @apply text-center outline-none text-skin-on-primary font-bold rounded-md text-sm py-2 px-5
+}
+
+.btn-sm {
+    @apply text-center outline-none text-skin-on-primary font-bold rounded-md text-[12px] py-1 px-2
 }
 
 .btn-skin {
@@ -996,12 +1004,12 @@ body {
     @apply z-[60] rounded ease-in-out transition duration-1000 border border-gray-200 absolute top-10 lg:left-4 left-8 flex flex-col bg-white w-44 lg:w-52 drop-shadow-lg
 }
 
-.h-menu-text {
-    @apply text-[13px] lg:text-[14px]
-}
-
 .h-menu {
     @apply items-center border-b border-gray-200 flex gap-2 px-4 py-1 cursor-pointer lg:hover:bg-skin-primary/5
+}
+
+.h-menu p {
+    @apply text-[13px] lg:text-[14px]
 }
 
 .header-wrap {
@@ -1013,7 +1021,11 @@ body {
 }
 
 .count {
-    @apply absolute -top-[1px] -right-[8px] bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20
+    @apply absolute -top-[1px] -right-[8px] bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20 font-bold
+}
+
+.count-md {
+    @apply font-bold text-[13px] text-white shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto w-6 h-6 flex-none
 }
 
 .loader-wrap {
@@ -1085,7 +1097,7 @@ body {
 }
 
 .menu {
-    @apply flex justify-between items-center border-t-[3px] rounded shadow-md py-1 px-2
+    @apply flex justify-between items-center border-t-[3px] rounded shadow-md p-2
 }
 
 .menu-img {
@@ -1248,6 +1260,14 @@ input:checked + .slider {
 
 .full-modal {
     @apply w-full h-full
+}
+
+.card-wrap {
+    @apply w-full bg-white p-2 my-2 rounded-md shadow-md shadow-black/10 border border-gray-200
+}
+
+.card-wrap img.avatar {
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
 }
 
 @layer utilities {
