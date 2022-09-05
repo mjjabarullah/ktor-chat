@@ -5,7 +5,7 @@
                 <div class="flex rounded px-4 py-2 bg-skin-hover text-white items-center relative">
                     <template x-if="permission.avatar">
                         <div class="relative flex-none">
-                            <i @click="changeUserAvatarDialog(u.id)" class="fa-solid fa-camera upload-icon"></i>
+                            <i @click="changeUserAvatarDialog" class="fa-solid fa-camera upload-icon"></i>
                         </div>
                     </template>
                     <img :src="u.avatar" src="" class="avatar" alt="">
@@ -13,7 +13,7 @@
                         <p class="text-left">
                             <span class="username" x-text="u.name"></span>
                             <template x-if="permission.userName">
-                                <i @click="changeUserNameDialog(u.id, u.name)"
+                                <i @click="changeUserNameDialog"
                                    class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                             </template>
                         </p>
@@ -23,10 +23,9 @@
                     </div>
                     <div class="actions">
                         <template x-if="u.private && permission.private">
-                            <i @click="openPvtDialog(u.id, u.name, u.avatar,u.nameColor, u.nameFont)"
-                               class="fa-solid fa-envelope icon-white"></i>
+                            <i @click="openPvtDialog(u.id)" class="fa-solid fa-envelope icon-white"></i>
                         </template>
-                        <i @click="closeUserProfile" class="fas fa-times-circle icon-white"></i>
+                        <i @click="showUserProfile = false" class="fas fa-times-circle icon-white"></i>
                     </div>
                 </div>
                 <div class="p-4 text-gray-900 text-left text-[14px]">
@@ -36,9 +35,6 @@
                         <img class="rank-icon" :src="u.rank.icon" alt="" src="">
                         <p class="font-bold text-[16px] ml-4" x-text="u.rank.name"></p>
                     </div>
-                    <template x-if="u.rank.code==='guest'">
-                        <button @click="changeUserPasswordDialog" class="btn">Change Password</button>
-                    </template>
                     <div x-data="{tab:0}" class="flex flex-col mt-2">
                         <div class="flex overflow-x-auto scrollbar">
                             <p @click="tab=0"

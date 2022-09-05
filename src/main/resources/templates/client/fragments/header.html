@@ -23,10 +23,10 @@
                 <i class="fa-solid fa-bell icon-white"></i>
                 <p x-cloak x-show="notifiCount > 0" x-transition class="count" x-text="notifiCount"></p>
             </div>
-            <i @click="toggleRight" class="fa-solid fa-user-group icon-white lg:hidden block"></i>
+            <i @click="toggleRight" class="fa-solid fa-user-group icon-white md:hidden block"></i>
         </div>
     </div>
-    <div x-show.transition.origin.top.left="showDropDown" x-cloak class="h-menu-wrap">
+    <div x-show="showDropDown" x-cloak class="h-menu-wrap" x-transition.origin.top.left>
         <div @click="showProfile = true; showDropDown= false" class="h-menu">
             <i class="fa-solid fa-user-pen"></i>
             <p>Profile</p>

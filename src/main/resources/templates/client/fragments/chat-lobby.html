@@ -42,12 +42,14 @@
         <div class="main-input-wrap flex-none" @click.outside="closeCustomizeText">
             <div x-transition x-cloak x-show="showOption" class="options">
                 <div class="inline-flex p-2 gap-4">
-                    <i @click="showDrawPad" class="fa-solid fa-paintbrush icon-skin"></i>
-                    <i @click="customizeTextDialog;showOption=false" class="fa-solid fa-palette icon-skin"></i>
+                    <img @click="showDrawPad" src="/images/defaults/brush.webp" class="icon-md">
+                    <img @click="customizeTextDialog;showOption=false" src="/images/defaults/palette.webp"
+                         class="icon-md">
                     <div class="relative flex-none">
                         <input x-ref='upload' @change="uploadImage($event)" class="input-image" type="file"
                                accept="image/*">
-                        <i @click="$refs.upload.click(); showOption=false" class="fa-solid fa-image icon-skin"></i>
+                        <img @click="$refs.upload.click(); showOption=false" src="/images/defaults/picture.webp"
+                             class="icon-md">
                     </div>
                 </div>
             </div>
@@ -59,18 +61,17 @@
             <div x-ref="mainEmojis" x-transition x-cloak x-show="showEmo" class="emo-wrap"></div>
             <div class="w-full h-full gap-2 ">
                 <div class="flex items-center h-full px-2 w-full">
-                    <i @click="showOption=!showOption;showEmo=false" class="mx-1 fa-solid fa-square-plus icon-skin"></i>
-                    <i @click="showEmo=!showEmo;showOption=false"
-                       class="ml-1 fa-solid fa-face-grin-hearts icon-skin"></i>
-                    <i @click="recordMainAudio" class="mx-2 fa-solid fa-microphone-lines icon-skin"></i>
+                    <img @click="showOption=!showOption;showEmo=false" src="/images/defaults/plus.webp" class="icon-md">
+                    <img @click="showEmo=!showEmo;showOption=false" src="/images/defaults/smiley.webp" class="icon-md">
+                    <img @click="recordMainAudio" src="/images/defaults/mic.webp" alt="" class="icon-md">
                     <div class="flex items-center flex-1">
                         <label class="h-10 flex w-full">
                             <input x-ref="mainInput" @keyup.enter="sendMessage" class="input-message"
                                    type="text" spellcheck="false" placeholder="Write something here..."
                                    autocomplete="off">
-                            <button @click="sendMessage" class="send"><i class="fa-solid fa-paper-plane"></i></button>
                         </label>
                     </div>
+                    <img @click="sendMessage" src="/images/defaults/send.webp" class="icon-md">
                 </div>
             </div>
         </div>

@@ -1,18 +1,14 @@
 package com.rainbowtechsolution.routes
 
-import com.rainbowtechsolution.controller.WsController
-import com.rainbowtechsolution.data.entity.MessageType
-import com.rainbowtechsolution.data.repository.ReportRepository
 import com.rainbowtechsolution.data.repository.RoomRepository
-import com.rainbowtechsolution.data.repository.WsRepository
 import com.rainbowtechsolution.data.repository.UserRepository
+import com.rainbowtechsolution.data.repository.WsRepository
 import com.rainbowtechsolution.domain.model.ChatSession
 import com.rainbowtechsolution.domain.model.Message
 import com.rainbowtechsolution.domain.model.PvtMessage
 import com.rainbowtechsolution.utils.decodeFromString
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import io.ktor.server.websocket.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
@@ -24,32 +20,33 @@ fun Route.wsRoutes(
     roomRepository: RoomRepository
 ) {
 
-    webSocket("/chatroom/{roomId}") {
-        val roomId = call.parameters["roomId"]?.toInt()
+    webSocket("/chat/{domainId}/room/{roomId}") {
+        val roomId = call.parameters["roomId"]!!.toInt()
+        val domainId = call.parameters["domainId"]!!.toInt()
         val chatSession = call.sessions.get<ChatSession>()
-        val sessionId = call.sessionId
-        if (chatSession == null || sessionId == null) {
+        if (chatSession == null) {
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session."))
             return@webSocket
         }
-        val user = userRepository.findUserById(chatSession.id!!)?.copy()
+        val userId = chatSession.id!!
+        val user = userRepository.findUserById(userId)?.copy()
         if (user == null) {
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No user found"))
             return@webSocket
         }
         user.socket = this
-        val room = roomId?.let { roomRepository.findRoomById(it) }
+        val room = roomRepository.findRoomById(roomId)
         if (room == null) {
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No room found"))
             return@webSocket
         }
         try {
-            wsRepository.connectRoom(user, room, sessionId)
+            wsRepository.connectRoom(user, roomId, domainId)
             incoming.consumeEach { frame ->
                 when (frame) {
                     is Frame.Text -> {
                         val message = frame.readText().decodeFromString<Message>()
-                        wsRepository.sendMessage(sessionId, room, message)
+                        wsRepository.sendMessage(domainId, roomId, userId, message)
                     }
                     else -> Unit
                 }
@@ -57,12 +54,12 @@ fun Route.wsRoutes(
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            userRepository.setSessions(user.id!!, false)
-            wsRepository.disconnectRoom(user, roomId, sessionId)
+            userRepository.setSessions(userId, false)
+            wsRepository.disconnectRoom(domainId, roomId, user, this)
         }
     }
 
-    webSocket("/member/{userId}") {
+    webSocket("/{domainId}/member/{userId}") {
         val userId = call.parameters["userId"]?.toLong()
         val chatSession = call.sessions.get<ChatSession>()
         val sessionId = call.sessionId
@@ -77,7 +74,7 @@ fun Route.wsRoutes(
         }
         sender.socket = this
         try {
-            wsRepository.connectUser(sender, sessionId)
+            wsRepository.connectUser(sender)
             incoming.consumeEach { frame ->
                 if (frame is Frame.Text) {
                     var pvtMessage = frame.readText().decodeFromString<PvtMessage>()
@@ -88,7 +85,7 @@ fun Route.wsRoutes(
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            wsRepository.disconnectUser(sessionId)
+            wsRepository.disconnectUser(this)
         }
     }
 }

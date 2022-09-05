@@ -8,7 +8,9 @@ import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.repository.*
 import com.rainbowtechsolution.domain.model.*
+import com.rainbowtechsolution.exceptions.PermissionDeniedException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
+import com.rainbowtechsolution.exceptions.UserNotFoundException
 import com.rainbowtechsolution.exceptions.ValidationException
 import com.rainbowtechsolution.utils.*
 import io.ktor.http.*
@@ -63,247 +65,300 @@ fun Route.adminRotes(
 
     host(domains) {
         authenticate(Auth.AUTH_SESSION) {
-            route("/reports") {
-                delete("/{id}/delete") {
-                    try {
-                        val id = call.parameters["id"]!!.toInt()
-                        val domainId = call.receiveParameters()["domainId"]!!.toInt()
-                        val staffIds = userRepository.getStaffIdsByDomainId(domainId)
-                        reportRepository.deleteReportById(id)
-                        val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                        WsController.broadCastToStaff(staffIds, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                    }
-                }
+            route("/{domainId}") {
 
-                post("/{id}/take-action") {
-                    try {
-                        val id = call.parameters["id"]!!.toInt()
-                        val params = call.receiveParameters()
-                        val targetId = params["targetId"]!!.toLong()
-                        val domainId = params["domainId"]!!.toInt()
-                        val roomId = params["roomId"]!!.toInt()
-                        val staffIds = userRepository.getStaffIdsByDomainId(domainId)
-                        when (ReportType.valueOf(params["type"].toString())) {
-                            ReportType.Chat -> {
-                                messageRepository.deleteMessage(targetId)
-                                reportRepository.deleteReportById(id)
-                                val message = Message(id = targetId, content = "", type = MessageType.Delete)
-                                WsController.broadcastToRoom(roomId, message.encodeToString())
-                            }
-                            ReportType.PvtChat -> {
-                                /*TODO*/
-                            }
-                            ReportType.NewsFeed -> {
-                                /*TODO*/
-                            }
-                        }
-                        val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                        WsController.broadCastToStaff(staffIds, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                    }
-                }
+                route("/rooms") {
 
-                post("/{id}/no-action") {
-                    try {
-                        val id = call.parameters["id"]!!.toInt()
-                        val params = call.receiveParameters()
-                        val domainId = params["domainId"]!!.toInt()
-                        val staffIds = userRepository.getStaffIdsByDomainId(domainId)
-                        when (ReportType.valueOf(params["type"].toString())) {
-                            ReportType.Chat -> reportRepository.deleteReportById(id)
-                            ReportType.PvtChat -> Unit/*TODO*/
-                            ReportType.NewsFeed -> Unit/*TODO*/
-                        }
-                        val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                        WsController.broadCastToStaff(staffIds, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                    }
-                }
-            }
+                    route("/{roomId}") {
 
-            route("/user") {
-                post("/{id}/update-name") {
-                    try {
-                        val params = call.receiveParameters()
-                        val id = call.parameters["id"]!!.toLong()
-                        val name = params["name"].toString()
-                        val domainId = params["domainId"]!!.toInt()
-                        if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
-                        val isUserExists = userRepository.isUserExists(name, domainId)
-                        if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
-                        userRepository.updateName(id, name)
-                        val message = PvtMessage(content = "", type = MessageType.DataChanges)
-                        WsController.broadCastToMember(id, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: ValidationException) {
-                        call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
-                    } catch (e: UserAlreadyFoundException) {
-                        call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                    }
-                }
+                        route("/messages") {
 
-                post("/{id}/update-avatar") {
-                    val parts = call.receiveMultipart()
-                    val id = call.parameters["id"]!!.toLong()
-                    val renderFormat = "webp"
-                    val imageName = "${getUUID()}.$renderFormat"
-                    var filePath = ChatDefaults.AVATAR_FOLDER
-                    try {
-                        val uploadDir = File(filePath)
-                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                        }
-                        filePath += imageName
-                        parts.forEachPart { part ->
-                            when (part) {
-                                is PartData.FileItem -> {
-                                    part.saveImage(filePath, renderFormat)
+                            delete("/{msgId}/delete") {
+                                try {
+                                    val msgId = call.parameters["msgId"]!!.toLong()
+                                    val userId = call.sessions.get<ChatSession>()?.id!!
+                                    val domainId = call.parameters["domainId"]!!.toInt()
+                                    val roomId = call.parameters["roomId"]!!.toInt()
+                                    val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                                    val rankId = user.rank?.id!!
+                                    val permission =
+                                        permissionRepository.findPermissionByRank(rankId) ?: throw Exception()
+                                    if (!permission.delMsg) throw PermissionDeniedException()
+                                    messageRepository.deleteMessage(msgId)
+                                    val message = Message(id = msgId, content = "", type = MessageType.DelChat)
+                                    WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                                    call.respond(HttpStatusCode.OK)
+                                } catch (e: PermissionDeniedException) {
+                                    call.respond(HttpStatusCode.Forbidden, e.message.toString())
+                                } catch (e: UserNotFoundException) {
+                                    call.respond(HttpStatusCode.NotFound, e.message.toString())
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
                                 }
-                                else -> Unit
                             }
                         }
-                        userRepository.updateAvatar(id, filePath)
-                        val message = PvtMessage(content = "", type = MessageType.DataChanges)
-                        WsController.broadCastToMember(id, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: IOException) {
-                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, e.message.toString())
-                    } finally {
-                        File(filePath).delete()
                     }
                 }
 
-                post("/{id}/update-default-avatar") {
-                    try {
-                        val id = call.parameters["id"]!!.toLong()
-                        val avatar = call.receiveParameters()["avatar"].toString()
-                        userRepository.updateAvatar(id, avatar)
-                        val message = PvtMessage(content = "", type = MessageType.DataChanges)
-                        WsController.broadCastToMember(id, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, e.message.toString())
+                route("/reports") {
+
+                    route("/{reportId}") {
+
+                        post("/take-action") {
+                            try {
+                                val reportId = call.parameters["reportId"]!!.toInt()
+                                val params = call.receiveParameters()
+                                val targetId = params["targetId"]!!.toLong()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val roomId = params["roomId"]!!.toInt()
+                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
+                                when (ReportType.valueOf(params["type"].toString())) {
+                                    ReportType.Chat -> {
+                                        messageRepository.deleteMessage(targetId)
+                                        reportRepository.deleteReportById(reportId)
+                                        val message = Message(id = targetId, content = "", type = MessageType.DelChat)
+                                        WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                                    }
+                                    ReportType.PvtChat -> {
+                                        /*TODO*/
+                                    }
+                                    ReportType.NewsFeed -> {
+                                        /*TODO*/
+                                    }
+                                }
+                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
+                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            }
+                        }
+
+                        post("/no-action") {
+                            try {
+                                val reportId = call.parameters["reportId"]!!.toInt()
+                                val params = call.receiveParameters()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
+                                when (ReportType.valueOf(params["type"].toString())) {
+                                    ReportType.Chat -> reportRepository.deleteReportById(reportId)
+                                    ReportType.PvtChat -> Unit/*TODO*/
+                                    ReportType.NewsFeed -> Unit/*TODO*/
+                                }
+                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
+                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            }
+                        }
+
+                        delete("/delete") {
+                            try {
+                                val reportId = call.parameters["reportId"]!!.toInt()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
+                                reportRepository.deleteReportById(reportId)
+                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
+                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            }
+                        }
                     }
                 }
 
-                post("/{id}/mute") {
-                    try {
-                        val id = call.parameters["id"]!!.toLong()
-                        val user = userRepository.findUserById(id)
-                        val roomId = user?.roomId!!
-                        userRepository.mute(id)
-                        val message = Message(user = User(id = id), content = "", type = MessageType.Mute)
-                        WsController.broadcastToRoom(roomId, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest)
+                route("/users") {
+
+                    route("/{userId}") {
+
+                        post("/update-name") {
+                            try {
+                                val params = call.receiveParameters()
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val name = params["name"].toString()
+                                if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
+                                val isUserExists = userRepository.isUserExists(name, domainId)
+                                if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
+                                userRepository.updateName(userId, name)
+                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: ValidationException) {
+                                call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
+                            } catch (e: UserAlreadyFoundException) {
+                                call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+                            }
+                        }
+
+                        post("/update-avatar") {
+                            val parts = call.receiveMultipart()
+                            val userId = call.parameters["userId"]!!.toLong()
+                            val renderFormat = "webp"
+                            val imageName = "${getUUID()}.$renderFormat"
+                            var filePath = ChatDefaults.AVATAR_FOLDER
+                            try {
+                                val uploadDir = File(filePath)
+                                if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                                    throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                                }
+                                filePath += imageName
+                                parts.forEachPart { part ->
+                                    when (part) {
+                                        is PartData.FileItem -> {
+                                            part.saveImage(filePath, renderFormat)
+                                        }
+                                        else -> Unit
+                                    }
+                                }
+                                userRepository.updateAvatar(userId, filePath)
+                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: IOException) {
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest, e.message.toString())
+                            }
+                        }
+
+                        post("/update-default-avatar") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val avatar = call.receiveParameters()["avatar"].toString()
+                                userRepository.updateAvatar(userId, avatar)
+                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest, e.message.toString())
+                            }
+                        }
+
+                        post("/mute") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val user = userRepository.findUserById(userId)
+                                val roomId = user?.roomId!!
+                                userRepository.mute(userId)
+                                val message = Message(user = User(id = userId), content = "", type = MessageType.Mute)
+                                //WsController.broadcastToRoom(roomId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        post("/unmute") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val user = userRepository.findUserById(userId)
+                                val roomId = user?.roomId!!
+                                userRepository.unMute(userId)
+                                val message = Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                //WsController.broadcastToRoom(roomId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        post("/kick") {
+                            try {
+                                val id = call.parameters["userId"]!!.toLong()
+                                userRepository.kick(id, 0)
+                                val message = PvtMessage(content = "", type = MessageType.Kick)
+                                WsController.broadCastToMember(id, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        post("/ban") {
+                            try {
+                                val id = call.parameters["userId"]!!.toLong()
+                                userRepository.ban(id)
+                                val message = PvtMessage(content = "", type = MessageType.Ban)
+                                WsController.broadCastToMember(id, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
                     }
                 }
 
-                post("/{id}/unmute") {
-                    try {
-                        val id = call.parameters["id"]!!.toLong()
-                        val user = userRepository.findUserById(id)
-                        val roomId = user?.roomId!!
-                        userRepository.unMute(id)
-                        val message = Message(user = User(id = id), content = "", type = MessageType.UnMute)
-                        WsController.broadcastToRoom(roomId, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest)
-                    }
-                }
+                route("/news") {
 
-                post("/{id}/kick") {
-                    try {
-                        val id = call.parameters["id"]!!.toLong()
-                        userRepository.kick(id, 0)
-                        val message = PvtMessage(content = "", type = MessageType.Kick)
-                        WsController.broadCastToMember(id, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest)
-                    }
-                }
-
-                post("/{id}/ban") {
-                    try {
-                        val id = call.parameters["id"]!!.toLong()
-                        userRepository.ban(id)
-                        val message = PvtMessage(content = "", type = MessageType.Ban)
-                        WsController.broadCastToMember(id, message.encodeToString())
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest)
-                    }
-                }
-            }
-
-            route("/{domainId}/news") {
-
-                post("/create") {
-                    try {
-                        val chatSession = call.sessions.get<ChatSession>()
-                        val userId = chatSession?.id!!
-                        val domainId = call.parameters["domainId"]!!.toInt()
-                        val parts = call.receiveMultipart()
+                    post("/create") {
                         var content = ""
                         var filePath: String?
                         val renderFormat = "webp"
                         val imageName = "${getUUID()}.$renderFormat"
                         filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
                         val uploadDir = File(filePath)
-                        if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                            throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                        }
-                        filePath += imageName
-                        var hasImage = false
-                        parts.forEachPart { part ->
-                            when (part) {
-                                is PartData.FormItem -> content = part.value
-                                is PartData.FileItem -> {
-                                    hasImage = true
-                                    part.saveImage(filePath, renderFormat)
-                                }
-                                else -> Unit
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val parts = call.receiveMultipart()
+
+                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
                             }
+                            filePath += imageName
+                            var hasImage = false
+                            parts.forEachPart { part ->
+                                when (part) {
+                                    is PartData.FormItem -> content = part.value
+                                    is PartData.FileItem -> {
+                                        hasImage = true
+                                        part.saveImage(filePath, renderFormat)
+                                    }
+                                    else -> Unit
+                                }
+                            }
+                            val image = if (hasImage) filePath else null
+                            val announcement = Announcement(
+                                content = content, image = image, user = User(userId), domainId = domainId
+                            )
+                            newsRepository.createNews(announcement)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.News
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
                         }
-                        val image = if (hasImage) filePath else null
-                        val announcement = Announcement(
-                            content = content, image = image, user = User(userId), domainId = domainId
-                        )
-                        newsRepository.createNews(announcement)
-
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError)
                     }
-                }
 
-                delete("/{id}/delete") {
-                    try {
-                        val id = call.parameters["id"]!!.toInt()
-                        newsRepository.deleteNews(id)
-                        call.respond(HttpStatusCode.OK)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                    delete("/{newsId}/delete") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val newsId = call.parameters["newsId"]!!.toInt()
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            newsRepository.deleteNews(newsId)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.DelNews
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                        }
                     }
                 }
             }

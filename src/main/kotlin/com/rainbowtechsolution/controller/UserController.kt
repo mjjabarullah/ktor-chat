@@ -40,6 +40,7 @@ class UserController : UserRepository {
     }
 
     override suspend fun guestRegister(user: User, rankId: Int): Unit = dbQuery {
+        userCache.invalidate(user.id!!)
         Users.update({ Users.id eq user.id!! }) {
             it[name] = user.name!!
             it[email] = user.email!!
@@ -86,7 +87,7 @@ class UserController : UserRepository {
         if (user != null) user
         else {
             user = Users.innerJoin(Ranks).select { Users.id eq id }.firstOrNull()?.toUserModel()
-            userCache.put(id, user)
+            if (user != null) userCache.put(id, user)
             user
         }
     }

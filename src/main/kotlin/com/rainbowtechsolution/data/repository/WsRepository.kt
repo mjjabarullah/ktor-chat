@@ -1,21 +1,19 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.Message
-import com.rainbowtechsolution.domain.model.PvtMessage
-import com.rainbowtechsolution.domain.model.Room
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.domain.model.*
+import io.ktor.websocket.*
 
 interface WsRepository {
 
-    suspend fun connectRoom(user: User, room: Room, sessionId: String)
+    suspend fun connectRoom(user: User, roomId: Int, domainId: Int)
 
-    suspend fun connectUser(user: User, sessionId: String)
+    suspend fun sendMessage(domainId: Int, roomId: Int, userId: Long, message: Message)
 
-    suspend fun sendMessage(sessionId: String, room: Room, message: Message)
+    suspend fun connectUser(user: User)
 
     suspend fun sendPrivateMessage(message: PvtMessage)
 
-    suspend fun disconnectRoom(user: User, roomId: Int, sessionId: String)
+    suspend fun disconnectRoom(domainId: Int, roomId: Int, user: User, socket: WebSocketSession)
 
-    suspend fun disconnectUser(sessionId: String)
+    suspend fun disconnectUser(socket: WebSocketSession)
 }

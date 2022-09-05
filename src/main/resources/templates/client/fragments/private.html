@@ -76,13 +76,13 @@
                             <div class="main-input-wrap flex-none">
                                 <div x-transition x-cloak x-show="showPvtOption" class="options">
                                     <div class="inline-flex p-2 gap-4">
-                                        <i @click="showDrawPad" class="fa-solid fa-paintbrush icon-skin"></i>
+                                        <img @click="showDrawPad" src="/images/defaults/brush.webp" class="icon-md">
                                         <div class="relative flex-none">
                                             <input x-ref="pvtUpload"
                                                    @change="uploadPvtImage(pvtUser.id, $event)"
                                                    class="input-image" type="file" accept="image/*">
-                                            <i @click="$refs.pvtUpload.click(); showPvtOption=false"
-                                               class="fa-solid fa-image icon-skin"></i>
+                                            <img @click="$refs.pvtUpload.click(); showPvtOption=false"
+                                                 src="/images/defaults/picture.webp" class="icon-md">
                                         </div>
                                     </div>
                                 </div>
@@ -95,23 +95,21 @@
                                 <div x-ref="pvtEmojis" x-transition x-show="showPvtEmo" class="pvt-emo-wrap"></div>
                                 <div class="w-full h-full gap-2 ">
                                     <div class="flex items-center h-full px-2 w-full">
-                                        <i @click="showPvtOption=!showPvtOption;showPvtEmo=false"
-                                           class="mx-1 fa-solid fa-square-plus icon-skin"></i>
-                                        <i @click="showPvtEmo=!showPvtEmo;showPvtOption=false"
-                                           class="ml-1 fa-solid fa-face-grin-hearts icon-skin"></i>
-                                        <i @click="$nextTick(() => {recordPvtAudio(pvtUser.id)})"
-                                           class="mx-2 fa-solid fa-microphone-lines icon-skin"></i>
+                                        <img @click="showPvtOption=!showPvtOption;showPvtEmo=false"
+                                             src="/images/defaults/plus.webp" class="icon-md">
+                                        <img @click="showPvtEmo=!showPvtEmo;showPvtOption=false"
+                                             src="/images/defaults/smiley.webp" class="icon-md">
+                                        <img @click="$nextTick(() => {recordPvtAudio(pvtUser.id)})"
+                                             src="/images/defaults/mic.webp" alt="" class="icon-md">
                                         <div class="flex items-center flex-1">
                                             <label class="h-10 flex w-full">
                                                 <input x-ref="pvtInput"
                                                        @keyup.enter="sendPvtMessage(pvtUser.id , $refs.pvtInput)"
                                                        class="input-message" type="text" spellcheck="false"
                                                        placeholder="Write something here..." autocomplete="off">
-                                                <button @click="sendPvtMessage(pvtUser.id, $refs.pvtInput)"
-                                                        class="send"><i
-                                                        class="fa-solid fa-paper-plane"></i>
-                                                </button>
                                             </label>
+                                            <img @click="sendPvtMessage(pvtUser.id, $refs.pvtInput)"
+                                                 src="/images/defaults/send.webp" class="icon-md">
                                         </div>
                                     </div>
                                 </div>

@@ -39,16 +39,13 @@
                     <div class="flex overflow-x-auto scrollbar">
                         <p @click="tab=0"
                            class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                           :class="tab===0? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                            Account</p>
+                           :class="tab===0? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Account</p>
                         <p @click="tab=1"
                            class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                           :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                            Sound Settings</p>
+                           :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Sounds</p>
                         <p @click="tab=2"
                            class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                           :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                            Others</p>
+                           :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Others</p>
                     </div>
                     <div x-show="tab===0" class="mt-1 text-black">
                         <table class="table w-full border-separate">

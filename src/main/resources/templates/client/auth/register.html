@@ -11,62 +11,61 @@
     <link rel='stylesheet' href="css/styles.css">
 </head>
 <body th:classappend="${domain.theme}" class="">
-<div class="flex-col flex pt-4 lg:p-10 pb-14 w-full px-2">
+<div x-data="auth" class="flex-col flex pt-4 lg:p-10 pb-14 w-full px-2">
     <div class="w-36 mx-auto ">
         <img class="w-36 " src="images/registration.webp" alt="">
     </div>
-    <div class="card">
+    <div x-data="register" class="card">
         <div class="flex flex-col items-start py-2 px-4">
             <h3 class="heading">Registration</h3>
-            <div th:if="${errors['default']}" th:text="${errors['default']}" class="error-default"></div>
-            <form class="w-full" action="/register" method="post">
+            <div x-show="errors.default" x-text="errors.default" class="error-default"></div>
+            <div x-show="success" x-text="success" class="success-default"></div>
+            <form class="w-full" @submit.prevent="register">
                 <div class="mb-4">
                     <div class="h-10">
                         <label class="h-full">
-                            <input name="name" onkeypress="return /^[a-zA-Z\d_-]*$/i.test(event.key)"
-                                   th:value="${data['name']}" class="input-text" maxlength="12" autofocus
-                                   type="text" placeholder="Username" autocomplete="off" required minlength="4">
+                            <input x-ref="name" x-model="name" onkeypress="return /^[a-zA-Z\d_-]*$/i.test(event.key)"
+                                   class="input-text" maxlength="12" type="text" placeholder="Username"
+                                   autocomplete="off" required minlength="4">
                         </label>
                     </div>
-                    <div th:if="${errors['name']}" th:text="${errors['name']}" class="error-text"></div>
+                    <div x-show="errors.name" x-text="errors.name" class="error-text"></div>
                 </div>
                 <div class="mb-4">
                     <div class="h-10">
                         <label class="h-full">
-                            <input name="email" th:value="${data['email']}" class="input-text"
-                                   type="email" placeholder="Email Address" autocomplete="off" required>
+                            <input x-model="email" class="input-text" type="email" placeholder="Email Address"
+                                   autocomplete="off" required>
                         </label>
                     </div>
-                    <div th:if="${errors['email']}" th:text="${errors['email']}" class="error-text"></div>
+                    <div x-show="errors.email" x-text="errors.email" class="error-text"></div>
                 </div>
                 <div class="mb-4">
                     <div class="h-10">
                         <label class="h-full">
-                            <input name="password" th:value="${data['password']}" class="input-text"
-                                   type="password" placeholder="Password" autocomplete="off" required minlength="8">
+                            <input x-model="password" class="input-text" type="password" placeholder="Password"
+                                   autocomplete="off" required minlength="8">
                         </label>
                     </div>
-                    <div th:if="${errors['password']}" th:text="${errors['password']}" class="error-text"></div>
+                    <div x-show="errors.password" x-text="errors.password" class="error-text"></div>
                 </div>
                 <div class="w-full h-10 mb-4">
-                    <select name="gender" class="input-text" required>
-                        <option value="" selected="" disabled>Select Gender</option>
-                        <option value="0">Male</option>
-                        <option value="1">Female</option>
+                    <select x-model="gender" class="input-text" required>
+                        <option value="" disabled>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
                     </select>
                 </div>
                 <div class="text-center mb-4">
                     <button type="submit" class="w-36 btn btn-skin"><i class="fa-solid fa-right-to-bracket"></i>
                         &nbsp;&nbsp;Register
                     </button>
-                    <p class="disc">Already have an account?
-                        <a href="/login" class="link-text">Login</a>
-                    </p>
+                    <p class="disc">Already have an account?<a href="/login" class="link-text">Login</a></p>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<script src="js/auth.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>
