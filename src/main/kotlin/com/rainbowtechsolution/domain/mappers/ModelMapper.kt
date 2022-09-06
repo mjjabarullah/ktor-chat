@@ -179,3 +179,13 @@ fun ResultRow.toNewsModel(user: User): Announcement {
         createdAt = this[Announcements.createdAt].format()
     )
 }
+
+fun ResultRow.toAdminshipModel(user: User): Adminship {
+    return Adminship(
+        id = this[AdminShips.id].value,
+        content = this[AdminShips.content],
+        image = this[AdminShips.image],
+        user = user,
+        createdAt = this[AdminShips.createdAt].format()
+    )
+}

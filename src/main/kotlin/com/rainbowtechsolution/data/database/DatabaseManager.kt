@@ -20,7 +20,7 @@ fun Application.configureDatabase() {
 
     transaction {
         SchemaUtils.createMissingTablesAndColumns(
-            Domains, Rooms, Users, Ranks, Permissions, Messages, PvtMessages, Reports, Seen, Announcements
+            Domains, Rooms, Users, Ranks, Permissions, Messages, PvtMessages, Reports, Seen, Announcements, AdminShips
         )
     }
 

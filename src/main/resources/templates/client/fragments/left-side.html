@@ -42,13 +42,13 @@
                     </div>
                 </li>
                 <li th:if="${permission.adminship}" class="pt-[10px] px-1">
-                    <div @click="openAdminShipModal" class="menu-wrap">
+                    <div @click="openAdminshipModal" class="menu-wrap">
                         <div class="menu border-yellow-600">
                             <div class="flex items-center ">
                                 <img class="menu-img" src="/images/defaults/adminship.webp" alt="">
                                 <p class="menu-text">AdminShip</p>
                             </div>
-                            <p x-cloak x-show="adminShipUnreadCount>0" x-text="adminShipUnreadCount"
+                            <p x-cloak x-show="adminshipUnreadCount>0" x-text="adminshipUnreadCount"
                                class="count-md"></p>
                         </div>
                     </div>

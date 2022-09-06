@@ -5384,6 +5384,8 @@ module.exports = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var alpinejs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alpinejs */ "./node_modules/alpinejs/dist/module.esm.js");
+/* harmony import */ var _constant_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./constant.js */ "./src/main/resources/dev/constant.js");
+/* harmony import */ var _functions_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./functions.js */ "./src/main/resources/dev/functions.js");
 
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -5398,17 +5400,17 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+
+
  //disableDevtool() /*TODO : Uncomment this in production*/
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.Alpine = alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"];
+window.MicRecorder = __webpack_require__(/*! mic-recorder-to-mp3 */ "./node_modules/mic-recorder-to-mp3/dist/index.js");
 Object.freeze(domain);
 Object.freeze(room);
 Object.freeze(permission);
 Object.freeze(rank);
-
-var MicRecorder = __webpack_require__(/*! mic-recorder-to-mp3 */ "./node_modules/mic-recorder-to-mp3/dist/index.js");
-
 var MessageType = {
   Join: 'Join',
   Chat: 'Chat',
@@ -5438,7 +5440,6 @@ var ReportType = {
 var textColors = ['red', 'red-1', 'red-2', 'red-3', 'orange', 'orange-1', 'orange-2', 'orange-3', 'amber', 'amber-1', 'amber-2', 'amber-3', 'yellow', 'yellow-1', 'yellow-2', 'yellow-3', 'lime', 'lime-1', 'lime-2', 'lime-3', 'green', 'green-1', 'green-2', 'green-3', 'emerald', 'emerald-1', 'emerald-2', 'emerald-3', 'teal', 'teal-1', 'teal-2', 'teal-3', 'cyan', 'cyan-1', 'cyan-2', 'cyan-3', 'sky', 'sky-1', 'sky-2', 'sky-3', 'blue', 'blue-1', 'blue-2', 'blue-3', 'indigo', 'indigo-1', 'indigo-2', 'indigo-3', 'violet', 'violet-1', 'violet-2', 'violet-3', 'purple', 'purple-1', 'purple-2', 'purple-3', 'fuchsia', 'fuchsia-1', 'fuchsia-2', 'fuchsia-3', 'pink', 'pink-1', 'pink-2', 'pink-3', 'rose', 'rose-1', 'rose-2', 'rose-3', 'slate', 'slate-1', 'slate-2', 'slate-3', 'gray', 'gray-1', 'gray-2', 'gray-3', 'zinc', 'zinc-1', 'zinc-2', 'zinc-3', 'stone', 'stone-1', 'stone-2', 'stone-3', 'black'];
 var bgColors = ['b-red', 'b-red-1', 'b-red-2', 'b-red-3', 'b-orange', 'b-orange-1', 'b-orange-2', 'b-orange-3', 'b-amber', 'b-amber-1', 'b-amber-2', 'b-amber-3', 'b-yellow', 'b-yellow-1', 'b-yellow-2', 'b-yellow-3', 'b-lime', 'b-lime-1', 'b-lime-2', 'b-lime-3', 'b-green', 'b-green-1', 'b-green-2', 'b-green-3', 'b-emerald', 'b-emerald-1', 'b-emerald-2', 'b-emerald-3', 'b-teal', 'b-teal-1', 'b-teal-2', 'b-teal-3', 'b-cyan', 'b-cyan-1', 'b-cyan-2', 'b-cyan-3', 'b-sky', 'b-sky-1', 'b-sky-2', 'b-sky-3', 'b-blue', 'b-blue-1', 'b-blue-2', 'b-blue-3', 'b-indigo', 'b-indigo-1', 'b-indigo-2', 'b-indigo-3', 'b-violet', 'b-violet-1', 'b-violet-2', 'b-violet-3', 'b-purple', 'b-purple-1', 'b-purple-2', 'b-purple-3', 'b-fuchsia', 'b-fuchsia-1', 'b-fuchsia-2', 'b-fuchsia-3', 'b-pink', 'b-pink-1', 'b-pink-2', 'b-pink-3', 'b-rose', 'b-rose-1', 'b-rose-2', 'b-rose-3', 'b-slate', 'b-slate-1', 'b-slate-2', 'b-slate-3', 'b-gray', 'b-gray-1', 'b-gray-2', 'b-gray-3', 'b-zinc', 'b-zinc-1', 'b-zinc-2', 'b-zinc-3', 'b-stone', 'b-stone-1', 'b-stone-2', 'b-stone-3', 'b-black'];
 var avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp'];
-var emojis = [easy, modern, easy, modern];
 /**
  * Responsive windows
  * */
@@ -5446,58 +5447,6 @@ var emojis = [easy, modern, easy, modern];
 var mobile = window.matchMedia('(max-width: 640px)');
 var tablet = window.matchMedia('(min-width: 768px)');
 var desktop = window.matchMedia('(min-width: 1024px)');
-/**
- * Success Messages
- * */
-
-var AVATAR_HAS_BEEN_CHANGED = 'Avatar has been changed';
-var NAME_HAS_BEEN_CHANGED = 'Name has been changed';
-var NAME_CUSTOMIZED = 'Name text customized.';
-var MOOD_HAS_BEEN_CHANGED = 'Mood has been changed';
-var ABOUT_HAS_BEEN_CHANGED = 'About me has been changed';
-var PASSWORD_HAS_BEEN_CHANGED = 'Password has been changed';
-var STATUS_HAS_BEEN_CHANGED = 'Status has been changed';
-var GENDER_HAS_BEEN_CHANGED = 'Gender has been changed';
-var DOB_HAS_BEEN_CHANGED = 'DOB has been changed';
-var CHAT_TEXT_CUSTOMIZED = 'Chat text customized';
-var NEWS_CREATED = 'Announcement created successfully';
-var NEWS_DELETED = 'Announcement deleted successfully';
-/**
- * Common errors
- * */
-
-var ERROR_NAME_INVALID = 'Must have min 4 to max 12 letters';
-var ERROR_MOOD_INVALID = 'Must have max 40 letters';
-var ERROR_PERMISSION_DENIED = 'Permission denied';
-var ERROR_SOMETHING_WENT_WRONG = 'Something went wrong';
-var ERROR_INVALID_FILE_FORMAT = 'Invalid file format';
-var ERROR_GUEST_DOESNT_HAVE_PASSWORD = 'Guest does not have password';
-var ERROR_PASSWORD_MUST_HAVE = 'Must have at least 8 characters';
-var ERROR_YOU_ARE_MUTED = 'You are muted';
-var ERROR_RECORD_LENGTH = 'Record length at least 10 seconds';
-var ERROR_UPLOAD_FAILED = 'Upload failed';
-var ERROR_RECORDING_FAILED = 'Recording failed';
-var ERROR_DELETE_MESSAGE = 'Deleting message failed';
-var ERROR_CANT_PRIVATE = 'You cannot private to this user';
-var ERROR_NO_MIC_PERMISSION = 'You haven\'t given mic permission';
-/**
- * Css classes
- * */
-
-var SUCCESS = 'success';
-var ERROR = 'error';
-var GREEN = 'green';
-var YELLOW = 'yellow';
-var RED = 'red';
-/**
- * Constants
- * */
-
-var EMPTY_STRING = '';
-var UNDEFINED = 'undefined';
-var GUEST = 'guest';
-var RECORDING_TIME = 180;
-var MIN_RECORDING_TIME = 10;
 document.addEventListener('alpine:init', function () {
   alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('chat', function () {
     return {
@@ -5556,15 +5505,19 @@ document.addEventListener('alpine:init', function () {
         news: [],
         unReadCount: 0
       },
+      adminship: {
+        adminships: [],
+        unReadCount: 0
+      },
       pvtNotifiCount: 0,
       reportNotifiCount: 0,
       notifiCount: 0,
       newsUnreadCount: 0,
-      adminShipUnreadCount: 0,
+      adminshipUnreadCount: 0,
       globalFeedUnreadCount: 0,
       totalCount: 0,
       isRecording: false,
-      remainingTime: RECORDING_TIME,
+      remainingTime: _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME,
       init: function init() {
         var _this = this;
 
@@ -5583,12 +5536,13 @@ document.addEventListener('alpine:init', function () {
         this.recorder = new MicRecorder({
           bitrate: 80
         });
-        this.$refs.mainEmojis.innerHTML = getEmojisHtml();
+        this.$refs.mainEmojis.innerHTML = _functions_js__WEBPACK_IMPORTED_MODULE_2__.getEmojisHtml();
         this.getMessages();
         this.reCheckPvtMessages();
         this.setStatusColor();
         this.getReports();
         this.getNews();
+        this.getAdminships();
         this.roomSocket.addEventListener('message', function (e) {
           var message = JSON.parse(e.data);
 
@@ -5596,13 +5550,13 @@ document.addEventListener('alpine:init', function () {
 
           message.user.id !== userId && message.type === MessageType.Chat && _this.$refs.chatSound.play();
         });
-        this.roomSocket.addEventListener('close', function (e) {}
+        this.roomSocket.addEventListener('close', function () {}
         /*location.reload()*/
         );
         this.userSocket.addEventListener('message', function (e) {
           return _this.onPvtMessageReceived(e);
         });
-        this.userSocket.addEventListener('close', function (e) {}
+        this.userSocket.addEventListener('close', function () {}
         /*location.reload()*/
         );
         var isUGCShowed = localStorage.getItem('isUGCShowed');
@@ -5622,8 +5576,8 @@ document.addEventListener('alpine:init', function () {
           this.showMessages = true;
           this.showLoader = false;
 
-          if (rank.code === 'guest') {
-            this.showSmallModal(guestDialogHtml());
+          if (rank.code === _constant_js__WEBPACK_IMPORTED_MODULE_1__.GUEST) {
+            this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.guestDialogHtml());
           } else {
             this.$refs.mainInput.focus();
           }
@@ -5643,13 +5597,13 @@ document.addEventListener('alpine:init', function () {
           user.gender = _this.user.gender;
         });
         this.$watch('newsUnreadCount', function () {
-          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
+          _this.totalCount = _this.newsUnreadCount + _this.adminshipUnreadCount + _this.globalFeedUnreadCount;
         });
-        this.$watch('adminShipUnreadCount', function () {
-          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
+        this.$watch('adminshipUnreadCount', function () {
+          _this.totalCount = _this.newsUnreadCount + _this.adminshipUnreadCount + _this.globalFeedUnreadCount;
         });
         this.$watch('globalFeedUnreadCount', function () {
-          _this.totalCount = _this.newsUnreadCount + _this.adminShipUnreadCount + _this.globalFeedUnreadCount;
+          _this.totalCount = _this.newsUnreadCount + _this.adminshipUnreadCount + _this.globalFeedUnreadCount;
         });
       },
       toggleLeft: function toggleLeft() {
@@ -5666,7 +5620,7 @@ document.addEventListener('alpine:init', function () {
         this.showModal = true;
       },
       closeSmallModal: function closeSmallModal() {
-        this.$refs.modalContent.innerText = EMPTY_STRING;
+        this.$refs.modalContent.innerText = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         this.showModal = false;
       },
       showImgModal: function showImgModal(html) {
@@ -5674,7 +5628,7 @@ document.addEventListener('alpine:init', function () {
         this.showImage = true;
       },
       closeImgModal: function closeImgModal() {
-        this.$refs.fullImage.innerText = EMPTY_STRING;
+        this.$refs.fullImage.innerText = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         this.showImage = false;
       },
       showFullModal: function showFullModal(html) {
@@ -5685,11 +5639,11 @@ document.addEventListener('alpine:init', function () {
         this.showFulModal = false;
         var content = this.$refs.fullModalContent;
         setTimeout(function () {
-          return content.innerHTML = EMPTY_STRING;
+          return content.innerHTML = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         }, 5e2);
       },
       showUCGPolicyDialog: function showUCGPolicyDialog() {
-        this.showSmallModal(ucgPolicyHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.ucgPolicyHtml());
       },
       closeUGCPolicy: function closeUGCPolicy() {
         this.closeSmallModal();
@@ -5697,8 +5651,8 @@ document.addEventListener('alpine:init', function () {
         this.$refs.mainInput.focus();
         localStorage.setItem("isUGCShowed", "true");
 
-        if (rank.code === 'guest') {
-          this.showSmallModal(guestDialogHtml());
+        if (rank.code === _constant_js__WEBPACK_IMPORTED_MODULE_1__.GUEST) {
+          this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.guestDialogHtml());
         }
       },
       showAlertMsg: function showAlertMsg(msg, color) {
@@ -5715,15 +5669,15 @@ document.addEventListener('alpine:init', function () {
         }, 3e3);
       },
       setStatusColor: function setStatusColor() {
-        if (this.user.status === Status.Online) this.statusColor = GREEN;else if (this.user.status === Status.Away) this.statusColor = YELLOW;else if (this.user.status === Status.Busy) this.statusColor = RED;else this.statusColor = EMPTY_STRING;
+        this.user.status === Status.Online ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_GREEN : this.user.status === Status.Away ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_YELLOW : this.user.status === Status.Busy ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_RED : this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
       },
       setUserStatusColor: function setUserStatusColor() {
-        if (this.user.status === Status.Online) this.statusColor = GREEN;else if (this.user.status === Status.Away) this.statusColor = YELLOW;else if (this.user.status === Status.Busy) this.statusColor = RED;else this.statusColor = EMPTY_STRING;
+        this.user.status === Status.Online ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_GREEN : this.user.status === Status.Away ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_YELLOW : this.user.status === Status.Busy ? this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_RED : this.statusColor = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
       },
       getMessages: function getMessages() {
         var _this3 = this;
 
-        this.$refs.chatMessages.innerHTML = EMPTY_STRING;
+        this.$refs.chatMessages.innerHTML = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         axios.get("".concat(domain.id, "/rooms/").concat(room.id, "/messages")).then(function (res) {
           return res.data.forEach(function (message) {
             return _this3.onMessageReceived(message);
@@ -5750,30 +5704,40 @@ document.addEventListener('alpine:init', function () {
           if (typeof callback === 'function') callback();
         });
       },
-      getPvtEmojis: function getPvtEmojis(el) {
-        el.innerHTML = pvtEmojisHtml();
-      },
-      getRoomUsers: function getRoomUsers() {
+      getAdminships: function getAdminships() {
         var _this6 = this;
 
-        axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
-          _this6.roomUsers = res.data;
-          _this6.onlineUsers = [];
-          _this6.offlineUsers = [];
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        axios.get("/".concat(domain.id, "/adminship")).then(function (res) {
+          _this6.adminship = res.data;
+          _this6.adminshipUnreadCount = _this6.adminship.unReadCount;
+          if (typeof callback === 'function') callback();
+        });
+      },
+      getPvtEmojis: function getPvtEmojis(el) {
+        el.innerHTML = _functions_js__WEBPACK_IMPORTED_MODULE_2__.pvtEmojisHtml();
+      },
+      getRoomUsers: function getRoomUsers() {
+        var _this7 = this;
 
-          _this6.roomUsers.forEach(function (user) {
-            if (user.sessions > 0 || user.status === Status.Stay) _this6.onlineUsers.push(user);else _this6.offlineUsers.push(user);
+        axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
+          _this7.roomUsers = res.data;
+          _this7.onlineUsers = [];
+          _this7.offlineUsers = [];
+
+          _this7.roomUsers.forEach(function (user) {
+            if (user.sessions > 0 || user.status === Status.Stay) _this7.onlineUsers.push(user);else _this7.offlineUsers.push(user);
           });
         })["catch"](function (e) {
-          return _this6.showAlertMsg(getErrorMsg(e));
+          return _this7.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e));
         });
       },
       showGuestRegisterDialog: function showGuestRegisterDialog() {
-        if (rank.code !== GUEST) return;
-        this.showSmallModal(guestRegisterHtml());
+        if (rank.code !== _constant_js__WEBPACK_IMPORTED_MODULE_1__.GUEST) return;
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.guestRegisterHtml());
       },
       getUserProfile: function getUserProfile(uId) {
-        var _this7 = this;
+        var _this8 = this;
 
         if (mobile.matches) this.showRight = false;
 
@@ -5783,113 +5747,113 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios.get("/".concat(domain.id, "/users/").concat(uId)).then(function (res) {
-          _this7.u = res.data;
+          _this8.u = res.data;
 
-          _this7.setUserStatusColor();
+          _this8.setUserStatusColor();
 
-          _this7.showUserProfile = true;
+          _this8.showUserProfile = true;
         })["catch"](function (e) {
-          return _this7.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this8.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       showLogoutDialog: function showLogoutDialog() {
-        this.showSmallModal(logoutHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.logoutHtml());
       },
       logout: function logout() {
-        var _this8 = this;
+        var _this9 = this;
 
         axios.post('logout').then(function () {
           return location.reload();
         })["catch"](function (e) {
-          return _this8.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this9.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeAvatarDialog: function changeAvatarDialog() {
-        this.showSmallModal(changeAvatarHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeAvatarHtml());
       },
       setAvatar: function setAvatar(index) {
-        var _this9 = this;
+        var _this10 = this;
 
         this.showLoader = true;
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.put("/".concat(domain.id, "/users/update-default-avatar"), data).then(function (res) {
-          _this9.user.avatar = res.data.avatar;
-          _this9.showLoader = false;
-
-          _this9.closeSmallModal();
-
-          _this9.showAlertMsg(AVATAR_HAS_BEEN_CHANGED, SUCCESS);
-        })["catch"](function (e) {
-          _this9.showLoader = false;
-
-          _this9.closeSmallModal();
-
-          _this9.showAlertMsg(getErrorMsg(e), ERROR);
-        });
-      },
-      changeAvatar: function changeAvatar(el) {
-        var _this10 = this;
-
-        this.showLoader = true;
-        var formData = new FormData();
-        var file = el.files[0];
-        var pattern = /image-*/;
-        if (file == null || file.type === UNDEFINED) return;
-
-        if (!file.type.match(pattern)) {
-          this.showLoader = false;
-          this.showAlertMsg(ERROR_INVALID_FILE_FORMAT, ERROR);
-          return;
-        }
-
-        formData.append('avatar', file);
-        axios.put("/".concat(domain.id, "/users/update-avatar"), formData).then(function (res) {
           _this10.user.avatar = res.data.avatar;
           _this10.showLoader = false;
 
           _this10.closeSmallModal();
 
-          _this10.showAlertMsg(AVATAR_HAS_BEEN_CHANGED, SUCCESS);
+          _this10.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.AVATAR_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
           _this10.showLoader = false;
 
           _this10.closeSmallModal();
 
-          _this10.showAlertMsg(getErrorMsg(e), ERROR);
+          _this10.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+        });
+      },
+      changeAvatar: function changeAvatar(el) {
+        var _this11 = this;
+
+        this.showLoader = true;
+        var formData = new FormData();
+        var file = el.files[0];
+        var pattern = /image-*/;
+        if (file == null || file.type === _constant_js__WEBPACK_IMPORTED_MODULE_1__.UNDEFINED) return;
+
+        if (!file.type.match(pattern)) {
+          this.showLoader = false;
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_INVALID_FILE_FORMAT, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+          return;
+        }
+
+        formData.append('avatar', file);
+        axios.put("/".concat(domain.id, "/users/update-avatar"), formData).then(function (res) {
+          _this11.user.avatar = res.data.avatar;
+          _this11.showLoader = false;
+
+          _this11.closeSmallModal();
+
+          _this11.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.AVATAR_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
+        })["catch"](function (e) {
+          _this11.showLoader = false;
+
+          _this11.closeSmallModal();
+
+          _this11.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeNameDialog: function changeNameDialog() {
-        this.showSmallModal(changeNameHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeNameHtml());
       },
       closeNameDialog: function closeNameDialog() {
         this.user.name = name;
         this.closeSmallModal();
       },
       changeName: function changeName() {
-        var _this11 = this;
+        var _this12 = this;
 
         if (this.user.name.length < 4 || this.user.name.length > 12) {
-          this.showAlertMsg(ERROR_NAME_INVALID, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_NAME_INVALID, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var formData = new FormData();
         formData.append('name', this.user.name);
         axios.put("/".concat(domain.id, "/users/update-name"), formData).then(function (res) {
-          name = _this11.user.name;
+          name = _this12.user.name;
 
-          _this11.closeSmallModal();
+          _this12.closeSmallModal();
 
-          _this11.showAlertMsg(NAME_HAS_BEEN_CHANGED, SUCCESS);
+          _this12.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.NAME_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this11.closeNameDialog();
+          _this12.closeNameDialog();
 
-          _this11.showAlertMsg(getErrorMsg(e), ERROR);
+          _this12.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       customizeNameDialog: function customizeNameDialog() {
-        this.showSmallModal(customizeNameHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.customizeNameHtml());
       },
       closeCustomizeNameDialog: function closeCustomizeNameDialog() {
         this.user.nameColor = nameColor;
@@ -5903,7 +5867,7 @@ document.addEventListener('alpine:init', function () {
         return this.user.nameColor === textColors[index];
       },
       customizeName: function customizeName() {
-        var _this12 = this;
+        var _this13 = this;
 
         if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
           return;
@@ -5916,27 +5880,27 @@ document.addEventListener('alpine:init', function () {
           nameColor = res.data.nameColor;
           nameFont = res.data.nameFont;
 
-          _this12.closeSmallModal();
+          _this13.closeSmallModal();
 
-          _this12.showAlertMsg(NAME_CUSTOMIZED, SUCCESS);
+          _this13.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.NAME_CUSTOMIZED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this12.closeCustomizeNameDialog();
+          _this13.closeCustomizeNameDialog();
 
-          _this12.showAlertMsg(getErrorMsg(e), ERROR);
+          _this13.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeMoodDialog: function changeMoodDialog() {
-        this.showSmallModal(changeMoodHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeMoodHtml());
       },
       closeMoodDialog: function closeMoodDialog() {
         this.user.mood = mood;
         this.closeSmallModal();
       },
       changeMood: function changeMood() {
-        var _this13 = this;
+        var _this14 = this;
 
         if (this.user.mood.length >= 40) {
-          this.showAlertMsg(ERROR_MOOD_INVALID, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_MOOD_INVALID, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -5945,129 +5909,129 @@ document.addEventListener('alpine:init', function () {
         axios.put("/".concat(domain.id, "/users/update-mood"), formData).then(function (res) {
           mood = res.data.mood;
 
-          _this13.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this13.showAlertMsg(MOOD_HAS_BEEN_CHANGED, SUCCESS);
+          _this14.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.MOOD_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this13.closeMoodDialog();
+          _this14.closeMoodDialog();
 
-          _this13.showAlertMsg(e.response.data, ERROR);
+          _this14.showAlertMsg(e.response.data, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeAboutDialog: function changeAboutDialog() {
-        this.showSmallModal(changeAboutHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeAboutHtml());
       },
       closeAboutDialog: function closeAboutDialog() {
         this.user.about = about;
         this.closeSmallModal();
       },
       changeAbout: function changeAbout() {
-        var _this14 = this;
+        var _this15 = this;
 
         var formData = new FormData();
         formData.append('about', this.user.about);
         axios.put("/".concat(domain.id, "/users/update-about"), formData).then(function (res) {
           about = res.data.about;
 
-          _this14.closeSmallModal();
+          _this15.closeSmallModal();
 
-          _this14.showAlertMsg(ABOUT_HAS_BEEN_CHANGED, SUCCESS);
+          _this15.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ABOUT_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this14.closeAboutDialog();
+          _this15.closeAboutDialog();
 
-          _this14.showAlertMsg(e.response.data, ERROR);
+          _this15.showAlertMsg(e.response.data, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changePasswordDialog: function changePasswordDialog() {
-        if (rank.code === GUEST) {
-          this.showAlertMsg(ERROR_GUEST_DOESNT_HAVE_PASSWORD, ERROR);
+        if (rank.code === _constant_js__WEBPACK_IMPORTED_MODULE_1__.GUEST) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_GUEST_DOESNT_HAVE_PASSWORD, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
-        this.showSmallModal(changePasswordHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changePasswordHtml());
       },
       changePassword: function changePassword() {
-        var _this15 = this;
+        var _this16 = this;
 
         if (this.user.password.length < 8) {
-          this.showAlertMsg(ERROR_PASSWORD_MUST_HAVE, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PASSWORD_MUST_HAVE, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var formData = new FormData();
         formData.append('password', this.user.password);
         axios.post("/".concat(domain.id, "/users/update-password"), formData).then(function () {
-          return _this15.showAlertMsg(PASSWORD_HAS_BEEN_CHANGED, SUCCESS);
+          return _this16.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.PASSWORD_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          return _this15.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this16.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.closeSmallModal();
       },
       changeStatusDialog: function changeStatusDialog() {
-        this.showSmallModal(changeStatusHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeStatusHtml());
       },
       changeStatus: function changeStatus() {
-        var _this16 = this;
+        var _this17 = this;
 
-        if (this.user.status === EMPTY_STRING) return;
+        if (this.user.status === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('status', this.user.status);
-        axios.post("/".concat(domain.id, "/users/update-status"), formData).then(function (res) {
-          _this16.showAlertMsg(STATUS_HAS_BEEN_CHANGED, SUCCESS);
+        axios.put("/".concat(domain.id, "/users/update-status"), formData).then(function (res) {
+          _this17.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.STATUS_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
 
-          _this16.user.status = res.data.status;
+          _this17.user.status = res.data.status;
 
-          _this16.setStatusColor();
+          _this17.setStatusColor();
         })["catch"](function (e) {
-          return _this16.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this17.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.closeSmallModal();
       },
       changeGenderDialog: function changeGenderDialog() {
-        this.showSmallModal(changeGenderHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeGenderHtml());
       },
       changeGender: function changeGender() {
-        var _this17 = this;
+        var _this18 = this;
 
-        if (this.user.gender === EMPTY_STRING) return;
+        if (this.user.gender === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('gender', this.user.gender);
         axios.post("/".concat(domain.id, "/users/update-gender"), formData).then(function (res) {
-          _this17.user.gender = res.data.gender;
+          _this18.user.gender = res.data.gender;
 
-          _this17.showAlertMsg(GENDER_HAS_BEEN_CHANGED, SUCCESS);
+          _this18.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.GENDER_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          return _this17.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this18.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.closeSmallModal();
       },
       changeDobDialog: function changeDobDialog() {
-        this.showSmallModal(changeDobHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeDobHtml());
       },
       closeDobDialog: function closeDobDialog() {
         this.user.dob = dob;
         this.closeSmallModal();
       },
       changeDob: function changeDob() {
-        var _this18 = this;
+        var _this19 = this;
 
-        if (this.user.dob === EMPTY_STRING) return;
+        if (this.user.dob === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('dob', this.user.dob);
         axios.post("".concat(domain.id, "/users/update-dob"), formData).then(function (res) {
-          _this18.showAlertMsg(DOB_HAS_BEEN_CHANGED, SUCCESS);
+          _this19.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.DOB_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
 
-          _this18.user.dob = res.data.dob;
+          _this19.user.dob = res.data.dob;
 
-          _this18.closeSmallModal();
+          _this19.closeSmallModal();
         })["catch"](function (e) {
-          _this18.closeDobDialog();
+          _this19.closeDobDialog();
 
-          _this18.showAlertMsg(getErrorMsg(e), ERROR);
+          _this19.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       customizeTextDialog: function customizeTextDialog() {
-        this.showSmallModal(customizeTextHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.customizeTextHtml());
       },
       closeCustomizeTextDialog: function closeCustomizeTextDialog() {
         this.user.textColor = textColor;
@@ -6086,7 +6050,7 @@ document.addEventListener('alpine:init', function () {
         this.showOption = false;
       },
       customizeText: function customizeText() {
-        var _this19 = this;
+        var _this20 = this;
 
         if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) return;
         var formData = new FormData();
@@ -6098,17 +6062,17 @@ document.addEventListener('alpine:init', function () {
           textBold = res.data.textBold;
           textFont = res.data.textFont;
 
-          _this19.closeSmallModal();
+          _this20.closeSmallModal();
 
-          _this19.showAlertMsg(CHAT_TEXT_CUSTOMIZED, SUCCESS);
+          _this20.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.CHAT_TEXT_CUSTOMIZED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this19.closeCustomizeTextDialog();
+          _this20.closeCustomizeTextDialog();
 
-          _this19.showAlertMsg(getErrorMsg(e), ERROR);
+          _this20.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeSoundSettings: function changeSoundSettings() {
-        var _this20 = this;
+        var _this21 = this;
 
         var formData = new FormData();
         formData.append('chatSound', this.user.chatSound);
@@ -6116,23 +6080,23 @@ document.addEventListener('alpine:init', function () {
         formData.append('nameSound', this.user.nameSound);
         formData.append('notifiSound', this.user.notifiSound);
         axios.put("/".concat(domain.id, "/users/change-sound-settings"), formData)["catch"](function (e) {
-          _this20.user.chatSound = chatSound;
-          _this20.user.pvtSound = pvtSound;
-          _this20.user.notifiSound = notifiSound;
-          _this20.user.nameSound = nameSound;
+          _this21.user.chatSound = chatSound;
+          _this21.user.pvtSound = pvtSound;
+          _this21.user.notifiSound = notifiSound;
+          _this21.user.nameSound = nameSound;
 
-          _this20.showAlertMsg(ERROR_SOMETHING_WENT_WRONG, ERROR);
+          _this21.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_SOMETHING_WENT_WRONG, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changePrivate: function changePrivate() {
-        var _this21 = this;
+        var _this22 = this;
 
         var formData = new FormData();
         formData.append('private', this.user["private"]);
         axios.put("/".concat(domain.id, "/users/change-private"), formData)["catch"](function (e) {
-          _this21.user["private"] = pvt;
+          _this22.user["private"] = pvt;
 
-          _this21.showAlertMsg(ERROR_SOMETHING_WENT_WRONG, ERROR);
+          _this22.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_SOMETHING_WENT_WRONG, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       removeTopic: function removeTopic() {
@@ -6143,19 +6107,19 @@ document.addEventListener('alpine:init', function () {
       },
       addMainEmo: function addMainEmo(emo) {
         var input = this.$refs.mainInput;
-        input.value === EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
+        input.value === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
         this.showEmo = false;
         input.focus();
       },
       addPvtEmo: function addPvtEmo(emo) {
         var input = this.$refs.pvtInput;
-        input.value === EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
+        input.value === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
         input.focus();
       },
       appendUserName: function appendUserName(el) {
         var username = el.innerText;
         var input = this.$refs.mainInput;
-        input.value === EMPTY_STRING ? input.value = "".concat(username, " ") : input.value += " ".concat(username, " ");
+        input.value === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING ? input.value = "".concat(username, " ") : input.value += " ".concat(username, " ");
         input.focus();
       },
       sendToRoom: function sendToRoom(message) {
@@ -6163,13 +6127,13 @@ document.addEventListener('alpine:init', function () {
       },
       sendMessage: function sendMessage() {
         if (this.user.muted) {
-          this.showAlertMsg(ERROR_YOU_ARE_MUTED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_YOU_ARE_MUTED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var content = this.$refs.mainInput.value;
 
-        if (content === EMPTY_STRING) {
+        if (content === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) {
           this.$refs.mainInput.focus();
           return;
         }
@@ -6178,14 +6142,14 @@ document.addEventListener('alpine:init', function () {
           content: content,
           type: MessageType.Chat
         });
-        this.$refs.mainInput.value = EMPTY_STRING;
+        this.$refs.mainInput.value = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         this.$refs.mainInput.focus();
       },
       recordMainAudio: function recordMainAudio() {
-        var _this22 = this;
+        var _this23 = this;
 
         if (this.user.muted) {
-          this.showAlertMsg(ERROR_YOU_ARE_MUTED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_YOU_ARE_MUTED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6193,12 +6157,12 @@ document.addEventListener('alpine:init', function () {
           this.showEmo = false;
           this.showOption = false;
 
-          if (!(RECORDING_TIME - this.remainingTime > MIN_RECORDING_TIME)) {
+          if (!(_constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME - this.remainingTime > _constant_js__WEBPACK_IMPORTED_MODULE_1__.MIN_RECORDING_TIME)) {
             this.recorder.stop();
             this.isRecording = false;
-            this.remainingTime = RECORDING_TIME;
+            this.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
             clearInterval(this.mainInterval);
-            this.showAlertMsg(ERROR_RECORD_LENGTH, ERROR);
+            this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_RECORD_LENGTH, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
             return;
           }
 
@@ -6213,39 +6177,39 @@ document.addEventListener('alpine:init', function () {
             });
             var formData = new FormData();
             formData.append('audio', audioFile);
-            var content = _this22.$refs.mainInput.value;
+            var content = _this23.$refs.mainInput.value;
             formData.append('content', content);
             axios.post("/".concat(domain.id, "/rooms/").concat(room.id, "/upload-audio"), formData).then(function (res) {
-              return _this22.sendToRoom(res.data);
+              return _this23.sendToRoom(res.data);
             })["catch"](function () {
-              return _this22.showAlertMsg(ERROR_UPLOAD_FAILED, ERROR);
+              return _this23.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_UPLOAD_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
             });
           })["catch"](function () {
-            return _this22.showAlertMsg(ERROR_RECORDING_FAILED, ERROR);
+            return _this23.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_RECORDING_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
           this.isRecording = false;
-          this.remainingTime = RECORDING_TIME;
+          this.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
           clearInterval(this.mainInterval);
         } else {
           this.showEmo = false;
           this.showOption = false;
           this.recorder.start().then(function () {
-            _this22.mainInterval = setInterval(function () {
-              if (_this22.remainingTime === 1) {
-                _this22.recordMainAudio();
-              } else _this22.remainingTime--;
+            _this23.mainInterval = setInterval(function () {
+              if (_this23.remainingTime === 1) {
+                _this23.recordMainAudio();
+              } else _this23.remainingTime--;
             }, 1000);
-            _this22.isRecording = true;
+            _this23.isRecording = true;
           })["catch"](function (e) {
-            _this22.showAlertMsg('You haven\'t given mic permission', ERROR);
+            _this23.showAlertMsg('You haven\'t given mic permission', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
         }
       },
       uploadImage: function uploadImage(event) {
-        var _this23 = this;
+        var _this24 = this;
 
         if (this.user.muted) {
-          this.showAlertMsg(ERROR_YOU_ARE_MUTED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_YOU_ARE_MUTED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6254,10 +6218,10 @@ document.addEventListener('alpine:init', function () {
         var file = event.target.files[0];
         var pattern = /image-*/;
         var content = this.$refs.mainInput.value;
-        if (file == null || file.type === UNDEFINED) return;
+        if (file == null || file.type === _constant_js__WEBPACK_IMPORTED_MODULE_1__.UNDEFINED) return;
 
         if (!file.type.match(pattern)) {
-          this.showAlertMsg(ERROR_INVALID_FILE_FORMAT, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_INVALID_FILE_FORMAT, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           this.showLoader = false;
           return;
         }
@@ -6265,17 +6229,17 @@ document.addEventListener('alpine:init', function () {
         formData.append('image', file);
         formData.append('content', content);
         axios.post("".concat(domain.id, "/rooms/").concat(room.id, "/upload-image"), formData).then(function (res) {
-          _this23.sendToRoom(res.data);
+          _this24.sendToRoom(res.data);
 
-          _this23.$refs.mainInput.value = EMPTY_STRING;
+          _this24.$refs.mainInput.value = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
 
-          _this23.$refs.mainInput.focus();
+          _this24.$refs.mainInput.focus();
 
-          _this23.showLoader = false;
+          _this24.showLoader = false;
         })["catch"](function () {
-          _this23.showLoader = false;
+          _this24.showLoader = false;
 
-          _this23.showAlertMsg(ERROR_UPLOAD_FAILED, ERROR);
+          _this24.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_UPLOAD_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       showImageDialog: function showImageDialog(el) {
@@ -6290,14 +6254,14 @@ document.addEventListener('alpine:init', function () {
 
           if (message.user.id === userId) {
             setTimeout(function () {
-              chatMessages.insertAdjacentHTML("afterbegin", renderWelcomeMessage());
+              chatMessages.insertAdjacentHTML('afterbegin', _functions_js__WEBPACK_IMPORTED_MODULE_2__.renderWelcomeMessage());
             }, 1e3);
             return;
           }
 
-          chatMessages.insertAdjacentHTML("afterbegin", renderJoinMessage(message));
+          chatMessages.insertAdjacentHTML('afterbegin', _functions_js__WEBPACK_IMPORTED_MODULE_2__.renderJoinMessage(message));
         } else if (message.type === MessageType.Chat) {
-          chatMessages.insertAdjacentHTML("afterbegin", renderChatMessage(message));
+          chatMessages.insertAdjacentHTML('afterbegin', _functions_js__WEBPACK_IMPORTED_MODULE_2__.renderChatMessage(message));
         } else if (message.type === MessageType.Leave) {
           this.getRoomUsers();
 
@@ -6306,7 +6270,7 @@ document.addEventListener('alpine:init', function () {
             return;
           }
 
-          chatMessages.insertAdjacentHTML("afterbegin", renderLeaveMessage(message));
+          chatMessages.insertAdjacentHTML('afterbegin', _functions_js__WEBPACK_IMPORTED_MODULE_2__.renderLeaveMessage(message));
         } else if (message.type === MessageType.DelChat) {
           var li = document.getElementById("chat-".concat(message.id));
           li != null && li.remove();
@@ -6326,7 +6290,7 @@ document.addEventListener('alpine:init', function () {
           if (message.user.id === userId) {
             this.user.muted = true;
             this.$refs.mainInput.disabled = this.user.muted;
-            this.showAlertMsg('You have been muted', ERROR);
+            this.showAlertMsg('You have been muted', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           }
         } else if (message.type === MessageType.UnMute) {
           var _user = this.roomUsers.find(function (user) {
@@ -6338,25 +6302,25 @@ document.addEventListener('alpine:init', function () {
           if (message.user.id === userId) {
             this.user.muted = false;
             this.$refs.mainInput.disabled = this.user.muted;
-            this.showAlertMsg('You have been unmuted', SUCCESS);
+            this.showAlertMsg('You have been unmuted', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
           }
         }
       },
       deleteChat: function deleteChat(id) {
-        var _this24 = this;
+        var _this25 = this;
 
         if (permission.delMsg) {
           axios["delete"]("/".concat(domain.id, "/rooms/").concat(room.id, "/messages/").concat(id, "/delete"))["catch"](function () {
-            return _this24.showAlertMsg(ERROR_DELETE_MESSAGE, ERROR);
+            return _this25.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_DELETE_MESSAGE, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
-        } else this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+        } else this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
       },
       reportDialog: function reportDialog(id, type) {
         var reportType = type === 1 ? ReportType.Chat : type === 2 ? ReportType.PvtChat : ReportType.NewsFeed;
-        this.showSmallModal(reportDialogHtml(id, reportType));
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.reportDialogHtml(id, reportType));
       },
       report: function report(targetId, reason, type) {
-        var _this25 = this;
+        var _this26 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
@@ -6364,14 +6328,14 @@ document.addEventListener('alpine:init', function () {
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("".concat(domain.id, "/reports/create"), formData).then(function (res) {
-          _this25.showAlertMsg('Message reported successfully', SUCCESS);
+          _this26.showAlertMsg('Message reported successfully', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this25.showAlertMsg('Reporting message failed', ERROR);
+          _this26.showAlertMsg('Reporting message failed', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.closeSmallModal();
       },
       openPvtDialog: function openPvtDialog(id) {
-        var _this26 = this;
+        var _this27 = this;
 
         var user = this.u;
         var exists = this.pvtUsers.find(function (user) {
@@ -6385,7 +6349,7 @@ document.addEventListener('alpine:init', function () {
           this.showRight = false;
         }
 
-        if (exists != null && exists !== 'undefined') {
+        if (exists != null && exists !== _constant_js__WEBPACK_IMPORTED_MODULE_1__.UNDEFINED) {
           exists.minimize = false;
           exists.added = true;
 
@@ -6394,7 +6358,7 @@ document.addEventListener('alpine:init', function () {
           }
 
           this.$nextTick(function () {
-            dragElement(document.getElementById("draggable-".concat(exists.id)), exists.id);
+            _functions_js__WEBPACK_IMPORTED_MODULE_2__.dragElement(document.getElementById("draggable-".concat(exists.id)), exists.id);
           });
           return;
         }
@@ -6404,15 +6368,15 @@ document.addEventListener('alpine:init', function () {
           user.minimize = false;
           user.added = true;
           user.isRecording = false;
-          user.remainingTime = RECORDING_TIME;
+          user.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
           user.recorder = new MicRecorder({
             bitrate: 80
           });
           user.interval = null;
 
-          _this26.pvtUsers.unshift(user);
+          _this27.pvtUsers.unshift(user);
 
-          _this26.showUserProfile = false;
+          _this27.showUserProfile = false;
         });
         this.setPvtNotifiCount();
       },
@@ -6439,13 +6403,13 @@ document.addEventListener('alpine:init', function () {
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg(ERROR_CANT_PRIVATE, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_CANT_PRIVATE, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var content = input.value;
 
-        if (content === EMPTY_STRING) {
+        if (content === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) {
           input.focus();
           return;
         }
@@ -6460,21 +6424,21 @@ document.addEventListener('alpine:init', function () {
           content: content,
           type: MessageType.Chat
         });
-        input.value = EMPTY_STRING;
+        input.value = _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING;
         input.focus();
       },
       sendToUser: function sendToUser(message) {
         this.userSocket.send(JSON.stringify(message));
       },
       recordPvtAudio: function recordPvtAudio(id) {
-        var _this27 = this;
+        var _this28 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg(ERROR_CANT_PRIVATE, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_CANT_PRIVATE, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6482,20 +6446,20 @@ document.addEventListener('alpine:init', function () {
           user.recorder.start().then(function () {
             user.interval = setInterval(function () {
               if (user.remainingTime === 1) {
-                _this27.recordPvtAudio(id);
+                _this28.recordPvtAudio(id);
               } else user.remainingTime--;
             }, 1000);
             user.isRecording = true;
           })["catch"](function () {
-            return _this27.showAlertMsg(ERROR_NO_MIC_PERMISSION, ERROR);
+            return _this28.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_NO_MIC_PERMISSION, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
         } else {
-          if (!(RECORDING_TIME - user.remainingTime > MIN_RECORDING_TIME)) {
+          if (!(_constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME - user.remainingTime > _constant_js__WEBPACK_IMPORTED_MODULE_1__.MIN_RECORDING_TIME)) {
             user.recorder.stop();
             user.isRecording = false;
             clearInterval(user.interval);
-            user.remainingTime = RECORDING_TIME;
-            this.showAlertMsg(ERROR_RECORD_LENGTH, ERROR);
+            user.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
+            this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_RECORD_LENGTH, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
             return;
           }
 
@@ -6511,27 +6475,27 @@ document.addEventListener('alpine:init', function () {
             var formData = new FormData();
             formData.append('audio', audioFile);
             axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-audio"), formData).then(function (res) {
-              _this27.sendToUser(res.data);
+              _this28.sendToUser(res.data);
             })["catch"](function (err) {
-              _this27.showAlertMsg(ERROR_UPLOAD_FAILED, ERROR);
+              _this28.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_UPLOAD_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
             });
           })["catch"](function (e) {
-            _this27.showAlertMsg(ERROR_RECORDING_FAILED, ERROR);
+            _this28.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_RECORDING_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
           user.isRecording = false;
           clearInterval(user.interval);
-          user.remainingTime = RECORDING_TIME;
+          user.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
         }
       },
       uploadPvtImage: function uploadPvtImage(id, event) {
-        var _this28 = this;
+        var _this29 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
         });
 
         if (!user["private"] || !permission["private"]) {
-          this.showAlertMsg('You can\'t private to this user', ERROR);
+          this.showAlertMsg('You can\'t private to this user', _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6539,23 +6503,23 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         var file = event.target.files[0];
         var pattern = /image-*/;
-        if (file == null || file.type === UNDEFINED) return;
+        if (file == null || file.type === _constant_js__WEBPACK_IMPORTED_MODULE_1__.UNDEFINED) return;
 
         if (!file.type.match(pattern)) {
-          this.showAlertMsg(ERROR_INVALID_FILE_FORMAT, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_INVALID_FILE_FORMAT, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           this.showLoader = false;
           return;
         }
 
         formData.append("image", file);
         axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-image"), formData).then(function (res) {
-          _this28.sendToUser(res.data);
+          _this29.sendToUser(res.data);
 
-          _this28.showLoader = false;
+          _this29.showLoader = false;
         })["catch"](function (e) {
-          _this28.showLoader = false;
+          _this29.showLoader = false;
 
-          _this28.showAlertMsg(ERROR_UPLOAD_FAILED, ERROR);
+          _this29.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_UPLOAD_FAILED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       onPvtMessageReceived: function onPvtMessageReceived(e) {
@@ -6585,41 +6549,41 @@ document.addEventListener('alpine:init', function () {
         }
       },
       reCheckPvtMessages: function reCheckPvtMessages() {
-        var _this29 = this;
+        var _this30 = this;
 
         axios.get("/".concat(domain.id, "/pvt/users")).then(function (res) {
-          _this29.pvtUsers = res.data;
+          _this30.pvtUsers = res.data;
 
-          _this29.pvtUsers.forEach(function (user) {
+          _this30.pvtUsers.forEach(function (user) {
             user.minimize = false;
             user.added = false;
             user.isRecording = false;
-            user.remainingTime = RECORDING_TIME;
+            user.remainingTime = _constant_js__WEBPACK_IMPORTED_MODULE_1__.RECORDING_TIME;
             user.recorder = new MicRecorder({
               bitrate: 80
             });
             user.interval = null;
           });
 
-          _this29.setPvtNotifiCount();
+          _this30.setPvtNotifiCount();
         })["catch"](function (e) {});
       },
       openRoomsModal: function openRoomsModal() {
-        var _this30 = this;
+        var _this31 = this;
 
         if (mobile.matches) this.showLeft = false;
         axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
-          return _this30.showFullModal(roomModalHtml(res.data));
+          return _this31.showFullModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.roomModalHtml(res.data));
         });
       },
       openMessageModal: function openMessageModal() {
-        this.showFullModal(messageModalHtml(this.pvtUsers));
+        this.showFullModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.messageModalHtml(this.pvtUsers));
       },
       setAllSeen: function setAllSeen(sender) {
-        var _this31 = this;
+        var _this32 = this;
 
         axios.post("".concat(domain.id, "/pvt/").concat(sender, "/all-seen")).then(function (res) {
-          var user = _this31.pvtUsers.find(function (user) {
+          var user = _this32.pvtUsers.find(function (user) {
             return user.id === sender;
           });
 
@@ -6627,7 +6591,7 @@ document.addEventListener('alpine:init', function () {
             return message.seen = true;
           });
 
-          _this31.setPvtNotifiCount();
+          _this32.setPvtNotifiCount();
         });
       },
       setPvtNotifiCount: function setPvtNotifiCount() {
@@ -6657,23 +6621,23 @@ document.addEventListener('alpine:init', function () {
         el.style.zIndex = "50";
       },
       openReportsModal: function openReportsModal() {
-        this.showFullModal(reportModalHtml(this.reports));
+        this.showFullModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.reportModalHtml(this.reports));
       },
       openReportActionDialog: function openReportActionDialog(reportId, targetId, roomId, type) {
-        var _this32 = this;
+        var _this33 = this;
 
         this.closeFullModal();
         var html = "<div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Report Action</p>\n                        <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>";
 
         if (type === ReportType.Chat) {
           axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/messages/").concat(targetId)).then(function (res) {
-            html += renderReportChatMessage(res.data, reportId, targetId, roomId, type);
+            html += _functions_js__WEBPACK_IMPORTED_MODULE_2__.renderReportChatMessage(res.data, reportId, targetId, roomId, type);
 
-            _this32.showSmallModal(html);
+            _this33.showSmallModal(html);
           })["catch"](function (e) {
             if (e.response) {
               if (e.response.status === 404) {
-                _this32.showAlertMsg(e.response.data, ERROR);
+                _this33.showAlertMsg(e.response.data, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
 
                 var formData = new FormData();
                 formData.append('domainId', domain.id);
@@ -6685,111 +6649,148 @@ document.addEventListener('alpine:init', function () {
               return;
             }
 
-            _this32.showAlertMsg('Something went wrong', ERROR);
+            _this33.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_SOMETHING_WENT_WRONG, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           });
         } else if (type === ReportType.PvtChat) {} else if (type === ReportType.NewsFeed) {}
       },
       takeAction: function takeAction(reportId, targetId, roomId, type) {
-        var _this33 = this;
+        var _this34 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/take-action"), formData).then(function () {
-          return _this33.closeSmallModal();
+          return _this34.closeSmallModal();
         });
       },
       noAction: function noAction(reportId, type) {
-        var _this34 = this;
+        var _this35 = this;
 
         var formData = new FormData();
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/no-action"), formData).then(function () {
-          return _this34.closeSmallModal();
+          return _this35.closeSmallModal();
         });
       },
       openNewsModal: function openNewsModal() {
-        var _this35 = this;
+        var _this36 = this;
 
         if (mobile.matches) this.showLeft = false;
-        this.showFullModal(newsModalHtml(this.news.news));
+        this.showFullModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.newsModalHtml(this.news.news));
         this.newsUnreadCount !== 0 && axios.post("/".concat(domain.id, "/news/read")).then(function () {
-          return _this35.newsUnreadCount = _this35.news.unReadCount = 0;
+          return _this36.newsUnreadCount = _this36.news.unReadCount = 0;
         });
       },
       writeNewsDialog: function writeNewsDialog() {
         if (!permission.writeNews) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
-        this.showSmallModal(writeNewsDialogHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.writeNewsDialogHtml());
       },
       delNews: function delNews(newsId) {
-        var _this36 = this;
+        var _this37 = this;
 
         if (!permission.delNews) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         axios["delete"]("/".concat(domain.id, "/news/").concat(newsId, "/delete")).then(function () {
-          _this36.showAlertMsg(NEWS_DELETED, SUCCESS);
+          _this37.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.NEWS_DELETED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
 
-          _this36.news.news = _this36.news.news.filter(function (news) {
+          _this37.news.news = _this37.news.news.filter(function (news) {
             return news.id !== newsId;
           });
 
-          _this36.openNewsModal();
+          _this37.openNewsModal();
         })["catch"](function (e) {
-          return _this36.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this37.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+        });
+      },
+      openAdminshipModal: function openAdminshipModal() {
+        var _this38 = this;
+
+        if (mobile.matches) this.showLeft = false;
+        this.showFullModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.adminshipModalHtml(this.adminship.adminships));
+        this.adminshipUnreadCount !== 0 && axios.post("/".concat(domain.id, "/adminship/read")).then(function () {
+          return _this38.adminshipUnreadCount = _this38.adminship.unReadCount = 0;
+        });
+      },
+      writeAdminShipDialog: function writeAdminShipDialog() {
+        if (!permission.adminShip) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+          return;
+        }
+
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.writeAdminshipDialogHtml());
+      },
+      delAdminShip: function delAdminShip(postId) {
+        var _this39 = this;
+
+        if (!permission.delNews) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+          return;
+        }
+
+        axios["delete"]("/".concat(domain.id, "/adminship/").concat(postId, "/delete")).then(function () {
+          _this39.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ADMINSHIP_DELETED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
+
+          _this39.news.news = _this39.news.news.filter(function (news) {
+            return news.id !== postId;
+          });
+
+          _this39.openAdminshipModal();
+        })["catch"](function (e) {
+          return _this39.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       },
       changeUserNameDialog: function changeUserNameDialog() {
         if (!permission.userName) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
-        this.showSmallModal(changeUserNameHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeUserNameHtml());
       },
       changeUserName: function changeUserName() {
-        var _this37 = this;
+        var _this40 = this;
 
         if (!permission.userName) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         if (name.length < 4 || name.length > 12) {
-          this.showAlertMsg(ERROR_NAME_INVALID, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_NAME_INVALID, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var formData = new FormData();
         formData.append('name', this.u.name);
         axios.post("/".concat(domain.id, "/users/").concat(this.u.id, "/update-name"), formData).then(function () {
-          return _this37.showAlertMsg(NAME_HAS_BEEN_CHANGED, SUCCESS);
+          return _this40.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.NAME_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          return _this37.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this40.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
       },
       changeUserAvatarDialog: function changeUserAvatarDialog() {
         if (!permission.avatar) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
-        this.showSmallModal(changeUserAvatarHtml());
+        this.showSmallModal(_functions_js__WEBPACK_IMPORTED_MODULE_2__.changeUserAvatarHtml());
       },
       setUserAvatar: function setUserAvatar(index) {
-        var _this38 = this;
+        var _this41 = this;
 
         if (!permission.avatar) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6797,22 +6798,22 @@ document.addEventListener('alpine:init', function () {
         var data = new FormData();
         data.append('avatar', avatars[index]);
         axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-default-avatar"), data).then(function (res) {
-          _this38.showLoader = false;
+          _this41.showLoader = false;
 
-          _this38.showAlertMsg(AVATAR_HAS_BEEN_CHANGED, SUCCESS);
+          _this41.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.AVATAR_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this38.showLoader = false;
+          _this41.showLoader = false;
 
-          _this38.showAlertMsg(getErrorMsg(e), ERROR);
+          _this41.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
       },
       changeUserAvatar: function changeUserAvatar(el) {
-        var _this39 = this;
+        var _this42 = this;
 
         if (!permission.avatar) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6820,44 +6821,44 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         var file = el.files[0];
         var pattern = /image-*/;
-        if (file == null || file.type === UNDEFINED) return;
+        if (file == null || file.type === _constant_js__WEBPACK_IMPORTED_MODULE_1__.UNDEFINED) return;
 
         if (!file.type.match(pattern)) {
           this.showLoader = false;
-          this.showAlertMsg(ERROR_INVALID_FILE_FORMAT, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_INVALID_FILE_FORMAT, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         formData.append('avatar', file);
         axios.post("/".concat(domain.id, "/users/").concat(this.u.id, "/update-avatar"), formData).then(function () {
-          _this39.showLoader = false;
+          _this42.showLoader = false;
 
-          _this39.showAlertMsg(AVATAR_HAS_BEEN_CHANGED, SUCCESS);
+          _this42.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.AVATAR_CHANGED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this39.showLoader = false;
+          _this42.showLoader = false;
 
-          _this39.showAlertMsg(getErrorMsg(e), ERROR);
+          _this42.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
       },
       actionMute: function actionMute() {
-        var _this40 = this;
+        var _this43 = this;
 
         if (!permission.mute) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         this.u.muted ? axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function () {
-          return _this40.u.muted = false;
+          return _this43.u.muted = false;
         }) : axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function () {
-          return _this40.u.muted = true;
+          return _this43.u.muted = true;
         });
       },
       kickUser: function kickUser(id) {
         if (!permission.kick) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6865,7 +6866,7 @@ document.addEventListener('alpine:init', function () {
       },
       banUser: function banUser(id) {
         if (!permission.ban) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
@@ -6883,7 +6884,7 @@ document.addEventListener('alpine:init', function () {
       password: '',
       errors: {},
       guestRegister: function guestRegister() {
-        var _this41 = this;
+        var _this44 = this;
 
         this.showLoader = true;
         var form = new FormData();
@@ -6892,113 +6893,308 @@ document.addEventListener('alpine:init', function () {
         form.append('password', this.password);
         form.append('gender', this.user.gender);
         axios.put("/".concat(domain.id, "/register"), form).then(function (res) {
-          _this41.showLoader = true;
+          _this44.showLoader = true;
 
-          _this41.closeSmallModal();
+          _this44.closeSmallModal();
 
           setTimeout(function () {
             return location.reload();
           }, 2000);
 
-          _this41.showAlertMsg(res.data, SUCCESS);
+          _this44.showAlertMsg(res.data, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
         })["catch"](function (e) {
-          _this41.showLoader = false;
-          if (e.response) _this41.errors = e.response.data;
+          _this44.showLoader = false;
+          if (e.response) _this44.errors = e.response.data;
         });
       }
     };
   });
   alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('announcement', function () {
     return {
-      content: EMPTY_STRING,
-      image: EMPTY_STRING,
+      content: _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING,
+      image: _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING,
       init: function init() {
-        var _this42 = this;
+        var _this45 = this;
 
         this.$nextTick(function () {
-          return _this42.$refs.newsInput.focus();
+          return _this45.$refs.newsInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this43 = this;
+        var _this46 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this43.image = e.target.result;
+          return _this46.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeNews: function writeNews() {
-        var _this44 = this;
+        var _this47 = this;
 
         var input = this.$refs.input;
 
         if (!permission.writeNews) {
-          this.showAlertMsg(ERROR_PERMISSION_DENIED, ERROR);
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
-        if (this.content === EMPTY_STRING) {
-          this.showAlertMsg('Content cannot be empty', ERROR);
+        if (this.content === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_CONTENT_EMPTY, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
           return;
         }
 
         var formData = new FormData();
         formData.append('content', this.content);
-        if (this.image !== EMPTY_STRING) formData.append('image', input.files[0]);
+        if (this.image !== _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/news/create"), formData).then(function () {
-          _this44.closeSmallModal();
+          _this47.closeSmallModal();
 
-          _this44.showAlertMsg(NEWS_CREATED, SUCCESS);
+          _this47.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.NEWS_CREATED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
 
-          _this44.getNews(function () {
-            _this44.openNewsModal();
+          _this47.getNews(function () {
+            _this47.openNewsModal();
           });
         })["catch"](function (e) {
-          return _this44.showAlertMsg(getErrorMsg(e), ERROR);
+          return _this47.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+        });
+      }
+    };
+  });
+  alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('adminship', function () {
+    return {
+      content: _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING,
+      image: _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING,
+      init: function init() {
+        var _this48 = this;
+
+        this.$nextTick(function () {
+          return _this48.$refs.adminshipInput.focus();
+        });
+      },
+      addImage: function addImage(el) {
+        var _this49 = this;
+
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          return _this49.image = e.target.result;
+        };
+
+        reader.readAsDataURL(el.files[0]);
+      },
+      writeAdminship: function writeAdminship() {
+        var _this50 = this;
+
+        var input = this.$refs.input;
+
+        if (!permission.writeNews) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_PERMISSION_DENIED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+          return;
+        }
+
+        if (this.content === _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) {
+          this.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ERROR_CONTENT_EMPTY, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('content', this.content);
+        if (this.image !== _constant_js__WEBPACK_IMPORTED_MODULE_1__.EMPTY_STRING) formData.append('image', input.files[0]);
+        axios.post("/".concat(domain.id, "/adminship/create"), formData).then(function () {
+          _this50.closeSmallModal();
+
+          _this50.showAlertMsg(_constant_js__WEBPACK_IMPORTED_MODULE_1__.ADMINSHIP_CREATED, _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_SUCCESS);
+
+          _this50.getAdminships(function () {
+            _this50.openAdminshipModal();
+          });
+        })["catch"](function (e) {
+          return _this50.showAlertMsg(_functions_js__WEBPACK_IMPORTED_MODULE_2__.getErrorMsg(e), _constant_js__WEBPACK_IMPORTED_MODULE_1__.CSS_ERROR);
         });
       }
     };
   });
 });
 alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].start();
+
+/***/ }),
+
+/***/ "./src/main/resources/dev/constant.js":
+/*!********************************************!*\
+  !*** ./src/main/resources/dev/constant.js ***!
+  \********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ABOUT_CHANGED": () => (/* binding */ ABOUT_CHANGED),
+/* harmony export */   "ADMINSHIP_CREATED": () => (/* binding */ ADMINSHIP_CREATED),
+/* harmony export */   "ADMINSHIP_DELETED": () => (/* binding */ ADMINSHIP_DELETED),
+/* harmony export */   "AVATAR_CHANGED": () => (/* binding */ AVATAR_CHANGED),
+/* harmony export */   "CHAT_TEXT_CUSTOMIZED": () => (/* binding */ CHAT_TEXT_CUSTOMIZED),
+/* harmony export */   "CSS_ERROR": () => (/* binding */ CSS_ERROR),
+/* harmony export */   "CSS_GREEN": () => (/* binding */ CSS_GREEN),
+/* harmony export */   "CSS_RED": () => (/* binding */ CSS_RED),
+/* harmony export */   "CSS_SUCCESS": () => (/* binding */ CSS_SUCCESS),
+/* harmony export */   "CSS_YELLOW": () => (/* binding */ CSS_YELLOW),
+/* harmony export */   "DOB_CHANGED": () => (/* binding */ DOB_CHANGED),
+/* harmony export */   "EMPTY_STRING": () => (/* binding */ EMPTY_STRING),
+/* harmony export */   "ERROR_CANT_PRIVATE": () => (/* binding */ ERROR_CANT_PRIVATE),
+/* harmony export */   "ERROR_CONTENT_EMPTY": () => (/* binding */ ERROR_CONTENT_EMPTY),
+/* harmony export */   "ERROR_DELETE_MESSAGE": () => (/* binding */ ERROR_DELETE_MESSAGE),
+/* harmony export */   "ERROR_GUEST_DOESNT_HAVE_PASSWORD": () => (/* binding */ ERROR_GUEST_DOESNT_HAVE_PASSWORD),
+/* harmony export */   "ERROR_INVALID_FILE_FORMAT": () => (/* binding */ ERROR_INVALID_FILE_FORMAT),
+/* harmony export */   "ERROR_MOOD_INVALID": () => (/* binding */ ERROR_MOOD_INVALID),
+/* harmony export */   "ERROR_NAME_INVALID": () => (/* binding */ ERROR_NAME_INVALID),
+/* harmony export */   "ERROR_NO_MIC_PERMISSION": () => (/* binding */ ERROR_NO_MIC_PERMISSION),
+/* harmony export */   "ERROR_PASSWORD_MUST_HAVE": () => (/* binding */ ERROR_PASSWORD_MUST_HAVE),
+/* harmony export */   "ERROR_PERMISSION_DENIED": () => (/* binding */ ERROR_PERMISSION_DENIED),
+/* harmony export */   "ERROR_RECORDING_FAILED": () => (/* binding */ ERROR_RECORDING_FAILED),
+/* harmony export */   "ERROR_RECORD_LENGTH": () => (/* binding */ ERROR_RECORD_LENGTH),
+/* harmony export */   "ERROR_SOMETHING_WENT_WRONG": () => (/* binding */ ERROR_SOMETHING_WENT_WRONG),
+/* harmony export */   "ERROR_UPLOAD_FAILED": () => (/* binding */ ERROR_UPLOAD_FAILED),
+/* harmony export */   "ERROR_YOU_ARE_MUTED": () => (/* binding */ ERROR_YOU_ARE_MUTED),
+/* harmony export */   "GENDER_CHANGED": () => (/* binding */ GENDER_CHANGED),
+/* harmony export */   "GUEST": () => (/* binding */ GUEST),
+/* harmony export */   "MIN_RECORDING_TIME": () => (/* binding */ MIN_RECORDING_TIME),
+/* harmony export */   "MOOD_CHANGED": () => (/* binding */ MOOD_CHANGED),
+/* harmony export */   "NAME_CHANGED": () => (/* binding */ NAME_CHANGED),
+/* harmony export */   "NAME_CUSTOMIZED": () => (/* binding */ NAME_CUSTOMIZED),
+/* harmony export */   "NEWS_CREATED": () => (/* binding */ NEWS_CREATED),
+/* harmony export */   "NEWS_DELETED": () => (/* binding */ NEWS_DELETED),
+/* harmony export */   "PASSWORD_CHANGED": () => (/* binding */ PASSWORD_CHANGED),
+/* harmony export */   "RECORDING_TIME": () => (/* binding */ RECORDING_TIME),
+/* harmony export */   "STATUS_CHANGED": () => (/* binding */ STATUS_CHANGED),
+/* harmony export */   "UNDEFINED": () => (/* binding */ UNDEFINED)
+/* harmony export */ });
 /**
- * Global functions
+ * Success
+ * */
+var AVATAR_CHANGED = 'Avatar has been changed';
+var NAME_CHANGED = 'Name has been changed';
+var NAME_CUSTOMIZED = 'Name text customized.';
+var MOOD_CHANGED = 'Mood has been changed';
+var ABOUT_CHANGED = 'About me has been changed';
+var PASSWORD_CHANGED = 'Password has been changed';
+var STATUS_CHANGED = 'Status has been changed';
+var GENDER_CHANGED = 'Gender has been changed';
+var DOB_CHANGED = 'DOB has been changed';
+var CHAT_TEXT_CUSTOMIZED = 'Chat text customized';
+var NEWS_CREATED = 'Announcement created successfully';
+var NEWS_DELETED = 'Announcement deleted successfully';
+var ADMINSHIP_CREATED = 'Adminship post created successfully';
+var ADMINSHIP_DELETED = 'Adminship post deleted successfully';
+/**
+ * Errors
  * */
 
-function renderReportChatMessage(message, id, targetId, roomId, type) {
-  var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : '';
-  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : '';
-  message.content = appendEmojis(message.content);
-  return "\n    <div class=\"p-4\">\n        <li class=\"chat-wrap mb-4\" style=\"border: none\">\n            <div class=\"flex py-1 px-2 w-full\" >\n                <img @click=\"getUserProfile(".concat(message.user.id, ")\" class=\"w-[36px] h-[36px] rounded-full flex-none cursor-pointer\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                    <div class=\"flex justify-between\">\n                        <p class=\"username clip \"> ").concat(message.user.name, "</p>\n                        <div class=\"flex items-center gap-2 mr-2\">\n                            <p class=\"date\">").concat(message.createdAt, "</p>\n                        </div>\n                    </div>\n                    <div class=\"pr-2\">").concat(image, " ").concat(audio, "\n                        <p class=\"chat clip text-start\">").concat(message.content, "</p>\n                    </div>\n                </div>\n           </div>\n        </li> \n        <button @click=\"takeAction(").concat(id, ", ").concat(targetId, ",").concat(roomId, ", '").concat(type, "')\" class=\"btn btn-skin text-center\">Take Action<button>\n        <button @click=\"noAction(").concat(id, ", '").concat(type, "')\" class=\"btn btn-disabled text-center ml-2\">No Action<button>\n    </div></div>");
-}
+var ERROR_NAME_INVALID = 'Must have min 4 to max 12 letters';
+var ERROR_MOOD_INVALID = 'Must have max 40 letters';
+var ERROR_PERMISSION_DENIED = 'Permission denied';
+var ERROR_SOMETHING_WENT_WRONG = 'Something went wrong';
+var ERROR_INVALID_FILE_FORMAT = 'Invalid file format';
+var ERROR_GUEST_DOESNT_HAVE_PASSWORD = 'Guest does not have password';
+var ERROR_PASSWORD_MUST_HAVE = 'Must have at least 8 characters';
+var ERROR_YOU_ARE_MUTED = 'You are muted';
+var ERROR_RECORD_LENGTH = 'Record length at least 10 seconds';
+var ERROR_UPLOAD_FAILED = 'Upload failed';
+var ERROR_RECORDING_FAILED = 'Recording failed';
+var ERROR_DELETE_MESSAGE = 'Deleting message failed';
+var ERROR_CANT_PRIVATE = 'You cannot private to this user';
+var ERROR_NO_MIC_PERMISSION = 'You haven\'t given mic permission';
+var ERROR_CONTENT_EMPTY = 'Content cannot be empty';
+/**
+ * Css classes
+ * */
 
+var CSS_SUCCESS = 'success';
+var CSS_ERROR = 'error';
+var CSS_GREEN = 'green';
+var CSS_YELLOW = 'yellow';
+var CSS_RED = 'red';
+/**
+ * Commons
+ * */
+
+var EMPTY_STRING = '';
+var UNDEFINED = 'undefined';
+var GUEST = 'guest';
+var RECORDING_TIME = 180;
+var MIN_RECORDING_TIME = 10;
+
+/***/ }),
+
+/***/ "./src/main/resources/dev/functions.js":
+/*!*********************************************!*\
+  !*** ./src/main/resources/dev/functions.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "adminshipModalHtml": () => (/* binding */ adminshipModalHtml),
+/* harmony export */   "changeAboutHtml": () => (/* binding */ changeAboutHtml),
+/* harmony export */   "changeAvatarHtml": () => (/* binding */ changeAvatarHtml),
+/* harmony export */   "changeDobHtml": () => (/* binding */ changeDobHtml),
+/* harmony export */   "changeGenderHtml": () => (/* binding */ changeGenderHtml),
+/* harmony export */   "changeMoodHtml": () => (/* binding */ changeMoodHtml),
+/* harmony export */   "changeNameHtml": () => (/* binding */ changeNameHtml),
+/* harmony export */   "changePasswordHtml": () => (/* binding */ changePasswordHtml),
+/* harmony export */   "changeStatusHtml": () => (/* binding */ changeStatusHtml),
+/* harmony export */   "changeUserAvatarHtml": () => (/* binding */ changeUserAvatarHtml),
+/* harmony export */   "changeUserNameHtml": () => (/* binding */ changeUserNameHtml),
+/* harmony export */   "customizeNameHtml": () => (/* binding */ customizeNameHtml),
+/* harmony export */   "customizeTextHtml": () => (/* binding */ customizeTextHtml),
+/* harmony export */   "dragElement": () => (/* binding */ dragElement),
+/* harmony export */   "emojis": () => (/* binding */ emojis),
+/* harmony export */   "getEmojisHtml": () => (/* binding */ getEmojisHtml),
+/* harmony export */   "getErrorMsg": () => (/* binding */ getErrorMsg),
+/* harmony export */   "guestDialogHtml": () => (/* binding */ guestDialogHtml),
+/* harmony export */   "guestRegisterHtml": () => (/* binding */ guestRegisterHtml),
+/* harmony export */   "logoutHtml": () => (/* binding */ logoutHtml),
+/* harmony export */   "messageModalHtml": () => (/* binding */ messageModalHtml),
+/* harmony export */   "newsModalHtml": () => (/* binding */ newsModalHtml),
+/* harmony export */   "pvtEmojisHtml": () => (/* binding */ pvtEmojisHtml),
+/* harmony export */   "renderChatMessage": () => (/* binding */ renderChatMessage),
+/* harmony export */   "renderJoinMessage": () => (/* binding */ renderJoinMessage),
+/* harmony export */   "renderLeaveMessage": () => (/* binding */ renderLeaveMessage),
+/* harmony export */   "renderReportChatMessage": () => (/* binding */ renderReportChatMessage),
+/* harmony export */   "renderWelcomeMessage": () => (/* binding */ renderWelcomeMessage),
+/* harmony export */   "reportDialogHtml": () => (/* binding */ reportDialogHtml),
+/* harmony export */   "reportModalHtml": () => (/* binding */ reportModalHtml),
+/* harmony export */   "roomModalHtml": () => (/* binding */ roomModalHtml),
+/* harmony export */   "ucgPolicyHtml": () => (/* binding */ ucgPolicyHtml),
+/* harmony export */   "writeAdminshipDialogHtml": () => (/* binding */ writeAdminshipDialogHtml),
+/* harmony export */   "writeNewsDialogHtml": () => (/* binding */ writeNewsDialogHtml)
+/* harmony export */ });
+/* harmony import */ var _constant_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./constant.js */ "./src/main/resources/dev/constant.js");
+
+var emojis = [easy, modern, easy, modern];
 function renderWelcomeMessage() {
   var topic = room.topic.replace(/%ROOM%/g, room.name);
   return "\n         <li id=\"topic\" class=\"w-full flex justify-center !bg-skin-primary/10 relative\">\n             <i @click=\"removeTopic\" class=\"cursor-pointer fa-solid fa-circle-xmark absolute text-sm text-skin-primary top-2 right-4\"></i>\n             <div class=\"flex py-4 px-2 w-full\">\n                <img class=\"w-[32px] h-[32px] mt-0.5 rounded-lg flex-none\" src=\"images/defaults/topic.webp\" alt=\"\">\n                <div class=\"ml-2 flex-1 \">\n                    <p class=\"username ml-1 mb-1\">Topic</p>\n                    <p class=\"chat text-skin-hover px-1 pr-2\">\n                        <span class=\"tag mr-1\">".concat(name, "</span> ").concat(topic, "\n                    </p>  \n                </div>\n            </div>\n        </li>\n    ");
 }
-
 function renderJoinMessage(message) {
   return "\n         <li class=\"w-full flex justify-center border-t border-gray-200\">\n            <div class=\"p-1\" @click=\"welcomeMessage('".concat(message.user.name, "')\">\n               <p class=\"rounded-md px-4 py-1 text-white bg-skin-primary text-[12px]\"><b class=\"cursor-pointer\">").concat(message.user.name, "</b> has joined the room.</p>\n            </div>\n        </li>\n    ");
 }
-
 function renderLeaveMessage(message) {
   return "\n         <li class=\"w-full flex justify-center border-t border-gray-200\">\n            <div class=\"p-1\">\n               <p class=\"px-4 py-1 text-gray-800 text-[12px]\">".concat(message.user.name, " has left the room.</p>\n            </div>\n        </li>\n    ");
 }
-
 function renderChatMessage(message) {
-  var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : EMPTY_STRING;
-  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : EMPTY_STRING;
+  var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
+  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
   var gender = message.user.gender === 'Male' ? 'male' : 'female';
   var bold = message.user.textBold ? ' font-bold' : ' font-normal';
-  var delIcon = permission.delMsg ? "<i @click=\"deleteChat(".concat(message.id, ")\" class=\"fa-solid fa-square-xmark icon-sm\"></i>") : EMPTY_STRING;
+  var delIcon = permission.delMsg ? "<i @click=\"deleteChat(".concat(message.id, ")\" class=\"fa-solid fa-square-xmark icon-sm\"></i>") : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
   message.content = appendEmojis(message.content);
   message.content = message.content.replace(RegExp("".concat(name), 'gi'), "<span class=\"tag\">".concat(name, "</span>"));
   return "\n         <li id=\"chat-".concat(message.id, "\" class=\"chat-wrap\">\n           <div class=\"flex py-1 px-2 w-full\" >\n            <img @click=\"getUserProfile(").concat(message.user.id, ")\" class=\"avatar flex-none cursor-pointer ").concat(gender, "\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                <div class=\"flex justify-between\">\n                    <div class=\"inline-flex items-center gap-0.5\">\n                        <img class=\"rank-icon-sm\" src=\"").concat(message.user.rank.icon, "\" alt=\"\" title=\"").concat(message.user.rank.name, "\">\n                        <p @click=\"appendUserName($el)\" class=\"username clip ").concat(message.user.nameColor, " ").concat(message.user.nameFont, "\"> \n                            ").concat(message.user.name, "\n                        </p>\n                    </div>\n                    <div class=\"flex items-center gap-2 mr-2\">\n                        <p class=\"date\">").concat(message.createdAt, "</p>\n                        <i @click=\"reportDialog(").concat(message.id, ", 1)\" class=\"fa-solid fa-font-awesome icon-sm\"></i> ").concat(delIcon, "\n                    </div>\n                </div>\n                <div class=\" px-1 pr-2\">").concat(image, " ").concat(audio, "\n                    <p class=\"chat clip ").concat(message.user.textColor, " ").concat(message.user.textFont, " ").concat(bold, " \">\n                        ").concat(message.content, "\n                    </p>\n                </div>\n            </div>\n           </div>\n         </li>\n    ");
 }
-
 function getEmojisHtml() {
   var head = '<div class="emo-head">';
   var emos = '';
@@ -7012,7 +7208,6 @@ function getEmojisHtml() {
   head += '</div>';
   return head + emos;
 }
-
 function pvtEmojisHtml() {
   var head = '<div class="emo-head">';
   var emos = '';
@@ -7087,78 +7282,62 @@ function dragElement(el, id) {
     document.onmousemove = null;
   }
 }
-
 function ucgPolicyHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Information</p>\n                <i @click=\"closeUGCPolicy\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <i class=\"fa-solid fa-triangle-exclamation text-[70px]\" ></i>\n                <p class=\"text-lg font-bold \">Do Not Spam / Abuse</p>\n                <p class=\"pt-2 text-[14px] text-left\">To improve our chat room app we use UGC Policy to control abusive chat.</p>\n                <p class=\"pt-2 text-[14px] text-left\">Our automatic abuse detection system can mark your message as spam and block or mute your account immediately.</p>\n            </div>\n        </div>\n    ";
 }
-
 function guestDialogHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-end items-center\">\n                <i @click=\"closeSmallModal; $refs.mainInput.focus()\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4 text-center \">\n               <img class=\"w-20 h-20 mx-auto\" src=\"/images/defaults/happy.webp\" alt=\"\"> \n                <p class=\"mt-2 text-2xl font-bold\">Welcome ".concat(name, "</p>\n                <p class=\"mt-2 text-[13px] leading-[15px]\">You are currently logged in as guest. Click here to register your account in order to access more features.</p>\n                <div class=\"text-center flex gap-2 justify-center mt-2\"> \n                    <button @click=\"closeSmallModal; $refs.mainInput.focus()\" class=\"px-2 btn btn-disabled text-center\">Close</button>\n                    <button @click=\"showGuestRegisterDialog\" class=\"px-2 btn btn-skin text-center\">Register</button>\n                </div> \n            </div>\n        </div>\n    ");
 }
-
 function guestRegisterHtml() {
   return "\n        <div x-data=\"guestRegister\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Register</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4 text-left\">\n                <form class=\"w-full\" @submit.prevent=\"guestRegister\">\n                    <div x-show=\"errors.default\" x-text=\"errors.default\" class=\"error-default\"></div>\n                    <div class=\"mb-4\">\n                        <div class=\"h-10\">\n                            <label class=\"h-full\">\n                                <input x-model=\"email\" name=\"email\"  class=\"input-text\"\n                                       type=\"email\" placeholder=\"Email Address\" autoComplete=\"off\" required>\n                            </label>\n                        </div>\n                       <div x-show=\"errors.email\" x-text=\"errors.email\" class=\"error-text\"></div> \n                    </div>\n                    <div class=\"mb-4\">\n                        <div class=\"h-10\">\n                            <label class=\"h-full\">\n                                <input x-model=\"password\" name=\"password\"  class=\"input-text\"\n                                       type=\"password\" placeholder=\"Password\" autoComplete=\"off\" required >\n                            </label>\n                        </div>\n                        <div x-show=\"errors.password\" x-text=\"errors.password\" class=\"error-text\"></div>\n                    </div>\n                    <div class=\"text-center\"> \n                        <button type=\"submit\" class=\"w-36 btn btn-skin text-center\">Register</button>\n                    </div>  \n                </form>\n            </div>\n        </div>";
 }
-
 function logoutHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Logout</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"px-4 py-2\">\n                <p class=\"text-[14px] mb-2\">Are you really want to log out?</p>  \n                <div class=\"flex gap-2 justify-center\">\n                    <button @click=\"logout\" class=\" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5\">Yes<button>          \n                    <button @click=\"closeSmallModal\" class=\" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5\">No<button>          \n                </div>\n            </div>\n        </div>\n    ";
 }
-
 function changeAvatarHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Avatar</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                Select an image\n                <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                      <div class=\"w-[50px] h-[50px] relative\">\n                        <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\" src=\"\"> \n                      </div>\n                  </template>\n                </div> \n                Or \n                <div class=\"mt-1\">\n                    <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                               accept=\"image/*\">\n                    <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                </div>  \n            </div>\n        </div>\n    ";
 }
-
 function changeNameHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Username</p>\n                <i @click=\"closeNameDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"h-10 mb-4\">\n                    <label class=\"h-full\">\n                        <input x-model=\"user.name\" name=\"name\" onkeypress=\"return /^[a-zA-Z\\d_-]*$/i.test(event.key)\"\n                               class=\"input-text\" type=\"text\" placeholder=\"Username\"\n                               autocomplete=\"off\" required minlength=\"4\" maxlength=\"12\" autofocus>\n                    </label> \n                </div>    \n                <button @click=\"changeName\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function customizeNameHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Customize Username</p>\n                <i @click=\"closeCustomizeNameDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <template x-if=\"user.nameFont\"> \n                    <p class=\"w-full font-bold clip\" :class=\"[user.nameFont, user.nameColor]\" x-text=\"user.name\"></p>\n                </template>\n                <template x-if=\"permission.nameFont\"> \n                    <div class=\"w-full h-10 mb-4\">\n                    <select x-model=\"user.nameFont\" class=\"input-text\">\n                        <option>Select Font</option>\n                        <option value=\"signika\">Signika</option>\n                        <option value=\"grandstander\">Grandstander</option>\n                        <option value=\"comic\">Comic</option>\n                        <option value=\"orbitron\">Orbitron</option>\n                        <option value=\"quicksand\">Quicksand</option>\n                        <option value=\"lemonada\">Lemonada</option>\n                        <option value=\"grenze\">Grenze</option>\n                        <option value=\"kalam\">Kalam</option>\n                        <option value=\"merienda\">Merienda</option>\n                        <option value=\"amita\">Amita</option>\n                        <option value=\"averia\">Averia</option>\n                        <option value=\"turret\">Turret</option>\n                        <option value=\"sansita\">Sansita</option>\n                        <option value=\"comfortaa\">Comfortaa</option>\n                        <option value=\"charm\">Charm</option>\n                        <option value=\"lobste\">Lobster</option>\n                    </select>\n                </div>\n                </template>\n                 <template x-if=\"permission.nameColor\"> \n                    <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                      <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                        <div @click=\"setNameColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                            <i x-show=\"isShowTickForName(index)\" x-transition class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                        </div>\n                      </template>\n                    </div>   \n                </template>\n                <button @click=\"customizeName\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function changeMoodHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Your Mood</p>\n                <i @click=\"closeMoodDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"h-10 mb-4\">\n                    <label class=\"h-full\">\n                        <input x-model=\"user.mood\" name=\"mood\" onkeypress=\"return /^[a-zA-Z\\d_-\\s]*$/i.test(event.key)\"\n                               class=\"input-text\" type=\"text\" placeholder=\"Type mood here\"\n                               autocomplete=\"off\" required maxlength=\"40\" autofocus>\n                    </label>\n                </div> \n                <button @click=\"changeMood\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function changeAboutHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change About Me</p>\n                <i @click=\"closeAboutDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                    <textarea @keyup=\"textArea($el, 60)\" class=\"text-area\" x-model=\"user.about\" type=\"text\" maxlength=\"150\" name=\"about\" autofocus></textarea>\n                </div>\n                <button @click=\"changeAbout\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function changePasswordHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Password</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"h-10 mb-4\">\n                    <label class=\"h-full\">\n                        <input x-model=\"user.password\" name=\"password\" class=\"input-text\" type=\"text\" \n                        placeholder=\"New password\" autocomplete=\"off\" autofocus>\n                    </label>\n                </div> \n                <button @click=\"changePassword\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>   \n        </div>\n    ";
 }
-
 function changeStatusHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Status</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"w-full h-10 mb-4\">\n                    <select x-model=\"user.status\" class=\"input-text\">\n                        <option value=\"\" selected>Select Status</option>\n                        <option value=\"Stay\">Stay</option>\n                        <option value=\"Online\">Online</option>\n                        <option value=\"Away\">Away</option>\n                        <option value=\"Busy\">Busy</option>\n                        <option value=\"Eating\">Eating</option>\n                        <option value=\"Gaming\">Gaming</option>\n                        <option value=\"Singing\">Singing</option>\n                        <option value=\"Listening\">Listening</option>\n                    </select>\n                </div>\n                <button @click=\"changeStatus\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n   ";
 }
-
 function changeGenderHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Gender</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <div class=\"w-full h-10 mb-4\">\n                    <select x-model=\"user.gender\" class=\"input-text\">\n                        <option value=\"\" selected=\"\">Select Gender</option>\n                        <option value=\"Male\">Male</option>\n                        <option value=\"Female\">Female</option>\n                    </select>\n                </div>\n                <button @click=\"changeGender\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n   ";
 }
-
 function changeDobHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Date of Birth</p>\n                <i @click=\"closeDobDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <div class=\"w-full h-10 mb-4\">\n                    <input x-model=\"user.dob\" class=\"input-text\"  name=\"dob\" max=\"2010-12-31\" min=\"1970-12-31\" type=\"date\">\n                </div>\n                <button @click=\"changeDob\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function customizeTextHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Chat Option</p>\n                <i @click=\"closeCustomizeTextDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <template x-if=\"user.textFont\"> \n                    <p class=\"w-full clip\" :class=\"[user.textFont, user.textColor, user.textBold=='true' ? 'font-bold' : 'font-normal' ]\">Sample Text</p>\n                </template>    \n                <div class=\"w-full h-10 mb-4\">\n                    <select @change=\"console.log($el.value)\" x-model=\"user.textFont\" class=\"input-text\">\n                        <option>Select Font</option>\n                        <option value=\"signika\">Signika</option>\n                        <option value=\"grandstander\">Grandstander</option>\n                        <option value=\"comic\">Comic</option>\n                        <option value=\"orbitron\">Orbitron</option>\n                        <option value=\"quicksand\">Quicksand</option>\n                        <option value=\"lemonada\">Lemonada</option>\n                        <option value=\"grenze\">Grenze</option>\n                        <option value=\"kalam\">Kalam</option>\n                        <option value=\"merienda\">Merienda</option>\n                        <option value=\"amita\">Amita</option>\n                        <option value=\"averia\">Averia</option>\n                        <option value=\"turret\">Turret</option>\n                        <option value=\"sansita\">Sansita</option>\n                        <option value=\"comfortaa\">Comfortaa</option>\n                        <option value=\"charm\">Charm</option>\n                        <option value=\"lobster\">Lobster</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Bold</p>\n                <div class=\"w-full h-10 mb-2\">\n                    <select x-model=\"user.textBold\" class=\"input-text\">\n                        <option value=\"true\">Yes</option>\n                        <option value=\"false\">No</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Color</p>\n                <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                    <div @click=\"setTextColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                        <i x-show=\"isShowTick(index)\" x-transition class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                    </div>\n                  </template>\n                </div>\n                <button @click=\"customizeText\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function reportDialogHtml(id, type) {
   return "\n        <div x-data=\"{ id: ".concat(id, ", selectedReason :'', reasons:['Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment']}\"\n         class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n            <div class=\"inline-flex items-center\"> \n                <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n            </div>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <p class=\"mb-4 text-[13px] text-start leading-[15px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                     <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                        <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" \n                        :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                        <p x-text=\"reason\"></p>\n                    </div>\n                </template>\n                <button @click=\"report(id, selectedReason, '").concat(type, "')\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n            </div>\n        </div>\n    ");
 }
-
 function messageModalHtml(pvtUsers) {
   var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Messages</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full \">\n    ";
 
   if (pvtUsers.length > 0) {
     pvtUsers.forEach(function (user) {
-      var count = user.unReadCount > 0 ? "<p class=\"count-md\">".concat(user.unReadCount, "</p>") : EMPTY_STRING;
+      var count = user.unReadCount > 0 ? "<p class=\"count-md\">".concat(user.unReadCount, "</p>") : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
       var message = user.messages[0];
       var person = message != null && message.sender.id === userId ? 'You : ' : "".concat(user.name, " : ");
-      var content = message != null ? appendEmojis(message.content) : EMPTY_STRING;
-      if (message.image && content === EMPTY_STRING) content += '(Image)';
-      if (message.audio && content === EMPTY_STRING) content += '(Audio)';
+      var content = message != null ? appendEmojis(message.content) : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
+      if (message.image && content === _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING) content += '(Image)';
+      if (message.audio && content === _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING) content += '(Audio)';
       content = person + content;
       html += "\n                <li @click=\"openPvtDialog(".concat(user.id, ")\" class=\"pvt-user-wrap\">\n                   <div class=\"w-full gap-2\">\n                        <div class=\"flex h-full w-full items-center\">\n                            <img class=\"avatar flex-none mx-1\" src=\"").concat(user.avatar, "\">\n                            <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                <p class=\"ellipsis username clip ").concat(user.nameColor, " ").concat(user.nameFont, "\"> ").concat(user.name, "\n                                <p class=\"flex items-center clip ellipsis text-gray-500 text-[12px]\">").concat(content, "</p>\n                            </div>").concat(count, "\n                        </div>\n                    </div>\n                </li>\n            ");
     });
@@ -7169,43 +7348,24 @@ function messageModalHtml(pvtUsers) {
   html += '</ul></div></div>';
   return html;
 }
-
 function changeUserNameHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Username</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <div class=\"h-10 mb-4\">\n                    <label class=\"h-full\">\n                        <input x-model=\"u.name\" name=\"name\" onkeypress=\"return /^[a-zA-Z\\d_-]*$/i.test(event.key)\"\n                               class=\"input-text\" type=\"text\" placeholder=\"Username\"\n                               autocomplete=\"off\" required minlength=\"4\" maxlength=\"12\" autofocus>\n                    </label> \n                </div>    \n                <button @click=\"changeUserName\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
-
 function changeUserAvatarHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Avatar</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                Select an image\n                <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                      <div class=\"w-[50px] h-[50px] relative\">\n                        <img @click=\"setUserAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                      </div>\n                  </template>\n                </div> \n                Or \n                <div class=\"mt-1\">\n                    <input x-ref='uploadUserAvatar' @change=\"changeUserAvatar($el)\" class=\"input-image\" type=\"file\" accept=\"image/*\">\n                    <button @click=\"$refs.uploadUserAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                </div>  \n            </div>\n        </div>\n   ";
 }
-
-function reportModalHtml(reports) {
-  var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Reports</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full \">\n    ";
-
-  if (reports.length > 0) {
-    reports.forEach(function (report) {
-      html += "\n                <li @click=\"openReportActionDialog(".concat(report.id, ", ").concat(report.targetId, ", ").concat(report.roomId, ", '").concat(report.type, "')\" class=\"report-user-wrap\">\n                   <div class=\"w-full gap-2\">\n                        <div class=\"flex h-full w-full items-center\">\n                            <img class=\"avatar flex-none mx-1\" src=\"").concat(report.avatar, "\">\n                            <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                <p class=\"ellipsis username clip text-black\"> ").concat(report.name, "\n                                <p class=\"flex items-center clip ellipsis text-gray-500 text-[13px]\">Reason : ").concat(report.reason, "</p>\n                                <p class=\"date\">").concat(report.createdAt, "</p>\n                            </div>\n                        </div>\n                    </div>\n                </li>\n            ");
-    });
-  } else {
-    html += "\n            <li class=\"pvt-user-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <i class=\"fa-solid fa-flag text-[40px]\"></i>\n                    <p class=\"text-[12px] font-bold\" > No Reports</p>\n                </div>\n            </li>\n        ";
-  }
-
-  html += '</ul></div></div>';
-  return html;
-}
-
 function roomModalHtml(rooms) {
   var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Room List</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full\">\n    ";
-  rooms.forEach(function (rm, index) {
+  rooms.forEach(function (rm) {
     var submitBtn = rm.id === room.id ? '<p class="text-black text-[10px] font-bold">(Current Room)</p>' : "<form class=\"flex-none\" action=\"/".concat(domain.id, "/rooms/").concat(rm.id, "/join\" method=\"post\">\n                <button type=\"submit\" class=\"btn-join\">Join&nbsp&nbsp<i class=\"fa-solid fa-angles-right\"></i></button>\n            </form>");
     html += "\n            <li class=\"my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 \">\n                <i class=\"fa-solid fa-earth-americas text-3xl flex-none text-skin-hover\"></i>\n                <div class=\"flex-1 text-left ml-2 text-black\">\n                    <p class=\"font-bold text-[12px]\">".concat(rm.name, "</p>\n                    <div>\n                        <i class=\"fa-solid fa-user-group \"></i>&nbsp&nbsp").concat(rm.onlineUsers, "\n                    </div>\n                </div>").concat(submitBtn, "\n            </li>\n        ");
   });
   html += "</ul></div></div>";
   return html;
 }
-
 function newsModalHtml(news) {
-  var addNew = permission.writeNews ? '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : EMPTY_STRING;
-  var html = "\n        <div x-data=\"{image:'hello'}\" class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Announcements</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">".concat(addNew, "\n                    <ul>\n        ");
+  var addNew = permission.writeNews ? '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
+  var html = "\n        <div class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Announcements</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">".concat(addNew, "\n                    <ul>\n        ");
 
   if (news.length > 0) {
     news.forEach(function (news) {
@@ -7222,17 +7382,75 @@ function newsModalHtml(news) {
   html += "</ul></div></div></div>";
   return html;
 }
-
 function writeNewsDialogHtml() {
   return "\n        <div x-data=\"announcement\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Announcement</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"newsInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeNews\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
+}
+function renderReportChatMessage(message, id, targetId, roomId, type) {
+  var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
+  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : '';
+  message.content = appendEmojis(message.content);
+  return "\n    <div class=\"p-4\">\n        <li class=\"chat-wrap mb-4\" style=\"border: none\">\n            <div class=\"flex py-1 px-2 w-full\" >\n                <img @click=\"getUserProfile(".concat(message.user.id, ")\" class=\"w-[36px] h-[36px] rounded-full flex-none cursor-pointer\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                    <div class=\"flex justify-between\">\n                        <p class=\"username clip \"> ").concat(message.user.name, "</p>\n                        <div class=\"flex items-center gap-2 mr-2\">\n                            <p class=\"date\">").concat(message.createdAt, "</p>\n                        </div>\n                    </div>\n                    <div class=\"pr-2\">").concat(image, " ").concat(audio, "\n                        <p class=\"chat clip text-start\">").concat(message.content, "</p>\n                    </div>\n                </div>\n           </div>\n        </li> \n        <button @click=\"takeAction(").concat(id, ", ").concat(targetId, ",").concat(roomId, ", '").concat(type, "')\" class=\"btn btn-skin text-center\">Take Action<button>\n        <button @click=\"noAction(").concat(id, ", '").concat(type, "')\" class=\"btn btn-disabled text-center ml-2\">No Action<button>\n    </div></div>");
+}
+function reportModalHtml(reports) {
+  var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Reports</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full \">\n    ";
+
+  if (reports.length > 0) {
+    reports.forEach(function (rpt) {
+      html += "\n                <li @click=\"openReportActionDialog(".concat(rpt.id, ", ").concat(rpt.targetId, ", ").concat(rpt.roomId, ", '").concat(rpt.type, "')\" class=\"report-user-wrap\">\n                   <div class=\"w-full gap-2\">\n                        <div class=\"flex h-full w-full items-center\">\n                            <img class=\"avatar flex-none mx-1\" src=\"").concat(rpt.avatar, "\">\n                            <div class=\"flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center\">\n                                <p class=\"ellipsis username clip text-black\"> ").concat(rpt.name, "\n                                <p class=\"flex items-center clip ellipsis text-gray-500 text-[13px]\">Reason : ").concat(rpt.reason, "</p>\n                                <p class=\"date\">").concat(rpt.createdAt, "</p>\n                            </div>\n                        </div>\n                    </div>\n                </li>\n            ");
+    });
+  } else {
+    html += "\n            <li class=\"pvt-user-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <i class=\"fa-solid fa-flag text-[40px]\"></i>\n                    <p class=\"text-[12px] font-bold\" > No Reports</p>\n                </div>\n            </li>\n        ";
+  }
+
+  html += '</ul></div></div>';
+  return html;
+}
+function adminshipModalHtml(adminships) {
+  var addNew = permission.adminShip ? '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : _constant_js__WEBPACK_IMPORTED_MODULE_0__.EMPTY_STRING;
+  var html = "\n        <div class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Adminship</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">".concat(addNew, "\n                    <ul>\n        ");
+
+  if (adminships.length > 0) {
+    adminships.forEach(function (adminShip) {
+      /*let user = news.user
+      let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+      let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : ''
+      let content = news.content.replaceAll('\r\n', '<br>')
+      html += `
+          <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+             <div class="flex flex-col w-full">
+                 <div class="flex items-center justify-between"> 
+                     <div class="flex items-center gap-2">
+                         <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                         <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                     </div>  
+                     <div class="flex items-center gap-2">
+                          <p class="date">${news.createdAt}</p>
+                          <i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>
+                     </div>                       
+                 </div>
+                 <div class="text-start mt-2">
+                     <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                 </div>  
+             </div>
+          </li>
+      `*/
+    });
+  } else {
+    html += "\n            <li class=\"card-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <img class=\"w-[40px]\" src=\"/images/defaults/adminship.webp\" alt=\"\">\n                    <p class=\"text-[12px] font-bold\" > No AdminShip Posts</p>\n                </div>\n            </li>\n       ";
+  }
+
+  html += "</ul></div></div></div>";
+  return html;
+}
+function writeAdminshipDialogHtml() {
+  return "\n        <div x-data=\"adminship\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Adminship Post</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"adminshipInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeAdminship\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
 }
 /**
  * Utility Functions
  * */
 
-
 function getErrorMsg(e) {
-  return e.response ? e.response.data : ERROR_SOMETHING_WENT_WRONG;
+  return e.response ? e.response.data : _constant_js__WEBPACK_IMPORTED_MODULE_0__.ERROR_SOMETHING_WENT_WRONG;
 }
 
 /***/ }),

@@ -29,7 +29,8 @@ import java.io.IOException
 fun Route.adminRotes(
     domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
     rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
-    messageRepository: MessageRepository, reportRepository: ReportRepository, newsRepository: NewsRepository
+    messageRepository: MessageRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
+    adminshipRepository: AdminshipRepository
 ) {
 
 
@@ -302,10 +303,9 @@ fun Route.adminRotes(
 
                     post("/create") {
                         var content = ""
-                        var filePath: String?
                         val renderFormat = "webp"
                         val imageName = "${getUUID()}.$renderFormat"
-                        filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+                        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
                         val uploadDir = File(filePath)
                         try {
                             val chatSession = call.sessions.get<ChatSession>()
@@ -352,6 +352,69 @@ fun Route.adminRotes(
                             newsRepository.deleteNews(newsId)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.DelNews
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                        }
+                    }
+                }
+
+                route("/adminship") {
+
+                    post("/create") {
+                        var content = ""
+                        val renderFormat = "webp"
+                        val imageName = "${getUUID()}.$renderFormat"
+                        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+                        val uploadDir = File(filePath)
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val parts = call.receiveMultipart()
+
+                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                            }
+                            filePath += imageName
+                            var hasImage = false
+                            parts.forEachPart { part ->
+                                when (part) {
+                                    is PartData.FormItem -> content = part.value
+                                    is PartData.FileItem -> {
+                                        hasImage = true
+                                        part.saveImage(filePath, renderFormat)
+                                    }
+                                    else -> Unit
+                                }
+                            }
+                            val image = if (hasImage) filePath else null
+                            val adminship = Adminship(
+                                content = content, image = image, user = User(userId), domainId = domainId
+                            )
+                            adminshipRepository.createAdminship(adminship)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.Adminship
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+
+                    delete("/{postId}/delete") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val postId = call.parameters["postId"]!!.toInt()
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            adminshipRepository.deleteAdminship(postId)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.DelAdminship
                             ).encodeToString()
                             WsController.broadcastToDomain(domainId, message)
                             call.respond(HttpStatusCode.OK)

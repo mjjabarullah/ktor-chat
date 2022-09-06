@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    <div x-cloak x-transition x-show="showAlert" x-ref="alertMsg" class="alert"></div>
+    <div x-cloak x-show="showAlert" class="alert" x-transition  x-ref="alertMsg" ></div>
     <div x-cloak x-show="showLoader" class="loader-wrap">
         <div class="loader" x-transition x-show="showLoader"></div>
     </div>
@@ -76,10 +76,10 @@
 </script>
 <script src="/js/emojis.js"></script>
 <script src="/js/chat.js"></script>
-<audio class="hidden" x-ref="pvtSound" src="https://mytamilchat.com/chat/sounds/private.mp3"></audio>
-<audio class="hidden" x-ref="chatSound" src="https://mytamilchat.com/chat/sounds/new_messages.mp3"></audio>
-<audio class="hidden" x-ref="nameSound" src="https://mytamilchat.com/chat/sounds/username.mp3"></audio>
-<audio class="hidden" x-ref="notifiSound" src="https://mytamilchat.com/chat/sounds/notify.mp3"></audio>
-<audio class="hidden" x-ref="AnnounceSound" src="https://mytamilchat.com/chat/sounds/new_news.mp3"></audio>
+<audio class="hidden" x-ref="pvtSound" src="/sounds/private.mp3"></audio>
+<audio class="hidden" x-ref="chatSound" src="/sounds/new_messages.mp3"></audio>
+<audio class="hidden" x-ref="nameSound" src="/sounds/username.mp3"></audio>
+<audio class="hidden" x-ref="notifiSound" src="/sounds/notify.mp3"></audio>
+<audio class="hidden" x-ref="AnnounceSound" src="/sounds/new_news.mp3"></audio>
 </body>
 </html>

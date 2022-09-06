@@ -15,6 +15,9 @@ fun Application.configureCachingHeaders() {
                 ContentType("image", "webp") -> CachingOptions(
                     CacheControl.MaxAge(maxAgeSeconds = monthInSeconds)
                 )
+                ContentType("audio", "mp3") -> CachingOptions(
+                    CacheControl.MaxAge(maxAgeSeconds = monthInSeconds)
+                )
                 else -> null
             }
         }

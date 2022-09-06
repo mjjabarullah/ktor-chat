@@ -16,4 +16,5 @@ val mainModule = module {
     single<ReportRepository> { ReportController() }
     single<SeenRepository> { SeenController() }
     single<NewsRepository> { NewsController(get()) }
+    single<AdminshipRepository> { AdminshipController(get()) }
 }

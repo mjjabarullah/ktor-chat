@@ -33,6 +33,7 @@ fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
     permissionRepository: PermissionRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
+    adminshipRepository: AdminshipRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -684,6 +685,34 @@ fun Route.domainRoutes(
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
                             newsRepository.readNews(domainId, userId)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+                }
+
+                route("/adminship") {
+                    get {
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val adminships = adminshipRepository.getAdminships(domainId, userId)
+                            call.respond(HttpStatusCode.OK, adminships)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+
+                    post("/read") {
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            adminshipRepository.readAdminShip(domainId, userId)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()
