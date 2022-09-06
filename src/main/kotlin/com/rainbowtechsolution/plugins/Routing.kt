@@ -21,6 +21,7 @@ fun Application.configureRouting() {
     val reportRepository by inject<ReportRepository>()
     val newsRepository by inject<NewsRepository>()
     val adminshipRepository by inject<AdminshipRepository>()
+    val globalFeedRepository by inject<GlobalFeedRepository>()
 
     install(Resources)
 
@@ -37,14 +38,14 @@ fun Application.configureRouting() {
 
         domainRoutes(
             domains, roomRepository, userRepository, messageRepository, domainRepository, rankRepository,
-            permissionRepository, reportRepository, newsRepository, adminshipRepository
+            permissionRepository, reportRepository, newsRepository, adminshipRepository, globalFeedRepository
         )
 
         mainRoutes(roomRepository, userRepository)
 
         adminRotes(
             domains, domainRepository, userRepository, rankRepository, permissionRepository, roomRepository,
-            messageRepository, reportRepository, newsRepository, adminshipRepository
+            messageRepository, reportRepository, newsRepository, adminshipRepository, globalFeedRepository
         )
 
         chatRoutes(messageRepository, roomRepository, userRepository, domainRepository)

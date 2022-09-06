@@ -9,7 +9,7 @@ interface AdminshipRepository {
 
     suspend fun getAdminships(domainId: Int, userId: Long): AdminshipRes
 
-    suspend fun readAdminShip(domainId: Int, userId: Long)
+    suspend fun readAdminship(domainId: Int, userId: Long)
 
     suspend fun deleteAdminship(id: Int)
 }

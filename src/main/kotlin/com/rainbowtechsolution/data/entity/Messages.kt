@@ -16,5 +16,5 @@ object Messages : LongIdTable("messages") {
 }
 
 enum class MessageType {
-    Join, Chat, Leave, DelChat, Report, ActionTaken, DataChanges, News, DelNews, Adminship, DelAdminship, Mute, UnMute, Kick, UnKick, Ban, UnBan
+    Join, Chat, Leave, DelChat, Report, ActionTaken, DataChanges, News, DelNews, Adminship, DelAdminship, GlobalFeed, DelGlobalFeed, Mute, UnMute, Kick, UnKick, Ban, UnBan
 }

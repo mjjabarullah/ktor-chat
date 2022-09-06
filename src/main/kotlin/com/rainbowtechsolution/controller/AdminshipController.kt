@@ -23,13 +23,13 @@ class AdminshipController(private val seenRepository: SeenRepository) : Adminshi
                 it[createdAt] = LocalDateTime.now()
             }.value
         }
-        readAdminShip(adminship.domainId!!, adminship.user?.id!!)
+        readAdminship(adminship.domainId!!, adminship.user?.id!!)
         return postId
     }
 
     override suspend fun getAdminships(domainId: Int, userId: Long): AdminshipRes = dbQuery {
         val date = Seen
-            .select { (Seen.domainId eq domainId) and (Seen.userId eq userId) and (Seen.type eq SeenType.News) }
+            .select { (Seen.domainId eq domainId) and (Seen.userId eq userId) and (Seen.type eq SeenType.AdminShip) }
             .first().let { it[Seen.createdAt] }
         val subQuery = AdminShips
             .slice(AdminShips.id.count())
@@ -58,7 +58,7 @@ class AdminshipController(private val seenRepository: SeenRepository) : Adminshi
         AdminshipRes(adminships, count ?: 0)
     }
 
-    override suspend fun readAdminShip(domainId: Int, userId: Long) = seenRepository.makeSeen(
+    override suspend fun readAdminship(domainId: Int, userId: Long) = seenRepository.makeSeen(
         domainId, userId, SeenType.AdminShip
     )
 

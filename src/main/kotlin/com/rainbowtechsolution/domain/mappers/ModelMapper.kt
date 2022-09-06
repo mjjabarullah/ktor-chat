@@ -189,3 +189,13 @@ fun ResultRow.toAdminshipModel(user: User): Adminship {
         createdAt = this[AdminShips.createdAt].format()
     )
 }
+
+fun ResultRow.toGlobalFeedModel(user: User): GlobalFeed {
+    return GlobalFeed(
+        id = this[GlobalFeeds.id].value,
+        content = this[GlobalFeeds.content],
+        image = this[GlobalFeeds.image],
+        user = user,
+        createdAt = this[GlobalFeeds.createdAt].format()
+    )
+}

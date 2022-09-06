@@ -1,6 +1,6 @@
-import * as Constant from './constant.js'
+import {Defaults, Errors} from './constant.js'
 
-export  const emojis = [easy, modern, easy, modern]
+export const emojis = [easy, modern, easy, modern]
 
 export function renderWelcomeMessage() {
     const topic = room.topic.replace(/%ROOM%/g, room.name)
@@ -41,11 +41,11 @@ export function renderLeaveMessage(message) {
 }
 
 export function renderChatMessage(message) {
-    const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Constant.EMPTY_STRING
-    const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Constant.EMPTY_STRING
+    const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
+    const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
     const bold = message.user.textBold ? ' font-bold' : ' font-normal'
-    const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Constant.EMPTY_STRING
+    const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Defaults.EMPTY_STRING
     message.content = appendEmojis(message.content)
     message.content = message.content.replace(RegExp(`${name}`, 'gi'), `<span class="tag">${name}</span>`)
     return `
@@ -123,7 +123,7 @@ function appendEmojis(content) {
 function getEmoSource(name) {
     let src = null
     emojis.forEach(emoji => {
-        Object.keys(emoji).forEach( key=> {
+        Object.keys(emoji).forEach(key => {
             if (key === name) src = emoji[key]
         })
     })
@@ -565,12 +565,12 @@ export function messageModalHtml(pvtUsers) {
     `
     if (pvtUsers.length > 0) {
         pvtUsers.forEach(user => {
-            let count = user.unReadCount > 0 ? `<p class="count-md">${user.unReadCount}</p>` : Constant.EMPTY_STRING
+            let count = user.unReadCount > 0 ? `<p class="count-md">${user.unReadCount}</p>` : Defaults.EMPTY_STRING
             const message = user.messages[0]
             const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} : `
-            let content = message != null ? appendEmojis(message.content) : Constant.EMPTY_STRING
-            if (message.image && content === Constant.EMPTY_STRING) content += '(Image)'
-            if (message.audio && content === Constant.EMPTY_STRING) content += '(Audio)'
+            let content = message != null ? appendEmojis(message.content) : Defaults.EMPTY_STRING
+            if (message.image && content === Defaults.EMPTY_STRING) content += '(Image)'
+            if (message.audio && content === Defaults.EMPTY_STRING) content += '(Audio)'
             content = person + content
             html += `
                 <li @click="openPvtDialog(${user.id})" class="pvt-user-wrap">
@@ -590,7 +590,7 @@ export function messageModalHtml(pvtUsers) {
         html += `
             <li class="pvt-user-wrap">
                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <i class="fa-solid fa-envelope text-[40px]"></i>
+                    <img class="w-[40px]" src="/images/defaults/topic.webp" alt="">
                     <p class="text-[12px] font-bold" > No Messages</p>
                 </div>
             </li>
@@ -681,7 +681,7 @@ export function roomModalHtml(rooms) {
 
 export function newsModalHtml(news) {
     let addNew = permission.writeNews ?
-        '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Constant.EMPTY_STRING
+        '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
     let html = `
         <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
@@ -696,8 +696,9 @@ export function newsModalHtml(news) {
         news.forEach(news => {
             let user = news.user
             let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : ''
+            let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
             let content = news.content.replaceAll('\r\n', '<br>')
+            let delNews = permission.delNews ? `<i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
             html += `
                 <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
                    <div class="flex flex-col w-full">
@@ -707,8 +708,7 @@ export function newsModalHtml(news) {
                                <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
                            </div>  
                            <div class="flex items-center gap-2">
-                                <p class="date">${news.createdAt}</p>
-                                <i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>
+                                <p class="date">${news.createdAt}</p>${delNews}
                            </div>                       
                        </div>
                        <div class="text-start mt-2">
@@ -755,8 +755,160 @@ export function writeNewsDialogHtml() {
     `
 }
 
+export function adminshipModalHtml(adminships) {
+    let addNew = permission.adminship ?
+        '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
+    let html = `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Adminship</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (adminships.length > 0) {
+        adminships.forEach(adminship => {
+            let user = adminship.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = adminship.image != null ? `<img @click="showImageDialog($el)" src="${adminship.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
+            let content = adminship.content.replaceAll('\r\n', '<br>')
+            let delAdminship = permission.delAdminship ? `<i @click="delAdminship(${adminship.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between"> 
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>  
+                           <div class="flex items-center gap-2">
+                                <p class="date">${adminship.createdAt}</p>${delAdminship}
+                           </div>                       
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                       </div>  
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
+                    <p class="text-[12px] font-bold" > No AdminShip Posts</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+}
+
+export function writeAdminshipDialogHtml() {
+    return `
+        <div x-data="adminship" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold ">Write Adminship Post</p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <div class="mb-4">
+                   <textarea x-ref="adminshipInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
+                        maxlength="3000" placeholder="write announcement"></textarea>
+                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
+                </div>
+                <div class="flex justify-end gap-2 items-center"> 
+                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
+                 <button @click.once="writeAdminship" class="btn btn-skin text-center">Post<button>
+                </div>
+            </div>
+        </div>
+    `
+}
+
+export function globalFeedModalHtml(feeds) {
+    let addNew = rank.code !== Defaults.GUEST ?
+        '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
+    let html = `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Global Feed</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (feeds.length > 0) {
+        feeds.forEach(feed => {
+            let user = feed.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = feed.image != null ? `<img @click="showImageDialog($el)" src="${feed.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
+            let content = feed.content.replaceAll('\r\n', '<br>')
+            let delFeed = permission.delGlobalFeed ? `<i @click="delGlobalFeed(${feed.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between"> 
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>  
+                           <div class="flex items-center gap-2">
+                                <p class="date">${feed.createdAt}</p>${delFeed}
+                           </div>                       
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                       </div>  
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                    <p class="text-[12px] font-bold" > No Global Feeds</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+}
+
+export function writeGlobalFeedDialogHtml() {
+    return `
+        <div x-data="globalFeed" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold ">Write Global Feed </p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <div class="mb-4">
+                   <textarea x-ref="feedInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
+                        maxlength="3000" placeholder="write announcement"></textarea>
+                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
+                </div>
+                <div class="flex justify-end gap-2 items-center"> 
+                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
+                 <button @click.once="writeGlobalFeed" class="btn btn-skin text-center">Post<button>
+                </div>
+            </div>
+        </div>
+    `
+}
+
 export function renderReportChatMessage(message, id, targetId, roomId, type) {
-    const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Constant.EMPTY_STRING
+    const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
     const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : ''
     message.content = appendEmojis(message.content)
     return `
@@ -813,7 +965,7 @@ export function reportModalHtml(reports) {
         html += `
             <li class="pvt-user-wrap">
                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <i class="fa-solid fa-flag text-[40px]"></i>
+                    <img class="w-[40px]" src="/images/defaults/flag.webp" alt="">
                     <p class="text-[12px] font-bold" > No Reports</p>
                 </div>
             </li>
@@ -823,85 +975,9 @@ export function reportModalHtml(reports) {
     return html
 }
 
-export function adminshipModalHtml(adminships){
-    let addNew = permission.adminShip ?
-        '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Constant.EMPTY_STRING
-    let html = `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
-            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
-                <p class="text-md font-bold ">Adminship</p>
-                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
-            </div>
-            <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
-                    <ul>
-        `
-    if (adminships.length > 0) {
-        adminships.forEach(adminShip => {
-            /*let user = news.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : ''
-            let content = news.content.replaceAll('\r\n', '<br>')
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between"> 
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>  
-                           <div class="flex items-center gap-2">
-                                <p class="date">${news.createdAt}</p>
-                                <i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>
-                           </div>                       
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>  
-                   </div>
-                </li>
-            `*/
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
-                    <p class="text-[12px] font-bold" > No AdminShip Posts</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
-}
-
-export function writeAdminshipDialogHtml() {
-    return `
-        <div x-data="adminship" class="text-gray-700 text-center">
-            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
-                <p class="text-md font-bold ">Write Adminship Post</p>
-                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
-            </div> 
-            <div class="p-4">
-                <div class="mb-4">
-                   <textarea x-ref="adminshipInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
-                        maxlength="3000" placeholder="write announcement"></textarea>
-                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
-                   <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
-                </div>
-                <div class="flex justify-end gap-2 items-center"> 
-                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeAdminship" class="btn btn-skin text-center">Post<button>
-                </div>
-            </div>
-        </div>
-    `
-}
-
 /**
  * Utility Functions
  * */
 export function getErrorMsg(e) {
-    return e.response ? e.response.data : Constant.ERROR_SOMETHING_WENT_WRONG
+    return e.response ? e.response.data : Errors.SOMETHING_WENT_WRONG
 }

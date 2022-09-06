@@ -33,7 +33,7 @@ fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
     permissionRepository: PermissionRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
-    adminshipRepository: AdminshipRepository
+    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -712,7 +712,78 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            adminshipRepository.readAdminShip(domainId, userId)
+                            adminshipRepository.readAdminship(domainId, userId)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+                }
+
+                route("/global-feed") {
+                    get {
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val globalFeeds = globalFeedRepository.getGlobalFeeds(domainId, userId)
+                            call.respond(HttpStatusCode.OK, globalFeeds)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+
+                    post("/create") {
+                        var content = ""
+                        val renderFormat = "webp"
+                        val imageName = "${getUUID()}.$renderFormat"
+                        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+                        val uploadDir = File(filePath)
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val parts = call.receiveMultipart()
+
+                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                            }
+                            filePath += imageName
+                            var hasImage = false
+                            parts.forEachPart { part ->
+                                when (part) {
+                                    is PartData.FormItem -> content = part.value
+                                    is PartData.FileItem -> {
+                                        hasImage = true
+                                        part.saveImage(filePath, renderFormat)
+                                    }
+                                    else -> Unit
+                                }
+                            }
+                            val image = if (hasImage) filePath else null
+                            val globalFeed = GlobalFeed(
+                                content = content, image = image, user = User(userId), domainId = domainId
+                            )
+                            globalFeedRepository.createGlobalFeed(globalFeed)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.GlobalFeed
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+
+                    post("/read") {
+                        try {
+                            val chatSession = call.sessions.get<ChatSession>()
+                            val userId = chatSession?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            globalFeedRepository.readGlobalFeed(domainId, userId)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()

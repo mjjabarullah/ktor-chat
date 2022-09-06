@@ -30,7 +30,7 @@ fun Route.adminRotes(
     domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
     rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
     messageRepository: MessageRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
-    adminshipRepository: AdminshipRepository
+    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository
 ) {
 
 
@@ -415,6 +415,26 @@ fun Route.adminRotes(
                             adminshipRepository.deleteAdminship(postId)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.DelAdminship
+                            ).encodeToString()
+                            WsController.broadcastToDomain(domainId, message)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                        }
+                    }
+                }
+
+                route("/global-feed") {
+
+                    delete("/{postId}/delete") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val postId = call.parameters["postId"]!!.toInt()
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            globalFeedRepository.deleteGlobalFeed(postId)
+                            val message = Message(
+                                content = "", user = User(id = userId), type = MessageType.DelGlobalFeed
                             ).encodeToString()
                             WsController.broadcastToDomain(domainId, message)
                             call.respond(HttpStatusCode.OK)
