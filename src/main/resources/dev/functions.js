@@ -1,6 +1,6 @@
-import {Defaults, Errors} from './constant.js'
+import {Defaults, Errors} from './constant'
+import {emojis} from './emojis'
 
-export const emojis = [easy, modern, easy, modern]
 
 export function renderWelcomeMessage() {
     const topic = room.topic.replace(/%ROOM%/g, room.name)

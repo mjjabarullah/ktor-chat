@@ -50,3 +50,6 @@ const modern = {
     ':idontcare72': '/emojis/modern/idontcare.png',
     ':idontcare82': '/emojis/modern/idontcare.png',
 }
+
+
+export const emojis = [easy, modern, easy, modern]

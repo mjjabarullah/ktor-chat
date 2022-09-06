@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rainbowtechsolution.common.Validation
 import io.ktor.http.content.*
-import io.ktor.server.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -55,7 +54,6 @@ suspend fun PartData.FileItem.saveAudio(path: String) {
 
 suspend fun <T> dbQuery(block: () -> T): T = newSuspendedTransaction(Dispatchers.IO) { block() }
 
-
 fun String.isNameValid(): Boolean {
     for (char in Validation.BAD_CHARS) {
         if (this.trim().contains(char)) return false
@@ -65,8 +63,8 @@ fun String.isNameValid(): Boolean {
 
 fun String.clean(): String {
     var result = this
-    for (char in Validation.BAD_CHARS) {
-        result = result.replace(char, "")
+    Validation.BAD_CHARS.map {
+        result = result.replace(it, "")
     }
     return result
 }
@@ -75,7 +73,7 @@ fun String.hashPassword(): String = BCrypt.hashpw(this, BCrypt.gensalt())
 
 fun String.checkPassword(passwordToCheck: String): Boolean = BCrypt.checkpw(passwordToCheck, this)
 
-fun String.getDomain() = split(".")[0]
+fun String.getDomainSlug() = split(".")[0]
 
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 

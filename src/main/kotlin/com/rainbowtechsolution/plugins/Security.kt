@@ -11,13 +11,12 @@ import com.rainbowtechsolution.data.repository.RankRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.model.ChatSession
-import com.rainbowtechsolution.data.model.Domain
 import com.rainbowtechsolution.data.model.Seen
 import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.exceptions.DomainNotFoundException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException
-import com.rainbowtechsolution.utils.getDomain
+import com.rainbowtechsolution.utils.getDomainSlug
 import com.rainbowtechsolution.utils.hashPassword
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -33,7 +32,6 @@ import org.koin.ktor.ext.inject
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
 import java.io.File
-import java.time.LocalDateTime
 import java.util.*
 import kotlin.time.Duration
 
@@ -77,7 +75,7 @@ fun Application.configureSecurity() {
                 val timezone = params["timezone"]
                 val country = params["country"]
                 try {
-                    val slug = request.host().getDomain()
+                    val slug = request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                     val domainId = domain.id!!
 
@@ -126,7 +124,7 @@ fun Application.configureSecurity() {
                 val timezone = params["timezone"]
                 val country = params["country"]
                 try {
-                    val slug = request.host().getDomain()
+                    val slug = request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                     val domainId = domain.id!!
                     val paramGender = params["gender"].toString()
@@ -179,7 +177,7 @@ fun Application.configureSecurity() {
                 val timezone = params["timezone"]
                 val country = params["country"]
                 try {
-                    val slug = request.host().getDomain()
+                    val slug = request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                     val domainId = domain.id!!
 
@@ -203,7 +201,7 @@ fun Application.configureSecurity() {
             }
             challenge {
                 try {
-                    val slug = call.request.host().getDomain()
+                    val slug = call.request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
                     call.respondTemplate("client/index", mapOf("domain" to domain))
                 } catch (_: DomainNotFoundException) {

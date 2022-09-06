@@ -10,7 +10,6 @@ import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.*
-import com.rainbowtechsolution.domain.model.*
 import com.rainbowtechsolution.exceptions.*
 import com.rainbowtechsolution.utils.*
 import io.ktor.http.*
@@ -44,7 +43,7 @@ fun Route.domainRoutes(
             get {
                 try {
                     val chatSession = call.sessions.get<ChatSession>()
-                    val slug = call.request.host().getDomain()
+                    val slug = call.request.host().getDomainSlug()
                     val userId = chatSession?.id!!
                     val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
@@ -211,7 +210,7 @@ fun Route.domainRoutes(
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val name = call.receiveParameters()["name"].toString()
                             if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
-                            val slug = call.request.host().getDomain()
+                            val slug = call.request.host().getDomainSlug()
                             val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                             val isUserExists = userRepository.isUserExists(name, domain.id!!)
                             if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
@@ -800,7 +799,7 @@ fun Route.domainRoutes(
             get {
                 try {
                     val chatSession = call.sessions.get<ChatSession>()
-                    val slug = call.request.host().getDomain()
+                    val slug = call.request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
                     if (chatSession != null) {
                         userRepository.findUserById(chatSession.id!!) ?: throw UserNotFoundException()
@@ -832,7 +831,7 @@ fun Route.domainRoutes(
             get {
                 try {
                     val chatSession = call.sessions.get<ChatSession>()
-                    val slug = call.request.host().getDomain()
+                    val slug = call.request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
                     if (chatSession != null) {
                         userRepository.findUserById(chatSession.id!!) ?: throw UserNotFoundException()
@@ -864,7 +863,7 @@ fun Route.domainRoutes(
             get {
                 try {
                     val chatSession = call.sessions.get<ChatSession>()
-                    val slug = call.request.host().getDomain()
+                    val slug = call.request.host().getDomainSlug()
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
                     if (chatSession != null) {
                         userRepository.findUserById(chatSession.id!!) ?: throw UserNotFoundException()
