@@ -34,7 +34,8 @@ module.exports = {
             },
             borderColor: {
                 skin: {
-                    primary: withOpacity('--color-primary')
+                    primary: withOpacity('--color-primary'),
+                    hover: withOpacity('--color-primary-hover')
                 },
             },
             ringColor: {

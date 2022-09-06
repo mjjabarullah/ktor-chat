@@ -5405,6 +5405,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 
 
 
+
 Object.freeze(domain);
 Object.freeze(room);
 Object.freeze(permission);
@@ -6303,23 +6304,8 @@ document.addEventListener('alpine:init', function () {
         var reportType = type === 1 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.Chat : type === 2 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.PvtChat : _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.NewsFeed;
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.reportDialogHtml(id, reportType));
       },
-      report: function report(targetId, reason, type) {
-        var _this27 = this;
-
-        var formData = new FormData();
-        formData.append('targetId', targetId);
-        formData.append('reason', reason);
-        formData.append('roomId', room.id);
-        formData.append('type', type);
-        axios.post("".concat(domain.id, "/reports/create"), formData).then(function (res) {
-          _this27.showAlertMsg('Message reported successfully', _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
-        })["catch"](function (e) {
-          _this27.showAlertMsg('Reporting message failed', _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-        });
-        this.closeSmallModal();
-      },
       openPvtDialog: function openPvtDialog(id) {
-        var _this28 = this;
+        var _this27 = this;
 
         var user = this.u;
         var exists = this.pvtUsers.find(function (user) {
@@ -6358,9 +6344,9 @@ document.addEventListener('alpine:init', function () {
           });
           user.interval = null;
 
-          _this28.pvtUsers.unshift(user);
+          _this27.pvtUsers.unshift(user);
 
-          _this28.showUserProfile = false;
+          _this27.showUserProfile = false;
         });
         this.setPvtNotifiCount();
       },
@@ -6415,7 +6401,7 @@ document.addEventListener('alpine:init', function () {
         this.userSocket.send(JSON.stringify(message));
       },
       recordPvtAudio: function recordPvtAudio(id) {
-        var _this29 = this;
+        var _this28 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6430,12 +6416,12 @@ document.addEventListener('alpine:init', function () {
           user.recorder.start().then(function () {
             user.interval = setInterval(function () {
               if (user.remainingTime === 1) {
-                _this29.recordPvtAudio(id);
+                _this28.recordPvtAudio(id);
               } else user.remainingTime--;
             }, 1000);
             user.isRecording = true;
           })["catch"](function () {
-            return _this29.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NO_MIC_PERMISSION, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            return _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NO_MIC_PERMISSION, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         } else {
           if (!(_constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.MAX_RECORDING_TIME - user.remainingTime > _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.MIN_RECORDING_TIME)) {
@@ -6459,12 +6445,12 @@ document.addEventListener('alpine:init', function () {
             var formData = new FormData();
             formData.append('audio', audioFile);
             axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-audio"), formData).then(function (res) {
-              _this29.sendToUser(res.data);
+              _this28.sendToUser(res.data);
             })["catch"](function (err) {
-              _this29.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+              _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
             });
           })["catch"](function (e) {
-            _this29.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
           user.isRecording = false;
           clearInterval(user.interval);
@@ -6472,7 +6458,7 @@ document.addEventListener('alpine:init', function () {
         }
       },
       uploadPvtImage: function uploadPvtImage(id, event) {
-        var _this30 = this;
+        var _this29 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6497,13 +6483,13 @@ document.addEventListener('alpine:init', function () {
 
         formData.append("image", file);
         axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-image"), formData).then(function (res) {
-          _this30.sendToUser(res.data);
+          _this29.sendToUser(res.data);
 
-          _this30.showLoader = false;
+          _this29.showLoader = false;
         })["catch"](function (e) {
-          _this30.showLoader = false;
+          _this29.showLoader = false;
 
-          _this30.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this29.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       onPvtMessageReceived: function onPvtMessageReceived(e) {
@@ -6533,12 +6519,12 @@ document.addEventListener('alpine:init', function () {
         }
       },
       reCheckPvtMessages: function reCheckPvtMessages() {
-        var _this31 = this;
+        var _this30 = this;
 
         axios.get("/".concat(domain.id, "/pvt/users")).then(function (res) {
-          _this31.pvtUsers = res.data;
+          _this30.pvtUsers = res.data;
 
-          _this31.pvtUsers.forEach(function (user) {
+          _this30.pvtUsers.forEach(function (user) {
             user.minimize = false;
             user.added = false;
             user.isRecording = false;
@@ -6549,25 +6535,26 @@ document.addEventListener('alpine:init', function () {
             user.interval = null;
           });
 
-          _this31.setPvtNotifiCount();
+          _this30.setPvtNotifiCount();
         })["catch"](function (e) {});
       },
       openRoomsModal: function openRoomsModal() {
-        var _this32 = this;
+        var _this31 = this;
 
         if (mobile.matches) this.showLeft = false;
+        this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalLoadingHtml());
         axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
-          return _this32.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalHtml(res.data));
+          return _this31.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalHtml(res.data));
         });
       },
       openMessageModal: function openMessageModal() {
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.messageModalHtml(this.pvtUsers));
       },
       setAllSeen: function setAllSeen(sender) {
-        var _this33 = this;
+        var _this32 = this;
 
         axios.post("".concat(domain.id, "/pvt/").concat(sender, "/all-seen")).then(function (res) {
-          var user = _this33.pvtUsers.find(function (user) {
+          var user = _this32.pvtUsers.find(function (user) {
             return user.id === sender;
           });
 
@@ -6575,7 +6562,7 @@ document.addEventListener('alpine:init', function () {
             return message.seen = true;
           });
 
-          _this33.setPvtNotifiCount();
+          _this32.setPvtNotifiCount();
         });
       },
       setPvtNotifiCount: function setPvtNotifiCount() {
@@ -6608,7 +6595,7 @@ document.addEventListener('alpine:init', function () {
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.reportModalHtml(this.reports));
       },
       openReportActionDialog: function openReportActionDialog(reportId, targetId, roomId, type) {
-        var _this34 = this;
+        var _this33 = this;
 
         this.closeFullModal();
         var html = "<div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Report Action</p>\n                        <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>";
@@ -6617,11 +6604,11 @@ document.addEventListener('alpine:init', function () {
           axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/messages/").concat(targetId)).then(function (res) {
             html += _functions__WEBPACK_IMPORTED_MODULE_1__.renderReportChatMessage(res.data, reportId, targetId, roomId, type);
 
-            _this34.showSmallModal(html);
+            _this33.showSmallModal(html);
           })["catch"](function (e) {
             if (e.response) {
               if (e.response.status === 404) {
-                _this34.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+                _this33.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
 
                 var formData = new FormData();
                 formData.append('domainId', domain.id);
@@ -6633,37 +6620,37 @@ document.addEventListener('alpine:init', function () {
               return;
             }
 
-            _this34.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            _this33.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         } else if (type === _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.PvtChat) {} else if (type === _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.NewsFeed) {}
       },
       takeAction: function takeAction(reportId, targetId, roomId, type) {
-        var _this35 = this;
+        var _this34 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/take-action"), formData).then(function () {
-          return _this35.closeSmallModal();
+          return _this34.closeSmallModal();
         });
       },
       noAction: function noAction(reportId, type) {
-        var _this36 = this;
+        var _this35 = this;
 
         var formData = new FormData();
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/no-action"), formData).then(function () {
-          return _this36.closeSmallModal();
+          return _this35.closeSmallModal();
         });
       },
       openNewsModal: function openNewsModal() {
-        var _this37 = this;
+        var _this36 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.newsModalHtml(this.news.news));
         this.newsUnreadCount !== 0 && axios.post("/".concat(domain.id, "/news/read")).then(function () {
-          return _this37.newsUnreadCount = _this37.news.unReadCount = 0;
+          return _this36.newsUnreadCount = _this36.news.unReadCount = 0;
         });
       },
       writeNewsDialog: function writeNewsDialog() {
@@ -6675,7 +6662,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeNewsDialogHtml());
       },
       delNews: function delNews(newsId) {
-        var _this38 = this;
+        var _this37 = this;
 
         if (!permission.delNews) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6683,24 +6670,24 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/news/").concat(newsId, "/delete")).then(function () {
-          _this38.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this37.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this38.news.news = _this38.news.news.filter(function (news) {
+          _this37.news.news = _this37.news.news.filter(function (news) {
             return news.id !== newsId;
           });
 
-          _this38.openNewsModal();
+          _this37.openNewsModal();
         })["catch"](function (e) {
-          return _this38.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this37.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       openAdminshipModal: function openAdminshipModal() {
-        var _this39 = this;
+        var _this38 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.adminshipModalHtml(this.adminship.adminships));
         this.adminshipUnreadCount !== 0 && axios.post("/".concat(domain.id, "/adminship/read")).then(function () {
-          return _this39.adminshipUnreadCount = _this39.adminship.unReadCount = 0;
+          return _this38.adminshipUnreadCount = _this38.adminship.unReadCount = 0;
         });
       },
       writeAdminShipDialog: function writeAdminShipDialog() {
@@ -6712,7 +6699,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeAdminshipDialogHtml());
       },
       delAdminShip: function delAdminShip(postId) {
-        var _this40 = this;
+        var _this39 = this;
 
         if (!permission.delAdminship) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6720,24 +6707,24 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/adminship/").concat(postId, "/delete")).then(function () {
-          _this40.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this39.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this40.adminship.adminships = _this40.adminship.adminships.filter(function (adminship) {
+          _this39.adminship.adminships = _this39.adminship.adminships.filter(function (adminship) {
             return adminship.id !== postId;
           });
 
-          _this40.openAdminshipModal();
+          _this39.openAdminshipModal();
         })["catch"](function (e) {
-          return _this40.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this39.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       openGlobalFeedModal: function openGlobalFeedModal() {
-        var _this41 = this;
+        var _this40 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.globalFeedModalHtml(this.globalFeed.globalFeeds));
         this.globalFeedUnreadCount !== 0 && axios.post("/".concat(domain.id, "/global-feed/read")).then(function () {
-          return _this41.globalFeedUnreadCount = _this41.globalFeed.unReadCount = 0;
+          return _this40.globalFeedUnreadCount = _this40.globalFeed.unReadCount = 0;
         });
       },
       writeGlobalFeedDialog: function writeGlobalFeedDialog() {
@@ -6749,7 +6736,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeGlobalFeedDialogHtml());
       },
       delGlobalFeed: function delGlobalFeed(postId) {
-        var _this42 = this;
+        var _this41 = this;
 
         if (!permission.delGlobalFeed) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6757,15 +6744,15 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/global-feed/").concat(postId, "/delete")).then(function () {
-          _this42.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this41.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this42.globalFeed.globalFeeds = _this42.globalFeed.globalFeeds.filter(function (globalFeed) {
+          _this41.globalFeed.globalFeeds = _this41.globalFeed.globalFeeds.filter(function (globalFeed) {
             return globalFeed.id !== postId;
           });
 
-          _this42.openGlobalFeedModal();
+          _this41.openGlobalFeedModal();
         })["catch"](function (e) {
-          return _this42.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this41.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeUserNameDialog: function changeUserNameDialog() {
@@ -6777,7 +6764,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserNameHtml());
       },
       changeUserName: function changeUserName() {
-        var _this43 = this;
+        var _this42 = this;
 
         if (!permission.userName) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6792,9 +6779,9 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('name', this.u.name);
         axios.post("/".concat(domain.id, "/users/").concat(this.u.id, "/update-name"), formData).then(function () {
-          return _this43.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          return _this42.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          return _this43.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this42.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
@@ -6808,7 +6795,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserAvatarHtml());
       },
       setUserAvatar: function setUserAvatar(index) {
-        var _this44 = this;
+        var _this43 = this;
 
         if (!permission.avatar) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6819,19 +6806,19 @@ document.addEventListener('alpine:init', function () {
         var data = new FormData();
         data.append('avatar', _constant__WEBPACK_IMPORTED_MODULE_2__.avatars[index]);
         axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-default-avatar"), data).then(function (res) {
-          _this44.showLoader = false;
+          _this43.showLoader = false;
 
-          _this44.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this43.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this44.showLoader = false;
+          _this43.showLoader = false;
 
-          _this44.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this43.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
       },
       changeUserAvatar: function changeUserAvatar(el) {
-        var _this45 = this;
+        var _this44 = this;
 
         if (!permission.avatar) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6852,19 +6839,19 @@ document.addEventListener('alpine:init', function () {
 
         formData.append('avatar', file);
         axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-avatar"), formData).then(function () {
-          _this45.showLoader = false;
+          _this44.showLoader = false;
 
-          _this45.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this44.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this45.showLoader = false;
+          _this44.showLoader = false;
 
-          _this45.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this44.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.showUserProfile = false;
         this.closeSmallModal();
       },
       actionMute: function actionMute() {
-        var _this46 = this;
+        var _this45 = this;
 
         if (!permission.mute) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6872,9 +6859,9 @@ document.addEventListener('alpine:init', function () {
         }
 
         this.u.muted ? axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function () {
-          return _this46.u.muted = false;
+          return _this45.u.muted = false;
         }) : axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function () {
-          return _this46.u.muted = true;
+          return _this45.u.muted = true;
         });
       },
       kickUser: function kickUser(id) {
@@ -6905,7 +6892,7 @@ document.addEventListener('alpine:init', function () {
       password: '',
       errors: {},
       guestRegister: function guestRegister() {
-        var _this47 = this;
+        var _this46 = this;
 
         this.showLoader = true;
         var form = new FormData();
@@ -6914,18 +6901,18 @@ document.addEventListener('alpine:init', function () {
         form.append('password', this.password);
         form.append('gender', this.user.gender);
         axios.put("/".concat(domain.id, "/register"), form).then(function (res) {
-          _this47.showLoader = true;
+          _this46.showLoader = true;
 
-          _this47.closeSmallModal();
+          _this46.closeSmallModal();
 
           setTimeout(function () {
             return location.reload();
           }, 2000);
 
-          _this47.showAlertMsg(res.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this46.showAlertMsg(res.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this47.showLoader = false;
-          if (e.response) _this47.errors = e.response.data;
+          _this46.showLoader = false;
+          if (e.response) _this46.errors = e.response.data;
         });
       }
     };
@@ -6935,25 +6922,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this48 = this;
+        var _this47 = this;
 
         this.$nextTick(function () {
-          return _this48.$refs.newsInput.focus();
+          return _this47.$refs.newsInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this49 = this;
+        var _this48 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this49.image = e.target.result;
+          return _this48.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeNews: function writeNews() {
-        var _this50 = this;
+        var _this49 = this;
 
         var input = this.$refs.input;
 
@@ -6971,15 +6958,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/news/create"), formData).then(function () {
-          _this50.closeSmallModal();
+          _this49.closeSmallModal();
 
-          _this50.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this49.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this50.getNews(function () {
-            _this50.openNewsModal();
+          _this49.getNews(function () {
+            _this49.openNewsModal();
           });
         })["catch"](function (e) {
-          return _this50.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this49.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       }
     };
@@ -6989,25 +6976,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this51 = this;
+        var _this50 = this;
 
         this.$nextTick(function () {
-          return _this51.$refs.adminshipInput.focus();
+          return _this50.$refs.adminshipInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this52 = this;
+        var _this51 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this52.image = e.target.result;
+          return _this51.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeAdminship: function writeAdminship() {
-        var _this53 = this;
+        var _this52 = this;
 
         var input = this.$refs.input;
 
@@ -7025,15 +7012,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/adminship/create"), formData).then(function () {
-          _this53.closeSmallModal();
+          _this52.closeSmallModal();
 
-          _this53.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this52.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this53.getAdminships(function () {
-            _this53.openAdminshipModal();
+          _this52.getAdminships(function () {
+            _this52.openAdminshipModal();
           });
         })["catch"](function (e) {
-          return _this53.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this52.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       }
     };
@@ -7043,25 +7030,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this54 = this;
+        var _this53 = this;
 
         this.$nextTick(function () {
-          return _this54.$refs.feedInput.focus();
+          return _this53.$refs.feedInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this55 = this;
+        var _this54 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this55.image = e.target.result;
+          return _this54.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeGlobalFeed: function writeGlobalFeed() {
-        var _this56 = this;
+        var _this55 = this;
 
         var input = this.$refs.input;
 
@@ -7079,16 +7066,37 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/global-feed/create"), formData).then(function () {
-          _this56.closeSmallModal();
+          _this55.closeSmallModal();
 
-          _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this55.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this56.getGlobalFeed(function () {
-            _this56.openGlobalFeedModal();
+          _this55.getGlobalFeed(function () {
+            _this55.openGlobalFeedModal();
           });
         })["catch"](function (e) {
-          return _this56.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this55.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
+      }
+    };
+  });
+  alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('report', function () {
+    return {
+      selectedReason: '',
+      reasons: ['Abusive Language', 'Spam Content', 'Inappropriate Content', 'Sexual Harassment'],
+      report: function report(targetId, type) {
+        var _this56 = this;
+
+        var formData = new FormData();
+        formData.append('targetId', targetId);
+        formData.append('reason', this.selectedReason);
+        formData.append('roomId', room.id);
+        formData.append('type', type);
+        axios.post("".concat(domain.id, "/reports/create"), formData).then(function () {
+          return _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.MESSAGE_REPORTED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+        })["catch"](function () {
+          return _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.REPORTING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+        this.closeSmallModal();
       }
     };
   });
@@ -7193,7 +7201,8 @@ var Success = {
   ADMINSHIP_CREATED: 'Adminship post created successfully',
   ADMINSHIP_DELETED: 'Adminship post deleted successfully',
   GLOBAL_FEED_CREATED: 'Adminship post created successfully',
-  GLOBAL_FEED_DELETED: 'Adminship post deleted successfully'
+  GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
+  MESSAGE_REPORTED: 'Message reported successfully'
 };
 /**
  * Errors
@@ -7214,7 +7223,8 @@ var Errors = {
   DELETE_MESSAGE: 'Deleting message failed',
   CANT_PRIVATE: 'You cannot private to this user',
   NO_MIC_PERMISSION: 'You haven\'t given mic permission',
-  CONTENT_EMPTY: 'Content cannot be empty'
+  CONTENT_EMPTY: 'Content cannot be empty',
+  REPORTING_FAILED: 'Message Reporting failed'
 };
 /**
  * Css classes
@@ -7348,6 +7358,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "reportDialogHtml": () => (/* binding */ reportDialogHtml),
 /* harmony export */   "reportModalHtml": () => (/* binding */ reportModalHtml),
 /* harmony export */   "roomModalHtml": () => (/* binding */ roomModalHtml),
+/* harmony export */   "roomModalLoadingHtml": () => (/* binding */ roomModalLoadingHtml),
 /* harmony export */   "ucgPolicyHtml": () => (/* binding */ ucgPolicyHtml),
 /* harmony export */   "writeAdminshipDialogHtml": () => (/* binding */ writeAdminshipDialogHtml),
 /* harmony export */   "writeGlobalFeedDialogHtml": () => (/* binding */ writeGlobalFeedDialogHtml),
@@ -7359,7 +7370,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function renderWelcomeMessage() {
   var topic = room.topic.replace(/%ROOM%/g, room.name);
-  return "\n         <li id=\"topic\" class=\"w-full flex justify-center !bg-skin-primary/10 relative\">\n             <i @click=\"removeTopic\" class=\"cursor-pointer fa-solid fa-circle-xmark absolute text-sm text-skin-primary top-2 right-4\"></i>\n             <div class=\"flex py-4 px-2 w-full\">\n                <img class=\"w-[32px] h-[32px] mt-0.5 rounded-lg flex-none\" src=\"images/defaults/topic.webp\" alt=\"\">\n                <div class=\"ml-2 flex-1 \">\n                    <p class=\"username ml-1 mb-1\">Topic</p>\n                    <p class=\"chat text-skin-hover px-1 pr-2\">\n                        <span class=\"tag mr-1\">".concat(name, "</span> ").concat(topic, "\n                    </p>  \n                </div>\n            </div>\n        </li>\n    ");
+  return "\n        <li id=\"topic\" class=\"topic\">\n            <i @click=\"removeTopic\" class=\"fa-solid fa-circle-xmark \"></i>\n            <div class=\"segment\">\n                <a class=\"ribbon label\">Welcome Jafa</a>      \n                <img  alt=\"\" src=\"/images/defaults/welcome.svg\">\n                <p>".concat(topic, "</p>        \n             </div>    \n        </li>\n    ");
 }
 function renderJoinMessage(message) {
   return "\n         <li class=\"w-full flex justify-center border-t border-gray-200\">\n            <div class=\"p-1\" @click=\"welcomeMessage('".concat(message.user.name, "')\">\n               <p class=\"rounded-md px-4 py-1 text-white bg-skin-primary text-[12px]\"><b class=\"cursor-pointer\">").concat(message.user.name, "</b> has joined the room.</p>\n            </div>\n        </li>\n    ");
@@ -7507,7 +7518,7 @@ function customizeTextHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Chat Option</p>\n                <i @click=\"closeCustomizeTextDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <template x-if=\"user.textFont\"> \n                    <p class=\"w-full clip\" :class=\"[user.textFont, user.textColor, user.textBold=='true' ? 'font-bold' : 'font-normal' ]\">Sample Text</p>\n                </template>    \n                <div class=\"w-full h-10 mb-4\">\n                    <select @change=\"console.log($el.value)\" x-model=\"user.textFont\" class=\"input-text\">\n                        <option>Select Font</option>\n                        <option value=\"signika\">Signika</option>\n                        <option value=\"grandstander\">Grandstander</option>\n                        <option value=\"comic\">Comic</option>\n                        <option value=\"orbitron\">Orbitron</option>\n                        <option value=\"quicksand\">Quicksand</option>\n                        <option value=\"lemonada\">Lemonada</option>\n                        <option value=\"grenze\">Grenze</option>\n                        <option value=\"kalam\">Kalam</option>\n                        <option value=\"merienda\">Merienda</option>\n                        <option value=\"amita\">Amita</option>\n                        <option value=\"averia\">Averia</option>\n                        <option value=\"turret\">Turret</option>\n                        <option value=\"sansita\">Sansita</option>\n                        <option value=\"comfortaa\">Comfortaa</option>\n                        <option value=\"charm\">Charm</option>\n                        <option value=\"lobster\">Lobster</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Bold</p>\n                <div class=\"w-full h-10 mb-2\">\n                    <select x-model=\"user.textBold\" class=\"input-text\">\n                        <option value=\"true\">Yes</option>\n                        <option value=\"false\">No</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Color</p>\n                <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                    <div @click=\"setTextColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                        <i x-show=\"isShowTick(index)\" x-transition class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                    </div>\n                  </template>\n                </div>\n                <button @click=\"customizeText\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
 }
 function reportDialogHtml(id, type) {
-  return "\n        <div x-data=\"{ id: ".concat(id, ", selectedReason :'', reasons:['Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment']}\"\n         class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n            <div class=\"inline-flex items-center\"> \n                <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n            </div>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <p class=\"mb-4 text-[13px] text-start leading-[15px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                     <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                        <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" \n                        :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                        <p x-text=\"reason\"></p>\n                    </div>\n                </template>\n                <button @click=\"report(id, selectedReason, '").concat(type, "')\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n            </div>\n        </div>\n    ");
+  return "\n        <div x-data=\"{ id: ".concat(id, ", type: '").concat(type, "' }\"\n         class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n            <div class=\"inline-flex items-center\"> \n                <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n            </div>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div x-data=\"report\" class=\"p-4\">\n                <p class=\"mb-4 text-[13px] text-start leading-[16px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                     <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                        <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                        <p x-text=\"reason\"></p>\n                    </div>\n                </template>\n                <button @click=\"report(id, type)\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n            </div>\n        </div>\n    ");
 }
 function messageModalHtml(pvtUsers) {
   var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Messages</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full \">\n    ";
@@ -7535,6 +7546,9 @@ function changeUserNameHtml() {
 }
 function changeUserAvatarHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Avatar</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                Select an image\n                <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                      <div class=\"w-[50px] h-[50px] relative\">\n                        <img @click=\"setUserAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\"> \n                      </div>\n                  </template>\n                </div> \n                Or \n                <div class=\"mt-1\">\n                    <input x-ref='uploadUserAvatar' @change=\"changeUserAvatar($el)\" class=\"input-image\" type=\"file\" accept=\"image/*\">\n                    <button @click=\"$refs.uploadUserAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                </div>  \n            </div>\n        </div>\n   ";
+}
+function roomModalLoadingHtml() {
+  return "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Room List</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px] flex items-center justify-center\">\n                <div class=\"loader\"></div>   \n            </div> \n        </div>\n   ";
 }
 function roomModalHtml(rooms) {
   var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Room List</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full\">\n    ";
@@ -7616,7 +7630,7 @@ function writeGlobalFeedDialogHtml() {
 }
 function renderReportChatMessage(message, id, targetId, roomId, type) {
   var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
-  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"><source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : '';
+  var audio = message.audio ? "<audio preload=\"auto\" controls controlslist=\"nodownload noplaybackrate\" class=\"w-[250px]\"> <source src=\"".concat(message.audio, "\" type=\"audio/mpeg\"></audio>") : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
   message.content = appendEmojis(message.content);
   return "\n    <div class=\"p-4\">\n        <li class=\"chat-wrap mb-4\" style=\"border: none\">\n            <div class=\"flex py-1 px-2 w-full\" >\n                <img @click=\"getUserProfile(".concat(message.user.id, ")\" class=\"w-[36px] h-[36px] rounded-full flex-none cursor-pointer\" src=\"").concat(message.user.avatar, "\">\n                <div class=\"ml-2 flex-1 \">\n                    <div class=\"flex justify-between\">\n                        <p class=\"username clip \"> ").concat(message.user.name, "</p>\n                        <div class=\"flex items-center gap-2 mr-2\">\n                            <p class=\"date\">").concat(message.createdAt, "</p>\n                        </div>\n                    </div>\n                    <div class=\"pr-2\">").concat(image, " ").concat(audio, "\n                        <p class=\"chat clip text-start\">").concat(message.content, "</p>\n                    </div>\n                </div>\n           </div>\n        </li> \n        <button @click=\"takeAction(").concat(id, ", ").concat(targetId, ",").concat(roomId, ", '").concat(type, "')\" class=\"btn btn-skin text-center\">Take Action<button>\n        <button @click=\"noAction(").concat(id, ", '").concat(type, "')\" class=\"btn btn-disabled text-center ml-2\">No Action<button>\n    </div></div>");
 }

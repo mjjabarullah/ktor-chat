@@ -12,6 +12,7 @@ fun Application.configureCachingHeaders() {
             when (outgoingContent.contentType?.withoutParameters()) {
                 //ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 2))
                 ContentType.Image.PNG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
+                ContentType.Image.SVG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
                 ContentType("image", "webp") -> CachingOptions(
                     CacheControl.MaxAge(maxAgeSeconds = monthInSeconds)
                 )

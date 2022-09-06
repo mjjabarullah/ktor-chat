@@ -8,7 +8,6 @@ import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.*
-import com.rainbowtechsolution.domain.model.*
 import com.rainbowtechsolution.exceptions.PermissionDeniedException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException

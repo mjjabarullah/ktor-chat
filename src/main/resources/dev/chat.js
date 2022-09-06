@@ -5,6 +5,7 @@ import * as fn from './functions'
 import {
     MessageType, ReportType, Status, Success, Errors, Css, Defaults, textColors, avatars, bgColors
 } from "./constant"
+import {roomModalLoadingHtml} from "./functions";
 
 Object.freeze(domain)
 Object.freeze(room)
@@ -773,19 +774,6 @@ document.addEventListener('alpine:init', () => {
                 const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
                 this.showSmallModal(fn.reportDialogHtml(id, reportType))
             },
-            report(targetId, reason, type) {
-                const formData = new FormData()
-                formData.append('targetId', targetId)
-                formData.append('reason', reason)
-                formData.append('roomId', room.id)
-                formData.append('type', type)
-                axios.post(`${domain.id}/reports/create`, formData).then(res => {
-                    this.showAlertMsg('Message reported successfully', Css.SUCCESS)
-                }).catch(e => {
-                    this.showAlertMsg('Reporting message failed', Css.ERROR)
-                })
-                this.closeSmallModal()
-            },
             openPvtDialog(id) {
                 const user = this.u
                 const exists = this.pvtUsers.find(user => user.id === id)
@@ -953,6 +941,7 @@ document.addEventListener('alpine:init', () => {
             },
             openRoomsModal() {
                 if (mobile.matches) this.showLeft = false
+                this.showFullModal(fn.roomModalLoadingHtml())
                 axios.get(`/${domain.id}/rooms`).then(res => this.showFullModal(fn.roomModalHtml(res.data)))
             },
             openMessageModal() {
@@ -1341,6 +1330,24 @@ document.addEventListener('alpine:init', () => {
                     })
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             }
+        }
+    })
+
+    Alpine.data('report', () => {
+        return {
+            selectedReason: '',
+            reasons: ['Abusive Language', 'Spam Content', 'Inappropriate Content', 'Sexual Harassment'],
+            report(targetId, type) {
+                const formData = new FormData()
+                formData.append('targetId', targetId)
+                formData.append('reason', this.selectedReason)
+                formData.append('roomId', room.id)
+                formData.append('type', type)
+                axios.post(`${domain.id}/reports/create`, formData).then(() =>
+                    this.showAlertMsg(Success.MESSAGE_REPORTED, Css.SUCCESS)
+                ).catch(() => this.showAlertMsg(Errors.REPORTING_FAILED, Css.ERROR))
+                this.closeSmallModal()
+            },
         }
     })
 })

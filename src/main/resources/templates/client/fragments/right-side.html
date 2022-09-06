@@ -47,7 +47,7 @@
             </template>
             <ul>
                 <template x-for="user in offlineUsers" :key="user.id">
-                    <li :id="'user-'+ user.id" class="user-wrap relative group" @click="getUserProfile(user.id)">
+                    <li :id="'user-'+ user.id" class="offline user-wrap relative group" @click="getUserProfile(user.id)">
                         <div class="absolute top-0 left-0 h-full w-full bg-white/30 group-hover:hidden"></div>
                         <div class="w-full h-8 gap-2">
                             <div class="flex h-full w-full items-center">

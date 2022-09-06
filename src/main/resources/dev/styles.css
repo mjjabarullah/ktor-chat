@@ -1052,7 +1052,7 @@ body {
     @apply cursor-pointer text-xl text-skin-hover flex-none
 }
 
-.icon-md{
+.icon-md {
     @apply mx-1 w-6 h-6 cursor-pointer flex-none
 }
 
@@ -1280,6 +1280,39 @@ input:checked + .slider {
 
 .btn-join {
     @apply text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin
+}
+
+.topic {
+    @apply pl-[22px] py-2 pr-2 w-full flex justify-center relative bg-transparent shadow-sm shadow-black/10
+}
+
+.topic img {
+    @apply h-[70px] float-right mr-2
+}
+
+.topic p {
+    @apply font-bold text-[14px] text-skin-primary mt-2
+}
+
+.topic i {
+    @apply z-10 cursor-pointer absolute text-sm text-skin-primary top-4 right-4
+}
+
+.segment {
+    @apply relative bg-white w-full py-2 px-4 shadow-sm shadow-black/20 border-[1px] border-gray-200 rounded
+}
+
+.ribbon {
+    @apply text-white border-skin-hover relative min-w-max
+}
+
+.ribbon.label {
+    @apply -left-8 pl-8 pr-4 font-bold text-[12px] rounded-l-none text-white after:absolute after:top-full after:left-0 after:bg-white after:border-r-[16px]
+    after:border-b-[16px] after:h-0 after:w-0 after:border-transparent after:border-r-skin-hover
+}
+
+.offline.user-wrap {
+    @apply lg:hover:bg-white
 }
 
 @layer utilities {

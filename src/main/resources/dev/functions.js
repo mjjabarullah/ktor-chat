@@ -5,17 +5,13 @@ import {emojis} from './emojis'
 export function renderWelcomeMessage() {
     const topic = room.topic.replace(/%ROOM%/g, room.name)
     return `
-         <li id="topic" class="w-full flex justify-center !bg-skin-primary/10 relative">
-             <i @click="removeTopic" class="cursor-pointer fa-solid fa-circle-xmark absolute text-sm text-skin-primary top-2 right-4"></i>
-             <div class="flex py-4 px-2 w-full">
-                <img class="w-[32px] h-[32px] mt-0.5 rounded-lg flex-none" src="images/defaults/topic.webp" alt="">
-                <div class="ml-2 flex-1 ">
-                    <p class="username ml-1 mb-1">Topic</p>
-                    <p class="chat text-skin-hover px-1 pr-2">
-                        <span class="tag mr-1">${name}</span> ${topic}
-                    </p>  
-                </div>
-            </div>
+        <li id="topic" class="topic">
+            <i @click="removeTopic" class="fa-solid fa-circle-xmark "></i>
+            <div class="segment">
+                <a class="ribbon label">Welcome Jafa</a>      
+                <img  alt="" src="/images/defaults/welcome.svg">
+                <p>${topic}</p>        
+             </div>    
         </li>
     `
 }
@@ -529,7 +525,7 @@ export function customizeTextHtml() {
 
 export function reportDialogHtml(id, type) {
     return `
-        <div x-data="{ id: ${id}, selectedReason :'', reasons:['Abusive Language','Spam Content','Inappropriate Content', 'Sexual Harashment']}"
+        <div x-data="{ id: ${id}, type: '${type}' }"
          class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
@@ -538,16 +534,15 @@ export function reportDialogHtml(id, type) {
             </div>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
-            <div class="p-4">
-                <p class="mb-4 text-[13px] text-start leading-[15px]">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>
+            <div x-data="report" class="p-4">
+                <p class="mb-4 text-[13px] text-start leading-[16px]">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>
                 <template x-for="(reason, index) in reasons" :key="index"> 
                      <div class="flex gap-2 items-center text-[13px] font-bold">
-                        <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" 
-                        :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
+                        <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
                         <p x-text="reason"></p>
                     </div>
                 </template>
-                <button @click="report(id, selectedReason, '${type}')" class="w-36 btn btn-skin text-center mt-2">Report<button>
+                <button @click="report(id, type)" class="w-36 btn btn-skin text-center mt-2">Report<button>
             </div>
         </div>
     `
@@ -643,6 +638,20 @@ export function changeUserAvatarHtml() {
                     <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload<button>
                 </div>  
             </div>
+        </div>
+   `
+}
+
+export function roomModalLoadingHtml() {
+    return `
+        <div class="text-skin-on-primary h-full">
+            <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
+                <p class="text-md font-bold ">Room List</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-[10px] flex items-center justify-center">
+                <div class="loader"></div>   
+            </div> 
         </div>
    `
 }
@@ -909,7 +918,7 @@ export function writeGlobalFeedDialogHtml() {
 
 export function renderReportChatMessage(message, id, targetId, roomId, type) {
     const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
-    const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : ''
+    const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"> <source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
     message.content = appendEmojis(message.content)
     return `
     <div class="p-4">

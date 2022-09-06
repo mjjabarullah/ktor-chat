@@ -101,7 +101,8 @@ export const Success = {
     ADMINSHIP_CREATED: 'Adminship post created successfully',
     ADMINSHIP_DELETED: 'Adminship post deleted successfully',
     GLOBAL_FEED_CREATED: 'Adminship post created successfully',
-    GLOBAL_FEED_DELETED: 'Adminship post deleted successfully'
+    GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
+    MESSAGE_REPORTED: 'Message reported successfully'
 }
 
 /**
@@ -122,7 +123,8 @@ export const Errors = {
     DELETE_MESSAGE: 'Deleting message failed',
     CANT_PRIVATE: 'You cannot private to this user',
     NO_MIC_PERMISSION: 'You haven\'t given mic permission',
-    CONTENT_EMPTY: 'Content cannot be empty'
+    CONTENT_EMPTY: 'Content cannot be empty',
+    REPORTING_FAILED: 'Message Reporting failed'
 }
 
 /**
