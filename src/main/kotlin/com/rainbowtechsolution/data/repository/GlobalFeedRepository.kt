@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.GlobalFeed
-import com.rainbowtechsolution.domain.model.GlobalFeedRes
+import com.rainbowtechsolution.data.model.GlobalFeed
+import com.rainbowtechsolution.data.model.GlobalFeedRes
 
 interface GlobalFeedRepository {
 

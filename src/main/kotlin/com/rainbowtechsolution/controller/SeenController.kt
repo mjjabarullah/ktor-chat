@@ -3,7 +3,7 @@ package com.rainbowtechsolution.controller
 
 import com.rainbowtechsolution.data.entity.SeenType
 import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.domain.model.Seen
+import com.rainbowtechsolution.data.model.Seen
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and

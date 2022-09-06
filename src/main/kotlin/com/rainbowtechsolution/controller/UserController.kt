@@ -8,9 +8,9 @@ import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.UserRepository
-import com.rainbowtechsolution.domain.mappers.toUserModel
-import com.rainbowtechsolution.domain.model.Rank
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.mappers.toUserModel
+import com.rainbowtechsolution.data.model.Rank
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.utils.checkPassword
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*

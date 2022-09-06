@@ -1,6 +1,6 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.Rank
+import com.rainbowtechsolution.data.model.Rank
 
 interface RankRepository {
 

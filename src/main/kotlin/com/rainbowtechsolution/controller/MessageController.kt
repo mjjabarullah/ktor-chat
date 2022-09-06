@@ -5,11 +5,11 @@ import com.rainbowtechsolution.data.entity.PvtMessages
 import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.MessageRepository
-import com.rainbowtechsolution.domain.mappers.toPvtMessageModel
-import com.rainbowtechsolution.domain.model.Message
-import com.rainbowtechsolution.domain.model.PvtMessage
-import com.rainbowtechsolution.domain.model.Rank
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.mappers.toPvtMessageModel
+import com.rainbowtechsolution.data.model.Message
+import com.rainbowtechsolution.data.model.PvtMessage
+import com.rainbowtechsolution.data.model.Rank
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.utils.dbQuery
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.*

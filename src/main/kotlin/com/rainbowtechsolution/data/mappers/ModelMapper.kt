@@ -1,8 +1,8 @@
-package com.rainbowtechsolution.domain.mappers
+package com.rainbowtechsolution.data.mappers
 
 import com.rainbowtechsolution.data.entity.*
+import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.domain.model.*
-import com.rainbowtechsolution.domain.model.Announcement
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.QueryAlias

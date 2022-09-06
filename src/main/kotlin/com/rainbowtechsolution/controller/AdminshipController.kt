@@ -3,10 +3,10 @@ package com.rainbowtechsolution.controller
 import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.repository.AdminshipRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.domain.mappers.toAdminshipModel
-import com.rainbowtechsolution.domain.model.Adminship
-import com.rainbowtechsolution.domain.model.AdminshipRes
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.mappers.toAdminshipModel
+import com.rainbowtechsolution.data.model.Adminship
+import com.rainbowtechsolution.data.model.AdminshipRes
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*
 import java.time.LocalDateTime

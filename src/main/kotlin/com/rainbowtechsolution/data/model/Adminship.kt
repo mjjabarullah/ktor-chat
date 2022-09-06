@@ -1,9 +1,9 @@
-package com.rainbowtechsolution.domain.model
+package com.rainbowtechsolution.data.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Announcement(
+data class Adminship(
     val id: Int? = null,
     val content: String? = null,
     val image: String? = null,

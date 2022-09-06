@@ -5,8 +5,8 @@ import com.rainbowtechsolution.data.entity.Reports
 import com.rainbowtechsolution.data.entity.Rooms
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.ReportRepository
-import com.rainbowtechsolution.domain.mappers.toReportModel
-import com.rainbowtechsolution.domain.model.Report
+import com.rainbowtechsolution.data.mappers.toReportModel
+import com.rainbowtechsolution.data.model.Report
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*
 import java.time.LocalDateTime

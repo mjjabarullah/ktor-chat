@@ -6,10 +6,10 @@ import com.rainbowtechsolution.data.entity.SeenType
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.NewsRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.domain.mappers.toNewsModel
-import com.rainbowtechsolution.domain.model.Announcement
-import com.rainbowtechsolution.domain.model.News
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.mappers.toNewsModel
+import com.rainbowtechsolution.data.model.Announcement
+import com.rainbowtechsolution.data.model.News
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*
 import java.time.LocalDateTime

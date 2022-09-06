@@ -6,10 +6,10 @@ import com.rainbowtechsolution.data.entity.SeenType
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.GlobalFeedRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.domain.mappers.toGlobalFeedModel
-import com.rainbowtechsolution.domain.model.GlobalFeed
-import com.rainbowtechsolution.domain.model.GlobalFeedRes
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.mappers.toGlobalFeedModel
+import com.rainbowtechsolution.data.model.GlobalFeed
+import com.rainbowtechsolution.data.model.GlobalFeedRes
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*
 import java.time.LocalDateTime
@@ -30,7 +30,7 @@ class GlobalFeedController(private val seenRepository: SeenRepository) : GlobalF
         return postId
     }
 
-    override suspend fun getGlobalFeeds(domainId: Int, userId: Long): GlobalFeedRes  = dbQuery {
+    override suspend fun getGlobalFeeds(domainId: Int, userId: Long): GlobalFeedRes = dbQuery {
         val date = Seen
             .select { (Seen.domainId eq domainId) and (Seen.userId eq userId) and (Seen.type eq SeenType.GlobalFeed) }
             .first().let { it[Seen.createdAt] }

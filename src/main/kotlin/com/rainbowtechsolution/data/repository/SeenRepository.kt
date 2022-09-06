@@ -2,7 +2,7 @@ package com.rainbowtechsolution.data.repository
 
 
 import com.rainbowtechsolution.data.entity.SeenType
-import com.rainbowtechsolution.domain.model.Seen
+import com.rainbowtechsolution.data.model.Seen
 
 interface SeenRepository {
 

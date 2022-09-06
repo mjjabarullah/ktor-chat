@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.common
 
-import com.rainbowtechsolution.domain.model.Permission
-import com.rainbowtechsolution.domain.model.Rank
+import com.rainbowtechsolution.data.model.Permission
+import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.utils.capitalizeWords
 
 

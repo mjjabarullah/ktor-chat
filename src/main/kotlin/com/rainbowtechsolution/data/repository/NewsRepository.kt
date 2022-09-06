@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.Announcement
-import com.rainbowtechsolution.domain.model.News
+import com.rainbowtechsolution.data.model.Announcement
+import com.rainbowtechsolution.data.model.News
 
 interface NewsRepository {
 

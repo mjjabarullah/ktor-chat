@@ -7,8 +7,8 @@ import com.rainbowtechsolution.data.entity.Rooms
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.RoomRepository
-import com.rainbowtechsolution.domain.mappers.toRoomModel
-import com.rainbowtechsolution.domain.model.Room
+import com.rainbowtechsolution.data.mappers.toRoomModel
+import com.rainbowtechsolution.data.model.Room
 import com.rainbowtechsolution.utils.dbQuery
 import javassist.expr.Expr
 import org.jetbrains.exposed.sql.*

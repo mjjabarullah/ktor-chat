@@ -1,4 +1,4 @@
-package com.rainbowtechsolution.domain.model
+package com.rainbowtechsolution.data.model
 
 import kotlinx.serialization.Serializable
 

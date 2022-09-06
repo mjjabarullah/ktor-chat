@@ -1,8 +1,8 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.Message
-import com.rainbowtechsolution.domain.model.PvtMessage
-import com.rainbowtechsolution.domain.model.PvtUser
+import com.rainbowtechsolution.data.model.Message
+import com.rainbowtechsolution.data.model.PvtMessage
+import com.rainbowtechsolution.data.model.PvtUser
 
 
 interface MessageRepository {

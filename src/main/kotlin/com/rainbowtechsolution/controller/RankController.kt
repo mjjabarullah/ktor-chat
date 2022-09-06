@@ -4,8 +4,8 @@ import com.rainbowtechsolution.common.RankIcons
 import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.repository.RankRepository
-import com.rainbowtechsolution.domain.mappers.toRankModel
-import com.rainbowtechsolution.domain.model.Rank
+import com.rainbowtechsolution.data.mappers.toRankModel
+import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.batchInsert

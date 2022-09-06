@@ -1,4 +1,4 @@
-package com.rainbowtechsolution.domain.model
+package com.rainbowtechsolution.data.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.rainbowtechsolution.common.ChatDefaults

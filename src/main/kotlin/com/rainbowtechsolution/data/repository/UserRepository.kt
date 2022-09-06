@@ -2,7 +2,7 @@ package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.entity.Gender
 import com.rainbowtechsolution.data.entity.Status
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.model.User
 
 interface UserRepository {
 

@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.domain.model.Adminship
-import com.rainbowtechsolution.domain.model.AdminshipRes
+import com.rainbowtechsolution.data.model.Adminship
+import com.rainbowtechsolution.data.model.AdminshipRes
 
 interface AdminshipRepository {
 

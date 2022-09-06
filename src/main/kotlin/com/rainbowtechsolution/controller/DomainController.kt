@@ -7,11 +7,11 @@ import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.entity.Rooms
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.repository.DomainRepository
-import com.rainbowtechsolution.domain.mappers.toDomainModel
-import com.rainbowtechsolution.domain.mappers.toRoomModel
-import com.rainbowtechsolution.domain.mappers.toUserModel
-import com.rainbowtechsolution.domain.model.Domain
-import com.rainbowtechsolution.domain.model.Room
+import com.rainbowtechsolution.data.mappers.toDomainModel
+import com.rainbowtechsolution.data.mappers.toRoomModel
+import com.rainbowtechsolution.data.mappers.toUserModel
+import com.rainbowtechsolution.data.model.Domain
+import com.rainbowtechsolution.data.model.Room
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere

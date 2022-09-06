@@ -10,10 +10,10 @@ import com.rainbowtechsolution.data.repository.DomainRepository
 import com.rainbowtechsolution.data.repository.RankRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
 import com.rainbowtechsolution.data.repository.UserRepository
-import com.rainbowtechsolution.domain.model.ChatSession
-import com.rainbowtechsolution.domain.model.Domain
-import com.rainbowtechsolution.domain.model.Seen
-import com.rainbowtechsolution.domain.model.User
+import com.rainbowtechsolution.data.model.ChatSession
+import com.rainbowtechsolution.data.model.Domain
+import com.rainbowtechsolution.data.model.Seen
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.exceptions.DomainNotFoundException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException

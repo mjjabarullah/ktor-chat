@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.entity.ReportType
-import com.rainbowtechsolution.domain.model.Report
+import com.rainbowtechsolution.data.model.Report
 
 interface ReportRepository {
 
