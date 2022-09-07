@@ -841,7 +841,7 @@ body {
 }
 
 .icon-sm {
-    @apply text-[10px] text-gray-400 cursor-pointer
+    @apply text-[10px] text-gray-300 cursor-pointer
 }
 
 .icon-white {
@@ -885,7 +885,7 @@ body {
 }
 
 .date {
-    @apply text-[9px] lg:text-[10px] italic font-light text-gray-400 whitespace-pre
+    @apply text-[9px] lg:text-[10px] italic font-light text-gray-300 whitespace-pre
 }
 
 .input-text {
@@ -989,7 +989,7 @@ body {
 }
 
 .chat-wrap {
-    @apply w-full flex border-t border-gray-200
+    @apply w-full flex border-t border-gray-100
 }
 
 .pvt-modal li.chat-wrap {
@@ -1097,7 +1097,7 @@ body {
 }
 
 .main-input-wrap {
-    @apply h-14 w-full bg-white bg-white border-t border-skin-primary relative
+    @apply h-14 w-full bg-white bg-white border-t border-gray-200 relative
 }
 
 .menu-wrap {
@@ -1193,7 +1193,7 @@ body {
 }
 
 .user-profile {
-    @apply w-11/12 max-w-[350px] mx-auto rounded bg-white shadow-lg shadow-skin-primary/20 mt-12
+    @apply w-11/12 max-w-[350px] mx-auto rounded bg-white mt-12
 }
 
 .switch {
@@ -1282,8 +1282,12 @@ input:checked + .slider {
     @apply text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin
 }
 
+.btn-action{
+    @apply text-center outline-none text-white font-bold rounded-md text-sm py-1 px-5
+}
+
 .topic {
-    @apply pl-[22px] py-2 pr-2 w-full flex justify-center relative bg-transparent shadow-sm shadow-black/10
+    @apply pl-[22px] py-2 pr-2 w-full flex justify-center relative bg-transparent border-t border-gray-100
 }
 
 .topic img {

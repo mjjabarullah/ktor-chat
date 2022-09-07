@@ -2,6 +2,7 @@ package com.rainbowtechsolution.routes
 
 import com.rainbowtechsolution.common.Auth
 import com.rainbowtechsolution.common.ChatDefaults
+import com.rainbowtechsolution.common.Errors
 import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.Gender
@@ -154,9 +155,41 @@ fun Route.domainRoutes(
                             val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
                             call.respond(HttpStatusCode.OK, user)
                         } catch (e: UserNotFoundException) {
-                            call.respond(HttpStatusCode.NotFound, "User not found")
+                            call.respond(HttpStatusCode.NotFound)
                         } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, "Something went error")
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                        }
+                    }
+
+                    get("/blocked-users") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val users = userRepository.getBlockedUsers(userId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                        }
+                    }
+
+                    post("/block") {
+                        try {
+                            val blocker = call.sessions.get<ChatSession>()?.id!!
+                            val blocked = call.receiveParameters()["blocked"]!!.toLong()
+                            userRepository.blockUser(blocker, blocked)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                        }
+                    }
+
+                    delete("/unblock") {
+                        try {
+                            val blocker = call.sessions.get<ChatSession>()?.id!!
+                            val blocked = call.receiveParameters()["blocked"]!!.toLong()
+                            userRepository.unblockUser(blocker, blocked)
+                            call.respond(HttpStatusCode.OK)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                         }
                     }
 

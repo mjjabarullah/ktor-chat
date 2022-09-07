@@ -2,7 +2,6 @@ package com.rainbowtechsolution.data.mappers
 
 import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.model.*
-import com.rainbowtechsolution.domain.model.*
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.QueryAlias
@@ -80,6 +79,17 @@ fun ResultRow.toUserModel(): User {
         kickMsg = this[Users.kickMsg],
         banMsg = this[Users.banMsg],
         createdAt = this[Users.createdAt].format("dd MMM yyyy hh:mm a")
+    )
+}
+
+fun ResultRow.toUserModel(userAlias: QueryAlias): User {
+    return User(
+        id = this[userAlias[Users.id]].value,
+        name = this[userAlias[Users.name]].capitalize(),
+        avatar = this[userAlias[Users.avatar]],
+        gender = this[userAlias[Users.gender]].name,
+        nameColor = this[userAlias[Users.nameColor]],
+        nameFont = this[userAlias[Users.nameFont]]
     )
 }
 

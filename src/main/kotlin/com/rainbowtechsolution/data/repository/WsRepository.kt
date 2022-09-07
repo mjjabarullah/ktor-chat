@@ -3,7 +3,6 @@ package com.rainbowtechsolution.data.repository
 import com.rainbowtechsolution.data.model.Message
 import com.rainbowtechsolution.data.model.PvtMessage
 import com.rainbowtechsolution.data.model.User
-import com.rainbowtechsolution.domain.model.*
 import io.ktor.websocket.*
 
 interface WsRepository {

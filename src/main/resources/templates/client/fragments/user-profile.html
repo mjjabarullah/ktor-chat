@@ -1,5 +1,5 @@
 <div x-cloak x-show="showUserProfile" class="profile-wrap">
-    <div x-transition x-show="showUserProfile" class="user-profile">
+    <div x-data="{tab:0}" x-transition x-show="showUserProfile" class="user-profile">
         <template x-if="u">
             <div class="profile">
                 <div class="flex rounded px-4 py-2 bg-skin-hover text-white items-center relative">
@@ -25,7 +25,7 @@
                         <template x-if="u.private && permission.private">
                             <i @click="openPvtDialog(u.id)" class="fa-solid fa-envelope icon-white"></i>
                         </template>
-                        <i @click="showUserProfile = false" class="fas fa-times-circle icon-white"></i>
+                        <i @click="closeUserProfile(); tab = 0" class="fas fa-times-circle icon-white"></i>
                     </div>
                 </div>
                 <div class="p-4 text-gray-900 text-left text-[14px]">
@@ -35,7 +35,7 @@
                         <img class="rank-icon" :src="u.rank.icon" alt="" src="">
                         <p class="font-bold text-[16px] ml-4" x-text="u.rank.name"></p>
                     </div>
-                    <div x-data="{tab:0}" class="flex flex-col mt-2">
+                    <div class="flex flex-col mt-2">
                         <div class="flex overflow-x-auto scrollbar">
                             <p @click="tab=0"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
@@ -128,11 +128,11 @@
                         <div x-show="tab===2" class="mt-1 text-black">
                             <table class="table w-full border-separate">
                                 <tbody>
-                                <tr>
+                                <tr @click="actionBlock">
                                     <th>
                                         <div class="inline-flex items-center">
                                             <i class="fa-solid fa-ban text-red-500"></i>
-                                            <p class="ml-2">Block</p>
+                                            <p class="ml-2" x-text="u.blocked?'UnBlock': 'Block'"></p>
                                         </div>
                                     </th>
                                     <td></td>

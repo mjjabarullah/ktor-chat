@@ -88,7 +88,7 @@ object ChatDefaults {
 
 
 object Errors {
-    const val SOMETHING_WENT_WRONG = "Something went wrong. Try again"
+    const val SOMETHING_WENT_WRONG = "Something went wrong"
     const val USER_NAME_REGISTERED = "Username already registered."
     const val USER_NAME_OR_EMAIL_REGISTERED = "Username or Email address already exists."
 }

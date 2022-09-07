@@ -3,10 +3,8 @@ package com.rainbowtechsolution.controller
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.rainbowtechsolution.common.ChatDefaults
-import com.rainbowtechsolution.data.entity.Gender
-import com.rainbowtechsolution.data.entity.Ranks
-import com.rainbowtechsolution.data.entity.Status
-import com.rainbowtechsolution.data.entity.Users
+import com.rainbowtechsolution.data.entity.*
+import com.rainbowtechsolution.data.mappers.toPvtMessageModel
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.mappers.toUserModel
 import com.rainbowtechsolution.data.model.Rank
@@ -273,5 +271,29 @@ class UserController : UserRepository {
     override suspend fun delete(id: Long): Int = dbQuery {
         userCache.invalidate(id)
         Users.deleteWhere { Users.id eq id }
+    }
+
+    override suspend fun blockUser(blocker: Long, blocked: Long): Unit = dbQuery {
+        Blocks.insert {
+            it[Blocks.blocker] = blocker
+            it[Blocks.blocked] = blocked
+            it[Blocks.createdAt] = LocalDateTime.now()
+        }
+    }
+
+    override suspend fun unblockUser(blocker: Long, blocked: Long):Unit= dbQuery {
+        Blocks.deleteWhere { (Blocks.blocker eq blocker) and (Blocks.blocked eq blocked)  }
+    }
+
+    override suspend fun getBlockedUsers(userId: Long): List<User> = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.gender
+        )
+        val bTable = Users.slice(expressions).selectAll().alias("blocked")
+        Blocks
+            .innerJoin(bTable, { blocked }, { bTable[Users.id] })
+            .select { Blocks.blocker eq userId }
+            .orderBy(Blocks.createdAt to SortOrder.DESC)
+            .map { it.toUserModel(bTable) }
     }
 }

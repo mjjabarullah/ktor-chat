@@ -5405,7 +5405,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 
 
 
-
 Object.freeze(domain);
 Object.freeze(room);
 Object.freeze(permission);
@@ -5467,6 +5466,7 @@ document.addEventListener('alpine:init', function () {
       roomSocket: new WebSocket("wss://".concat(location.host, "/chat/").concat(domain.id, "/room/").concat(room.id)),
       userSocket: new WebSocket("wss://".concat(location.host, "/").concat(domain.id, "/member/").concat(userId)),
       roomUsers: [],
+      blockedUsers: [],
       onlineUsers: [],
       offlineUsers: [],
       pvtUsers: [],
@@ -5511,19 +5511,20 @@ document.addEventListener('alpine:init', function () {
           bitrate: 80
         });
         this.$refs.mainEmojis.innerHTML = _functions__WEBPACK_IMPORTED_MODULE_1__.getEmojisHtml();
-        this.getMessages();
+        this.getBlockedUsers();
         this.reCheckPvtMessages();
         this.setStatusColor();
         this.getReports();
         this.getNews();
         this.getGlobalFeed();
         this.getAdminships();
+        this.getMessages();
         this.roomSocket.addEventListener('message', function (e) {
           var message = JSON.parse(e.data);
 
           _this.onMessageReceived(message);
 
-          message.user.id !== userId && message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Chat && _this.$refs.chatSound.play();
+          message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Chat && message.user.id !== userId && _this.$refs.chatSound.play();
         });
         this.roomSocket.addEventListener('close', function () {}
         /*location.reload()*/
@@ -5581,6 +5582,10 @@ document.addEventListener('alpine:init', function () {
           _this.totalCount = _this.newsUnreadCount + _this.adminshipUnreadCount + _this.globalFeedUnreadCount;
         });
       },
+
+      /**
+       * Responsive
+       * */
       toggleLeft: function toggleLeft() {
         this.showLeft = !this.showLeft;
         if (tablet.matches) return;
@@ -5590,6 +5595,10 @@ document.addEventListener('alpine:init', function () {
         this.showLeft = false;
         this.showRight = !this.showRight;
       },
+
+      /**
+       * Global modals and functions
+       * */
       showSmallModal: function showSmallModal(html) {
         this.$refs.modalContent.innerHTML = html;
         this.showModal = true;
@@ -5617,19 +5626,6 @@ document.addEventListener('alpine:init', function () {
           return content.innerHTML = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
         }, 5e2);
       },
-      showUCGPolicyDialog: function showUCGPolicyDialog() {
-        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.ucgPolicyHtml());
-      },
-      closeUGCPolicy: function closeUGCPolicy() {
-        this.closeSmallModal();
-        this.showMessages = true;
-        this.$refs.mainInput.focus();
-        localStorage.setItem("isUGCShowed", "true");
-
-        if (rank.code === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) {
-          this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.guestDialogHtml());
-        }
-      },
       showAlertMsg: function showAlertMsg(msg, color) {
         var _this2 = this;
 
@@ -5643,140 +5639,76 @@ document.addEventListener('alpine:init', function () {
           _this2.showAlert = false;
         }, 3e3);
       },
+      textArea: function textArea(el, height) {
+        el.style.height = "".concat(height, "px");
+        el.style.height = "".concat(el.scrollHeight, "px");
+      },
+      showImageDialog: function showImageDialog(el) {
+        var html = "\n                    <div class=\"relative w-full mx-auto\">\n                        <img src=\"".concat(el.src, "\" class=\"mx-auto\" alt=\"\">\n                        <div class=\"bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1\"> \n                            <i @click=\"closeImgModal\" class=\"fas fa-times-circle text-2xl \"></i>\n                        </div>\n                    </div>\n                ");
+        this.showImgModal(html);
+      },
+
+      /**
+       * UGC Dialog
+       * */
+      showUCGPolicyDialog: function showUCGPolicyDialog() {
+        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.ucgPolicyHtml());
+      },
+      closeUGCPolicy: function closeUGCPolicy() {
+        this.closeSmallModal();
+        this.showMessages = true;
+        this.$refs.mainInput.focus();
+        localStorage.setItem("isUGCShowed", "true");
+
+        if (rank.code === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) {
+          this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.guestDialogHtml());
+        }
+      },
+
+      /**
+       * Profile
+       * */
       setStatusColor: function setStatusColor() {
         this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Online ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.GREEN : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Away ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.YELLOW : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Busy ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.RED : this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
-      },
-      setUserStatusColor: function setUserStatusColor() {
-        this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Online ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.GREEN : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Away ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.YELLOW : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Busy ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.RED : this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
-      },
-      getMessages: function getMessages() {
-        var _this3 = this;
-
-        this.$refs.chatMessages.innerHTML = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
-        axios.get("".concat(domain.id, "/rooms/").concat(room.id, "/messages")).then(function (res) {
-          return res.data.forEach(function (message) {
-            return _this3.onMessageReceived(message);
-          });
-        });
-      },
-      getReports: function getReports() {
-        var _this4 = this;
-
-        permission.reports && axios.get("/".concat(domain.id, "/reports")).then(function (res) {
-          _this4.reports = res.data;
-          _this4.reportNotifiCount = _this4.reports.length;
-        });
-      },
-      getNews: function getNews() {
-        var _this5 = this;
-
-        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-        rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && axios.get("/".concat(domain.id, "/news")).then(function (res) {
-          _this5.news = res.data;
-          _this5.newsUnreadCount = _this5.news.unReadCount;
-          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
-        });
-      },
-      getAdminships: function getAdminships() {
-        var _this6 = this;
-
-        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-        permission.adminship && axios.get("/".concat(domain.id, "/adminship")).then(function (res) {
-          _this6.adminship = res.data;
-          _this6.adminshipUnreadCount = _this6.adminship.unReadCount;
-          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
-        });
-      },
-      getGlobalFeed: function getGlobalFeed() {
-        var _this7 = this;
-
-        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-        rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && axios.get("/".concat(domain.id, "/global-feed")).then(function (res) {
-          _this7.globalFeed = res.data;
-          _this7.globalFeedUnreadCount = _this7.globalFeed.unReadCount;
-          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
-        });
-      },
-      getPvtEmojis: function getPvtEmojis(el) {
-        el.innerHTML = _functions__WEBPACK_IMPORTED_MODULE_1__.pvtEmojisHtml();
-      },
-      getRoomUsers: function getRoomUsers() {
-        var _this8 = this;
-
-        axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
-          _this8.roomUsers = res.data;
-          _this8.onlineUsers = [];
-          _this8.offlineUsers = [];
-
-          _this8.roomUsers.forEach(function (user) {
-            if (user.sessions > 0 || user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Stay) _this8.onlineUsers.push(user);else _this8.offlineUsers.push(user);
-          });
-        })["catch"](function (e) {
-          return _this8.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e));
-        });
-      },
-      showGuestRegisterDialog: function showGuestRegisterDialog() {
-        if (rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) return;
-        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.guestRegisterHtml());
-      },
-      getUserProfile: function getUserProfile(uId) {
-        var _this9 = this;
-
-        if (mobile.matches) this.showRight = false;
-
-        if (uId === userId) {
-          this.showProfile = true;
-          return;
-        }
-
-        axios.get("/".concat(domain.id, "/users/").concat(uId)).then(function (res) {
-          _this9.u = res.data;
-
-          _this9.setUserStatusColor();
-
-          _this9.showUserProfile = true;
-        })["catch"](function (e) {
-          return _this9.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-        });
       },
       showLogoutDialog: function showLogoutDialog() {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.logoutHtml());
       },
       logout: function logout() {
-        var _this10 = this;
+        var _this3 = this;
 
         axios.post('logout').then(function () {
           return location.reload();
         })["catch"](function (e) {
-          return _this10.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this3.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeAvatarDialog: function changeAvatarDialog() {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeAvatarHtml());
       },
       setAvatar: function setAvatar(index) {
-        var _this11 = this;
+        var _this4 = this;
 
         this.showLoader = true;
         var data = new FormData();
         data.append('avatar', _constant__WEBPACK_IMPORTED_MODULE_2__.avatars[index]);
         axios.put("/".concat(domain.id, "/users/update-default-avatar"), data).then(function (res) {
-          _this11.user.avatar = res.data.avatar;
-          _this11.showLoader = false;
+          _this4.user.avatar = res.data.avatar;
+          _this4.showLoader = false;
 
-          _this11.closeSmallModal();
+          _this4.closeSmallModal();
 
-          _this11.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this4.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this11.showLoader = false;
+          _this4.showLoader = false;
 
-          _this11.closeSmallModal();
+          _this4.closeSmallModal();
 
-          _this11.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this4.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeAvatar: function changeAvatar(el) {
-        var _this12 = this;
+        var _this5 = this;
 
         this.showLoader = true;
         var formData = new FormData();
@@ -5792,18 +5724,18 @@ document.addEventListener('alpine:init', function () {
 
         formData.append('avatar', file);
         axios.put("/".concat(domain.id, "/users/update-avatar"), formData).then(function (res) {
-          _this12.user.avatar = res.data.avatar;
-          _this12.showLoader = false;
+          _this5.user.avatar = res.data.avatar;
+          _this5.showLoader = false;
 
-          _this12.closeSmallModal();
+          _this5.closeSmallModal();
 
-          _this12.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this5.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this12.showLoader = false;
+          _this5.showLoader = false;
 
-          _this12.closeSmallModal();
+          _this5.closeSmallModal();
 
-          _this12.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this5.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeNameDialog: function changeNameDialog() {
@@ -5814,7 +5746,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeName: function changeName() {
-        var _this13 = this;
+        var _this6 = this;
 
         if (this.user.name.length < 4 || this.user.name.length > 12) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NAME_INVALID, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -5824,15 +5756,15 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('name', this.user.name);
         axios.put("/".concat(domain.id, "/users/update-name"), formData).then(function (res) {
-          name = _this13.user.name;
+          name = _this6.user.name;
 
-          _this13.closeSmallModal();
+          _this6.closeSmallModal();
 
-          _this13.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this6.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this13.closeNameDialog();
+          _this6.closeNameDialog();
 
-          _this13.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this6.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       customizeNameDialog: function customizeNameDialog() {
@@ -5850,7 +5782,7 @@ document.addEventListener('alpine:init', function () {
         return this.user.nameColor === _constant__WEBPACK_IMPORTED_MODULE_2__.textColors[index];
       },
       customizeName: function customizeName() {
-        var _this14 = this;
+        var _this7 = this;
 
         if (nameColor === this.user.nameColor && nameFont === this.user.nameFont) {
           return;
@@ -5863,13 +5795,13 @@ document.addEventListener('alpine:init', function () {
           nameColor = res.data.nameColor;
           nameFont = res.data.nameFont;
 
-          _this14.closeSmallModal();
+          _this7.closeSmallModal();
 
-          _this14.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CUSTOMIZED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this7.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CUSTOMIZED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this14.closeCustomizeNameDialog();
+          _this7.closeCustomizeNameDialog();
 
-          _this14.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this7.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeMoodDialog: function changeMoodDialog() {
@@ -5880,7 +5812,7 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeMood: function changeMood() {
-        var _this15 = this;
+        var _this8 = this;
 
         if (this.user.mood.length >= 40) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.MOOD_INVALID, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -5892,13 +5824,13 @@ document.addEventListener('alpine:init', function () {
         axios.put("/".concat(domain.id, "/users/update-mood"), formData).then(function (res) {
           mood = res.data.mood;
 
-          _this15.closeSmallModal();
+          _this8.closeSmallModal();
 
-          _this15.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.MOOD_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this8.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.MOOD_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this15.closeMoodDialog();
+          _this8.closeMoodDialog();
 
-          _this15.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this8.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeAboutDialog: function changeAboutDialog() {
@@ -5909,20 +5841,20 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeAbout: function changeAbout() {
-        var _this16 = this;
+        var _this9 = this;
 
         var formData = new FormData();
         formData.append('about', this.user.about);
         axios.put("/".concat(domain.id, "/users/update-about"), formData).then(function (res) {
           about = res.data.about;
 
-          _this16.closeSmallModal();
+          _this9.closeSmallModal();
 
-          _this16.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ABOUT_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this9.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ABOUT_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this16.closeAboutDialog();
+          _this9.closeAboutDialog();
 
-          _this16.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this9.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changePasswordDialog: function changePasswordDialog() {
@@ -5934,7 +5866,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changePasswordHtml());
       },
       changePassword: function changePassword() {
-        var _this17 = this;
+        var _this10 = this;
 
         if (this.user.password.length < 8) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PASSWORD_MUST_HAVE, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -5944,9 +5876,9 @@ document.addEventListener('alpine:init', function () {
         var formData = new FormData();
         formData.append('password', this.user.password);
         axios.post("/".concat(domain.id, "/users/update-password"), formData).then(function () {
-          return _this17.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.PASSWORD_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          return _this10.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.PASSWORD_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          return _this17.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this10.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.closeSmallModal();
       },
@@ -5954,19 +5886,19 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeStatusHtml());
       },
       changeStatus: function changeStatus() {
-        var _this18 = this;
+        var _this11 = this;
 
         if (this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('status', this.user.status);
         axios.put("/".concat(domain.id, "/users/update-status"), formData).then(function (res) {
-          _this18.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.STATUS_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this11.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.STATUS_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this18.user.status = res.data.status;
+          _this11.user.status = res.data.status;
 
-          _this18.setStatusColor();
+          _this11.setStatusColor();
         })["catch"](function (e) {
-          return _this18.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this11.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.closeSmallModal();
       },
@@ -5974,17 +5906,17 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeGenderHtml());
       },
       changeGender: function changeGender() {
-        var _this19 = this;
+        var _this12 = this;
 
         if (this.user.gender === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('gender', this.user.gender);
         axios.post("/".concat(domain.id, "/users/update-gender"), formData).then(function (res) {
-          _this19.user.gender = res.data.gender;
+          _this12.user.gender = res.data.gender;
 
-          _this19.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GENDER_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this12.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GENDER_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          return _this19.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this12.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.closeSmallModal();
       },
@@ -5996,21 +5928,21 @@ document.addEventListener('alpine:init', function () {
         this.closeSmallModal();
       },
       changeDob: function changeDob() {
-        var _this20 = this;
+        var _this13 = this;
 
         if (this.user.dob === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) return;
         var formData = new FormData();
         formData.append('dob', this.user.dob);
         axios.post("".concat(domain.id, "/users/update-dob"), formData).then(function (res) {
-          _this20.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.DOB_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this13.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.DOB_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this20.user.dob = res.data.dob;
+          _this13.user.dob = res.data.dob;
 
-          _this20.closeSmallModal();
+          _this13.closeSmallModal();
         })["catch"](function (e) {
-          _this20.closeDobDialog();
+          _this13.closeDobDialog();
 
-          _this20.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this13.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       customizeTextDialog: function customizeTextDialog() {
@@ -6033,7 +5965,7 @@ document.addEventListener('alpine:init', function () {
         this.showOption = false;
       },
       customizeText: function customizeText() {
-        var _this21 = this;
+        var _this14 = this;
 
         if (textBold === this.user.textBold && textColor === this.user.textColor && textFont === this.user.textFont) return;
         var formData = new FormData();
@@ -6045,17 +5977,17 @@ document.addEventListener('alpine:init', function () {
           textBold = res.data.textBold;
           textFont = res.data.textFont;
 
-          _this21.closeSmallModal();
+          _this14.closeSmallModal();
 
-          _this21.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.CHAT_TEXT_CUSTOMIZED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this14.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.CHAT_TEXT_CUSTOMIZED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this21.closeCustomizeTextDialog();
+          _this14.closeCustomizeTextDialog();
 
-          _this21.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this14.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changeSoundSettings: function changeSoundSettings() {
-        var _this22 = this;
+        var _this15 = this;
 
         var formData = new FormData();
         formData.append('chatSound', this.user.chatSound);
@@ -6063,40 +5995,237 @@ document.addEventListener('alpine:init', function () {
         formData.append('nameSound', this.user.nameSound);
         formData.append('notifiSound', this.user.notifiSound);
         axios.put("/".concat(domain.id, "/users/change-sound-settings"), formData)["catch"](function (e) {
-          _this22.user.chatSound = chatSound;
-          _this22.user.pvtSound = pvtSound;
-          _this22.user.notifiSound = notifiSound;
-          _this22.user.nameSound = nameSound;
+          _this15.user.chatSound = chatSound;
+          _this15.user.pvtSound = pvtSound;
+          _this15.user.notifiSound = notifiSound;
+          _this15.user.nameSound = nameSound;
 
-          _this22.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this15.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       changePrivate: function changePrivate() {
-        var _this23 = this;
+        var _this16 = this;
 
         var formData = new FormData();
         formData.append('private', this.user["private"]);
         axios.put("/".concat(domain.id, "/users/change-private"), formData)["catch"](function (e) {
-          _this23.user["private"] = pvt;
+          _this16.user["private"] = pvt;
 
-          _this23.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this16.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
-      removeTopic: function removeTopic() {
-        document.getElementById('topic').remove();
+      showGuestRegisterDialog: function showGuestRegisterDialog() {
+        if (rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) return;
+        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.guestRegisterHtml());
       },
-      welcomeMessage: function welcomeMessage(name) {
-        this.$refs.mainInput.value = "Welcome ".concat(name);
+
+      /**
+       * User blocking
+       * */
+      getBlockedUsers: function getBlockedUsers() {
+        var _this17 = this;
+
+        axios.get("/".concat(domain.id, "/users/blocked-users")).then(function (res) {
+          return _this17.blockedUsers = res.data;
+        });
+      },
+      actionBlock: function actionBlock() {
+        var _this18 = this;
+
+        this.u.blocked ? this.unblock(this.u.id, function () {
+          return _this18.u.blocked = false;
+        }) : this.block(this.u.id, function () {
+          return _this18.u.blocked = true;
+        });
+      },
+      block: function block(userId) {
+        var _this19 = this;
+
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        var formData = new FormData();
+        formData.append('blocked', userId);
+        axios.post("/".concat(domain.id, "/users/block"), formData).then(function () {
+          _this19.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.USER_BLOCKED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+
+          _this19.getBlockedUsers();
+
+          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
+        })["catch"](function (e) {
+          return _this19.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.BLOCKING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+      unblock: function unblock(userId) {
+        var _this20 = this;
+
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        var formData = new FormData();
+        formData.append('blocked', userId);
+        axios["delete"]("/".concat(domain.id, "/users/unblock"), {
+          data: formData
+        }).then(function () {
+          _this20.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.USER_UNBLOCKED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+
+          _this20.blockedUsers = _this20.blockedUsers.filter(function (user) {
+            return user.id !== userId;
+          });
+          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
+        })["catch"](function (e) {
+          return _this20.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UNBLOCKING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+      openBlockedModal: function openBlockedModal() {
+        this.showProfile = false;
+        this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.blockedModalHtml(this.blockedUsers));
+      },
+
+      /**
+       * User Profile
+       * */
+      getUserProfile: function getUserProfile(uId) {
+        var _this21 = this;
+
+        if (mobile.matches) this.showRight = false;
+
+        if (uId === userId) {
+          this.showProfile = true;
+          return;
+        }
+
+        axios.get("/".concat(domain.id, "/users/").concat(uId)).then(function (res) {
+          _this21.u = res.data;
+
+          var user = _this21.blockedUsers.find(function (user) {
+            return user.id === _this21.u.id;
+          });
+
+          _this21.u.blocked = user != null;
+
+          _this21.setUserStatusColor();
+
+          _this21.showUserProfile = true;
+        })["catch"](function (e) {
+          return _this21.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+      closeUserProfile: function closeUserProfile() {
+        this.showUserProfile = false;
+      },
+      setUserStatusColor: function setUserStatusColor() {
+        this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Online ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.GREEN : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Away ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.YELLOW : this.user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Busy ? this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Css.RED : this.statusColor = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
+      },
+      changeUserNameDialog: function changeUserNameDialog() {
+        if (!permission.userName) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserNameHtml());
+      },
+      changeUserName: function changeUserName() {
+        var _this22 = this;
+
+        if (!permission.userName) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        if (name.length < 4 || name.length > 12) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NAME_INVALID, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('name', this.u.name);
+        axios.post("/".concat(domain.id, "/users/").concat(this.u.id, "/update-name"), formData).then(function () {
+          return _this22.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+        })["catch"](function (e) {
+          return _this22.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+        this.showUserProfile = false;
+        this.closeSmallModal();
+      },
+      changeUserAvatarDialog: function changeUserAvatarDialog() {
+        if (!permission.avatar) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserAvatarHtml());
+      },
+      setUserAvatar: function setUserAvatar(index) {
+        var _this23 = this;
+
+        if (!permission.avatar) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        this.showLoader = true;
+        var data = new FormData();
+        data.append('avatar', _constant__WEBPACK_IMPORTED_MODULE_2__.avatars[index]);
+        axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-default-avatar"), data).then(function (res) {
+          _this23.showLoader = false;
+
+          _this23.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+        })["catch"](function (e) {
+          _this23.showLoader = false;
+
+          _this23.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+        this.showUserProfile = false;
+        this.closeSmallModal();
+      },
+      changeUserAvatar: function changeUserAvatar(el) {
+        var _this24 = this;
+
+        if (!permission.avatar) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        this.showLoader = true;
+        var formData = new FormData();
+        var file = el.files[0];
+        var pattern = /image-*/;
+        if (file == null || file.type === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.UNDEFINED) return;
+
+        if (!file.type.match(pattern)) {
+          this.showLoader = false;
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.INVALID_FILE_FORMAT, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        formData.append('avatar', file);
+        axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-avatar"), formData).then(function () {
+          _this24.showLoader = false;
+
+          _this24.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+        })["catch"](function (e) {
+          _this24.showLoader = false;
+
+          _this24.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+        this.showUserProfile = false;
+        this.closeSmallModal();
+      },
+
+      /**
+       * Messages
+       * */
+      getMessages: function getMessages() {
+        var _this25 = this;
+
+        this.$refs.chatMessages.innerHTML = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
+        axios.get("".concat(domain.id, "/rooms/").concat(room.id, "/messages")).then(function (res) {
+          return res.data.forEach(function (message) {
+            return _this25.onMessageReceived(message);
+          });
+        });
       },
       addMainEmo: function addMainEmo(emo) {
         var input = this.$refs.mainInput;
         input.value === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
         this.showEmo = false;
-        input.focus();
-      },
-      addPvtEmo: function addPvtEmo(emo) {
-        var input = this.$refs.pvtInput;
-        input.value === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
         input.focus();
       },
       appendUserName: function appendUserName(el) {
@@ -6129,7 +6258,7 @@ document.addEventListener('alpine:init', function () {
         this.$refs.mainInput.focus();
       },
       recordMainAudio: function recordMainAudio() {
-        var _this24 = this;
+        var _this26 = this;
 
         if (this.user.muted) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.YOU_ARE_MUTED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6160,15 +6289,15 @@ document.addEventListener('alpine:init', function () {
             });
             var formData = new FormData();
             formData.append('audio', audioFile);
-            var content = _this24.$refs.mainInput.value;
+            var content = _this26.$refs.mainInput.value;
             formData.append('content', content);
             axios.post("/".concat(domain.id, "/rooms/").concat(room.id, "/upload-audio"), formData).then(function (res) {
-              return _this24.sendToRoom(res.data);
+              return _this26.sendToRoom(res.data);
             })["catch"](function () {
-              return _this24.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+              return _this26.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
             });
           })["catch"](function () {
-            return _this24.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            return _this26.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
           this.isRecording = false;
           this.remainingTime = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.MAX_RECORDING_TIME;
@@ -6177,19 +6306,19 @@ document.addEventListener('alpine:init', function () {
           this.showEmo = false;
           this.showOption = false;
           this.recorder.start().then(function () {
-            _this24.mainInterval = setInterval(function () {
-              if (_this24.remainingTime === 1) {
-                _this24.recordMainAudio();
-              } else _this24.remainingTime--;
+            _this26.mainInterval = setInterval(function () {
+              if (_this26.remainingTime === 1) {
+                _this26.recordMainAudio();
+              } else _this26.remainingTime--;
             }, 1000);
-            _this24.isRecording = true;
+            _this26.isRecording = true;
           })["catch"](function (e) {
-            _this24.showAlertMsg('You haven\'t given mic permission', _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            _this26.showAlertMsg('You haven\'t given mic permission', _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         }
       },
       uploadImage: function uploadImage(event) {
-        var _this25 = this;
+        var _this27 = this;
 
         if (this.user.muted) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.YOU_ARE_MUTED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6212,22 +6341,18 @@ document.addEventListener('alpine:init', function () {
         formData.append('image', file);
         formData.append('content', content);
         axios.post("".concat(domain.id, "/rooms/").concat(room.id, "/upload-image"), formData).then(function (res) {
-          _this25.sendToRoom(res.data);
+          _this27.sendToRoom(res.data);
 
-          _this25.$refs.mainInput.value = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
+          _this27.$refs.mainInput.value = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
 
-          _this25.$refs.mainInput.focus();
+          _this27.$refs.mainInput.focus();
 
-          _this25.showLoader = false;
+          _this27.showLoader = false;
         })["catch"](function () {
-          _this25.showLoader = false;
+          _this27.showLoader = false;
 
-          _this25.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this27.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
-      },
-      showImageDialog: function showImageDialog(el) {
-        var html = "\n                    <div class=\"relative w-full mx-auto\">\n                        <img src=\"".concat(el.src, "\" class=\"mx-auto\" alt=\"\">\n                        <div class=\"bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1\"> \n                            <i @click=\"closeImgModal\" class=\"fas fa-times-circle text-2xl \"></i>\n                        </div>\n                    </div>\n                ");
-        this.showImgModal(html);
       },
       onMessageReceived: function onMessageReceived(message) {
         var chatMessages = this.$refs.chatMessages;
@@ -6244,7 +6369,10 @@ document.addEventListener('alpine:init', function () {
 
           chatMessages.insertAdjacentHTML('afterbegin', _functions__WEBPACK_IMPORTED_MODULE_1__.renderJoinMessage(message));
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Chat) {
-          chatMessages.insertAdjacentHTML('afterbegin', _functions__WEBPACK_IMPORTED_MODULE_1__.renderChatMessage(message));
+          var user = this.blockedUsers.find(function (user) {
+            return user.id === message.user.id;
+          });
+          user == null && chatMessages.insertAdjacentHTML('afterbegin', _functions__WEBPACK_IMPORTED_MODULE_1__.renderChatMessage(message));
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Leave) {
           this.getRoomUsers();
           message.user.id !== userId && chatMessages.insertAdjacentHTML('afterbegin', _functions__WEBPACK_IMPORTED_MODULE_1__.renderLeaveMessage(message));
@@ -6267,10 +6395,11 @@ document.addEventListener('alpine:init', function () {
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.DelGlobalFeed) {
           this.getGlobalFeed();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Mute) {
-          var user = this.roomUsers.find(function (user) {
+          var _user = this.roomUsers.find(function (user) {
             return user.id === message.user.id;
           });
-          if (user) user.muted = true;
+
+          if (_user) _user.muted = true;
 
           if (message.user.id === userId) {
             this.user.muted = true;
@@ -6278,11 +6407,11 @@ document.addEventListener('alpine:init', function () {
             this.showAlertMsg('You have been muted', _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           }
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.UnMute) {
-          var _user = this.roomUsers.find(function (user) {
+          var _user2 = this.roomUsers.find(function (user) {
             return user.id === message.user.id;
           });
 
-          if (_user) _user.muted = false;
+          if (_user2) _user2.muted = false;
 
           if (message.user.id === userId) {
             this.user.muted = false;
@@ -6292,20 +6421,34 @@ document.addEventListener('alpine:init', function () {
         }
       },
       deleteChat: function deleteChat(id) {
-        var _this26 = this;
+        var _this28 = this;
 
         if (permission.delMsg) {
           axios["delete"]("/".concat(domain.id, "/rooms/").concat(room.id, "/messages/").concat(id, "/delete"))["catch"](function () {
-            return _this26.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.DELETE_MESSAGE, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            return _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.DELETE_MESSAGE, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         } else this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
       },
-      reportDialog: function reportDialog(id, type) {
-        var reportType = type === 1 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.Chat : type === 2 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.PvtChat : _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.NewsFeed;
-        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.reportDialogHtml(id, reportType));
+      removeTopic: function removeTopic() {
+        document.getElementById('topic').remove();
+      },
+      welcomeMessage: function welcomeMessage(name) {
+        this.$refs.mainInput.value = "Welcome ".concat(name);
+      },
+
+      /**
+       * Private Messages
+       * */
+      getPvtEmojis: function getPvtEmojis(el) {
+        el.innerHTML = _functions__WEBPACK_IMPORTED_MODULE_1__.pvtEmojisHtml();
+      },
+      addPvtEmo: function addPvtEmo(emo) {
+        var input = this.$refs.pvtInput;
+        input.value === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING ? input.value = "".concat(emo, " ") : input.value += " ".concat(emo, " ");
+        input.focus();
       },
       openPvtDialog: function openPvtDialog(id) {
-        var _this27 = this;
+        var _this29 = this;
 
         var user = this.u;
         var exists = this.pvtUsers.find(function (user) {
@@ -6344,9 +6487,9 @@ document.addEventListener('alpine:init', function () {
           });
           user.interval = null;
 
-          _this27.pvtUsers.unshift(user);
+          _this29.pvtUsers.unshift(user);
 
-          _this27.showUserProfile = false;
+          _this29.showUserProfile = false;
         });
         this.setPvtNotifiCount();
       },
@@ -6401,7 +6544,7 @@ document.addEventListener('alpine:init', function () {
         this.userSocket.send(JSON.stringify(message));
       },
       recordPvtAudio: function recordPvtAudio(id) {
-        var _this28 = this;
+        var _this30 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6416,12 +6559,12 @@ document.addEventListener('alpine:init', function () {
           user.recorder.start().then(function () {
             user.interval = setInterval(function () {
               if (user.remainingTime === 1) {
-                _this28.recordPvtAudio(id);
+                _this30.recordPvtAudio(id);
               } else user.remainingTime--;
             }, 1000);
             user.isRecording = true;
           })["catch"](function () {
-            return _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NO_MIC_PERMISSION, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            return _this30.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NO_MIC_PERMISSION, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         } else {
           if (!(_constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.MAX_RECORDING_TIME - user.remainingTime > _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.MIN_RECORDING_TIME)) {
@@ -6445,12 +6588,12 @@ document.addEventListener('alpine:init', function () {
             var formData = new FormData();
             formData.append('audio', audioFile);
             axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-audio"), formData).then(function (res) {
-              _this28.sendToUser(res.data);
+              _this30.sendToUser(res.data);
             })["catch"](function (err) {
-              _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+              _this30.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
             });
           })["catch"](function (e) {
-            _this28.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            _this30.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.RECORDING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
           user.isRecording = false;
           clearInterval(user.interval);
@@ -6458,7 +6601,7 @@ document.addEventListener('alpine:init', function () {
         }
       },
       uploadPvtImage: function uploadPvtImage(id, event) {
-        var _this29 = this;
+        var _this31 = this;
 
         var user = this.pvtUsers.find(function (user) {
           return user.id === id;
@@ -6483,13 +6626,13 @@ document.addEventListener('alpine:init', function () {
 
         formData.append("image", file);
         axios.post("/".concat(domain.id, "/pvt/").concat(id, "/upload-image"), formData).then(function (res) {
-          _this29.sendToUser(res.data);
+          _this31.sendToUser(res.data);
 
-          _this29.showLoader = false;
+          _this31.showLoader = false;
         })["catch"](function (e) {
-          _this29.showLoader = false;
+          _this31.showLoader = false;
 
-          _this29.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          _this31.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.UPLOAD_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
       onPvtMessageReceived: function onPvtMessageReceived(e) {
@@ -6519,12 +6662,12 @@ document.addEventListener('alpine:init', function () {
         }
       },
       reCheckPvtMessages: function reCheckPvtMessages() {
-        var _this30 = this;
+        var _this32 = this;
 
         axios.get("/".concat(domain.id, "/pvt/users")).then(function (res) {
-          _this30.pvtUsers = res.data;
+          _this32.pvtUsers = res.data;
 
-          _this30.pvtUsers.forEach(function (user) {
+          _this32.pvtUsers.forEach(function (user) {
             user.minimize = false;
             user.added = false;
             user.isRecording = false;
@@ -6535,26 +6678,17 @@ document.addEventListener('alpine:init', function () {
             user.interval = null;
           });
 
-          _this30.setPvtNotifiCount();
+          _this32.setPvtNotifiCount();
         })["catch"](function (e) {});
-      },
-      openRoomsModal: function openRoomsModal() {
-        var _this31 = this;
-
-        if (mobile.matches) this.showLeft = false;
-        this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalLoadingHtml());
-        axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
-          return _this31.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalHtml(res.data));
-        });
       },
       openMessageModal: function openMessageModal() {
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.messageModalHtml(this.pvtUsers));
       },
       setAllSeen: function setAllSeen(sender) {
-        var _this32 = this;
+        var _this33 = this;
 
         axios.post("".concat(domain.id, "/pvt/").concat(sender, "/all-seen")).then(function (res) {
-          var user = _this32.pvtUsers.find(function (user) {
+          var user = _this33.pvtUsers.find(function (user) {
             return user.id === sender;
           });
 
@@ -6562,7 +6696,7 @@ document.addEventListener('alpine:init', function () {
             return message.seen = true;
           });
 
-          _this32.setPvtNotifiCount();
+          _this33.setPvtNotifiCount();
         });
       },
       setPvtNotifiCount: function setPvtNotifiCount() {
@@ -6591,11 +6725,55 @@ document.addEventListener('alpine:init', function () {
       makeItBehind: function makeItBehind(el) {
         el.style.zIndex = "50";
       },
+
+      /**
+       * Rooms
+       * */
+      openRoomsModal: function openRoomsModal() {
+        var _this34 = this;
+
+        if (mobile.matches) this.showLeft = false;
+        this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalLoadingHtml());
+        axios.get("/".concat(domain.id, "/rooms")).then(function (res) {
+          return _this34.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.roomModalHtml(res.data));
+        });
+      },
+      getRoomUsers: function getRoomUsers() {
+        var _this35 = this;
+
+        axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/users?limit=").concat(domain.offlineLimit)).then(function (res) {
+          _this35.roomUsers = res.data;
+          _this35.onlineUsers = [];
+          _this35.offlineUsers = [];
+
+          _this35.roomUsers.forEach(function (user) {
+            if (user.sessions > 0 || user.status === _constant__WEBPACK_IMPORTED_MODULE_2__.Status.Stay) _this35.onlineUsers.push(user);else _this35.offlineUsers.push(user);
+          });
+        })["catch"](function (e) {
+          return _this35.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e));
+        });
+      },
+
+      /**
+       * Reports
+       * */
+      getReports: function getReports() {
+        var _this36 = this;
+
+        permission.reports && axios.get("/".concat(domain.id, "/reports")).then(function (res) {
+          _this36.reports = res.data;
+          _this36.reportNotifiCount = _this36.reports.length;
+        });
+      },
       openReportsModal: function openReportsModal() {
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.reportModalHtml(this.reports));
       },
+      reportDialog: function reportDialog(id, type) {
+        var reportType = type === 1 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.Chat : type === 2 ? _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.PvtChat : _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.NewsFeed;
+        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.reportDialogHtml(id, reportType));
+      },
       openReportActionDialog: function openReportActionDialog(reportId, targetId, roomId, type) {
-        var _this33 = this;
+        var _this37 = this;
 
         this.closeFullModal();
         var html = "<div class=\"text-gray-700 text-center\">\n                    <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                        <p class=\"text-md font-bold \">Report Action</p>\n                        <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n                    </div>";
@@ -6604,53 +6782,63 @@ document.addEventListener('alpine:init', function () {
           axios.get("/".concat(domain.id, "/rooms/").concat(room.id, "/messages/").concat(targetId)).then(function (res) {
             html += _functions__WEBPACK_IMPORTED_MODULE_1__.renderReportChatMessage(res.data, reportId, targetId, roomId, type);
 
-            _this33.showSmallModal(html);
+            _this37.showSmallModal(html);
           })["catch"](function (e) {
             if (e.response) {
               if (e.response.status === 404) {
-                _this33.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+                _this37.showAlertMsg(e.response.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
 
-                var formData = new FormData();
-                formData.append('domainId', domain.id);
-                axios["delete"]("/".concat(domain.id, "/reports/").concat(reportId, "/delete"), {
-                  data: formData
-                });
+                axios["delete"]("/".concat(domain.id, "/reports/").concat(reportId, "/delete"));
               }
 
               return;
             }
 
-            _this33.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+            _this37.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.SOMETHING_WENT_WRONG, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           });
         } else if (type === _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.PvtChat) {} else if (type === _constant__WEBPACK_IMPORTED_MODULE_2__.ReportType.NewsFeed) {}
       },
       takeAction: function takeAction(reportId, targetId, roomId, type) {
-        var _this34 = this;
+        var _this38 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/take-action"), formData).then(function () {
-          return _this34.closeSmallModal();
+          return _this38.closeSmallModal();
         });
       },
       noAction: function noAction(reportId, type) {
-        var _this35 = this;
+        var _this39 = this;
 
         var formData = new FormData();
         formData.append('type', type);
         axios.post("/".concat(domain.id, "/reports/").concat(reportId, "/no-action"), formData).then(function () {
-          return _this35.closeSmallModal();
+          return _this39.closeSmallModal();
+        });
+      },
+
+      /**
+       * Announcement
+       * */
+      getNews: function getNews() {
+        var _this40 = this;
+
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && axios.get("/".concat(domain.id, "/news")).then(function (res) {
+          _this40.news = res.data;
+          _this40.newsUnreadCount = _this40.news.unReadCount;
+          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
         });
       },
       openNewsModal: function openNewsModal() {
-        var _this36 = this;
+        var _this41 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.newsModalHtml(this.news.news));
         this.newsUnreadCount !== 0 && axios.post("/".concat(domain.id, "/news/read")).then(function () {
-          return _this36.newsUnreadCount = _this36.news.unReadCount = 0;
+          return _this41.newsUnreadCount = _this41.news.unReadCount = 0;
         });
       },
       writeNewsDialog: function writeNewsDialog() {
@@ -6662,7 +6850,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeNewsDialogHtml());
       },
       delNews: function delNews(newsId) {
-        var _this37 = this;
+        var _this42 = this;
 
         if (!permission.delNews) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6670,24 +6858,38 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/news/").concat(newsId, "/delete")).then(function () {
-          _this37.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this42.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this37.news.news = _this37.news.news.filter(function (news) {
+          _this42.news.news = _this42.news.news.filter(function (news) {
             return news.id !== newsId;
           });
 
-          _this37.openNewsModal();
+          _this42.openNewsModal();
         })["catch"](function (e) {
-          return _this37.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this42.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+
+      /**
+       * AdminShip
+       * */
+      getAdminships: function getAdminships() {
+        var _this43 = this;
+
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        permission.adminship && axios.get("/".concat(domain.id, "/adminship")).then(function (res) {
+          _this43.adminship = res.data;
+          _this43.adminshipUnreadCount = _this43.adminship.unReadCount;
+          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
         });
       },
       openAdminshipModal: function openAdminshipModal() {
-        var _this38 = this;
+        var _this44 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.adminshipModalHtml(this.adminship.adminships));
         this.adminshipUnreadCount !== 0 && axios.post("/".concat(domain.id, "/adminship/read")).then(function () {
-          return _this38.adminshipUnreadCount = _this38.adminship.unReadCount = 0;
+          return _this44.adminshipUnreadCount = _this44.adminship.unReadCount = 0;
         });
       },
       writeAdminShipDialog: function writeAdminShipDialog() {
@@ -6699,7 +6901,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeAdminshipDialogHtml());
       },
       delAdminShip: function delAdminShip(postId) {
-        var _this39 = this;
+        var _this45 = this;
 
         if (!permission.delAdminship) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6707,24 +6909,38 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/adminship/").concat(postId, "/delete")).then(function () {
-          _this39.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this45.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this39.adminship.adminships = _this39.adminship.adminships.filter(function (adminship) {
+          _this45.adminship.adminships = _this45.adminship.adminships.filter(function (adminship) {
             return adminship.id !== postId;
           });
 
-          _this39.openAdminshipModal();
+          _this45.openAdminshipModal();
         })["catch"](function (e) {
-          return _this39.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this45.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+
+      /*
+      * Global Feed
+      * */
+      getGlobalFeed: function getGlobalFeed() {
+        var _this46 = this;
+
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && axios.get("/".concat(domain.id, "/global-feed")).then(function (res) {
+          _this46.globalFeed = res.data;
+          _this46.globalFeedUnreadCount = _this46.globalFeed.unReadCount;
+          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
         });
       },
       openGlobalFeedModal: function openGlobalFeedModal() {
-        var _this40 = this;
+        var _this47 = this;
 
         if (mobile.matches) this.showLeft = false;
         this.showFullModal(_functions__WEBPACK_IMPORTED_MODULE_1__.globalFeedModalHtml(this.globalFeed.globalFeeds));
         this.globalFeedUnreadCount !== 0 && axios.post("/".concat(domain.id, "/global-feed/read")).then(function () {
-          return _this40.globalFeedUnreadCount = _this40.globalFeed.unReadCount = 0;
+          return _this47.globalFeedUnreadCount = _this47.globalFeed.unReadCount = 0;
         });
       },
       writeGlobalFeedDialog: function writeGlobalFeedDialog() {
@@ -6736,7 +6952,7 @@ document.addEventListener('alpine:init', function () {
         this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.writeGlobalFeedDialogHtml());
       },
       delGlobalFeed: function delGlobalFeed(postId) {
-        var _this41 = this;
+        var _this48 = this;
 
         if (!permission.delGlobalFeed) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6744,114 +6960,23 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios["delete"]("/".concat(domain.id, "/global-feed/").concat(postId, "/delete")).then(function () {
-          _this41.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this48.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_DELETED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this41.globalFeed.globalFeeds = _this41.globalFeed.globalFeeds.filter(function (globalFeed) {
+          _this48.globalFeed.globalFeeds = _this48.globalFeed.globalFeeds.filter(function (globalFeed) {
             return globalFeed.id !== postId;
           });
 
-          _this41.openGlobalFeedModal();
+          _this48.openGlobalFeedModal();
         })["catch"](function (e) {
-          return _this41.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this48.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       },
-      changeUserNameDialog: function changeUserNameDialog() {
-        if (!permission.userName) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
 
-        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserNameHtml());
-      },
-      changeUserName: function changeUserName() {
-        var _this42 = this;
-
-        if (!permission.userName) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        if (name.length < 4 || name.length > 12) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.NAME_INVALID, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        var formData = new FormData();
-        formData.append('name', this.u.name);
-        axios.post("/".concat(domain.id, "/users/").concat(this.u.id, "/update-name"), formData).then(function () {
-          return _this42.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NAME_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
-        })["catch"](function (e) {
-          return _this42.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-        });
-        this.showUserProfile = false;
-        this.closeSmallModal();
-      },
-      changeUserAvatarDialog: function changeUserAvatarDialog() {
-        if (!permission.avatar) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        this.showSmallModal(_functions__WEBPACK_IMPORTED_MODULE_1__.changeUserAvatarHtml());
-      },
-      setUserAvatar: function setUserAvatar(index) {
-        var _this43 = this;
-
-        if (!permission.avatar) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        this.showLoader = true;
-        var data = new FormData();
-        data.append('avatar', _constant__WEBPACK_IMPORTED_MODULE_2__.avatars[index]);
-        axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-default-avatar"), data).then(function (res) {
-          _this43.showLoader = false;
-
-          _this43.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
-        })["catch"](function (e) {
-          _this43.showLoader = false;
-
-          _this43.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-        });
-        this.showUserProfile = false;
-        this.closeSmallModal();
-      },
-      changeUserAvatar: function changeUserAvatar(el) {
-        var _this44 = this;
-
-        if (!permission.avatar) {
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        this.showLoader = true;
-        var formData = new FormData();
-        var file = el.files[0];
-        var pattern = /image-*/;
-        if (file == null || file.type === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.UNDEFINED) return;
-
-        if (!file.type.match(pattern)) {
-          this.showLoader = false;
-          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.INVALID_FILE_FORMAT, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-          return;
-        }
-
-        formData.append('avatar', file);
-        axios.put("/".concat(domain.id, "/users/").concat(this.u.id, "/update-avatar"), formData).then(function () {
-          _this44.showLoader = false;
-
-          _this44.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.AVATAR_CHANGED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
-        })["catch"](function (e) {
-          _this44.showLoader = false;
-
-          _this44.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
-        });
-        this.showUserProfile = false;
-        this.closeSmallModal();
-      },
+      /**
+       * Actions
+       * */
       actionMute: function actionMute() {
-        var _this45 = this;
+        var _this49 = this;
 
         if (!permission.mute) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
@@ -6859,9 +6984,9 @@ document.addEventListener('alpine:init', function () {
         }
 
         this.u.muted ? axios.post("/user/".concat(this.u.id, "/mute"))["catch"](function () {
-          return _this45.u.muted = false;
+          return _this49.u.muted = false;
         }) : axios.post("/user/".concat(this.u.id, "/unmute"))["catch"](function () {
-          return _this45.u.muted = true;
+          return _this49.u.muted = true;
         });
       },
       kickUser: function kickUser(id) {
@@ -6879,10 +7004,6 @@ document.addEventListener('alpine:init', function () {
         }
 
         axios.post("/user/".concat(id, "/ban"));
-      },
-      textArea: function textArea(el, height) {
-        el.style.height = "".concat(height, "px");
-        el.style.height = "".concat(el.scrollHeight, "px");
       }
     };
   });
@@ -6892,7 +7013,7 @@ document.addEventListener('alpine:init', function () {
       password: '',
       errors: {},
       guestRegister: function guestRegister() {
-        var _this46 = this;
+        var _this50 = this;
 
         this.showLoader = true;
         var form = new FormData();
@@ -6901,18 +7022,18 @@ document.addEventListener('alpine:init', function () {
         form.append('password', this.password);
         form.append('gender', this.user.gender);
         axios.put("/".concat(domain.id, "/register"), form).then(function (res) {
-          _this46.showLoader = true;
+          _this50.showLoader = true;
 
-          _this46.closeSmallModal();
+          _this50.closeSmallModal();
 
           setTimeout(function () {
             return location.reload();
           }, 2000);
 
-          _this46.showAlertMsg(res.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this50.showAlertMsg(res.data, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function (e) {
-          _this46.showLoader = false;
-          if (e.response) _this46.errors = e.response.data;
+          _this50.showLoader = false;
+          if (e.response) _this50.errors = e.response.data;
         });
       }
     };
@@ -6922,25 +7043,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this47 = this;
+        var _this51 = this;
 
         this.$nextTick(function () {
-          return _this47.$refs.newsInput.focus();
+          return _this51.$refs.newsInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this48 = this;
+        var _this52 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this48.image = e.target.result;
+          return _this52.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeNews: function writeNews() {
-        var _this49 = this;
+        var _this53 = this;
 
         var input = this.$refs.input;
 
@@ -6958,15 +7079,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/news/create"), formData).then(function () {
-          _this49.closeSmallModal();
+          _this53.closeSmallModal();
 
-          _this49.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this53.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.NEWS_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this49.getNews(function () {
-            _this49.openNewsModal();
+          _this53.getNews(function () {
+            _this53.openNewsModal();
           });
         })["catch"](function (e) {
-          return _this49.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this53.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       }
     };
@@ -6976,25 +7097,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this50 = this;
+        var _this54 = this;
 
         this.$nextTick(function () {
-          return _this50.$refs.adminshipInput.focus();
+          return _this54.$refs.adminshipInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this51 = this;
+        var _this55 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this51.image = e.target.result;
+          return _this55.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeAdminship: function writeAdminship() {
-        var _this52 = this;
+        var _this56 = this;
 
         var input = this.$refs.input;
 
@@ -7012,15 +7133,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/adminship/create"), formData).then(function () {
-          _this52.closeSmallModal();
+          _this56.closeSmallModal();
 
-          _this52.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.ADMINSHIP_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this52.getAdminships(function () {
-            _this52.openAdminshipModal();
+          _this56.getAdminships(function () {
+            _this56.openAdminshipModal();
           });
         })["catch"](function (e) {
-          return _this52.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this56.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       }
     };
@@ -7030,25 +7151,25 @@ document.addEventListener('alpine:init', function () {
       content: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       image: _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING,
       init: function init() {
-        var _this53 = this;
+        var _this57 = this;
 
         this.$nextTick(function () {
-          return _this53.$refs.feedInput.focus();
+          return _this57.$refs.feedInput.focus();
         });
       },
       addImage: function addImage(el) {
-        var _this54 = this;
+        var _this58 = this;
 
         var reader = new FileReader();
 
         reader.onload = function (e) {
-          return _this54.image = e.target.result;
+          return _this58.image = e.target.result;
         };
 
         reader.readAsDataURL(el.files[0]);
       },
       writeGlobalFeed: function writeGlobalFeed() {
-        var _this55 = this;
+        var _this59 = this;
 
         var input = this.$refs.input;
 
@@ -7066,15 +7187,15 @@ document.addEventListener('alpine:init', function () {
         formData.append('content', this.content);
         if (this.image !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) formData.append('image', input.files[0]);
         axios.post("/".concat(domain.id, "/global-feed/create"), formData).then(function () {
-          _this55.closeSmallModal();
+          _this59.closeSmallModal();
 
-          _this55.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          _this59.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this55.getGlobalFeed(function () {
-            _this55.openGlobalFeedModal();
+          _this59.getGlobalFeed(function () {
+            _this59.openGlobalFeedModal();
           });
         })["catch"](function (e) {
-          return _this55.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this59.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
       }
     };
@@ -7084,7 +7205,7 @@ document.addEventListener('alpine:init', function () {
       selectedReason: '',
       reasons: ['Abusive Language', 'Spam Content', 'Inappropriate Content', 'Sexual Harassment'],
       report: function report(targetId, type) {
-        var _this56 = this;
+        var _this60 = this;
 
         var formData = new FormData();
         formData.append('targetId', targetId);
@@ -7092,9 +7213,9 @@ document.addEventListener('alpine:init', function () {
         formData.append('roomId', room.id);
         formData.append('type', type);
         axios.post("".concat(domain.id, "/reports/create"), formData).then(function () {
-          return _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.MESSAGE_REPORTED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
+          return _this60.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.MESSAGE_REPORTED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
         })["catch"](function () {
-          return _this56.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.REPORTING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return _this60.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.REPORTING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.closeSmallModal();
       }
@@ -7202,7 +7323,9 @@ var Success = {
   ADMINSHIP_DELETED: 'Adminship post deleted successfully',
   GLOBAL_FEED_CREATED: 'Adminship post created successfully',
   GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
-  MESSAGE_REPORTED: 'Message reported successfully'
+  MESSAGE_REPORTED: 'Message reported successfully',
+  USER_BLOCKED: 'User blocked successfully',
+  USER_UNBLOCKED: 'User unblocked successfully'
 };
 /**
  * Errors
@@ -7224,7 +7347,9 @@ var Errors = {
   CANT_PRIVATE: 'You cannot private to this user',
   NO_MIC_PERMISSION: 'You haven\'t given mic permission',
   CONTENT_EMPTY: 'Content cannot be empty',
-  REPORTING_FAILED: 'Message Reporting failed'
+  REPORTING_FAILED: 'Message reporting failed',
+  BLOCKING_FAILED: 'User blocking failed',
+  UNBLOCKING_FAILED: 'User unblocking failed'
 };
 /**
  * Css classes
@@ -7328,6 +7453,7 @@ var emojis = [easy, modern, easy, modern];
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "adminshipModalHtml": () => (/* binding */ adminshipModalHtml),
+/* harmony export */   "blockedModalHtml": () => (/* binding */ blockedModalHtml),
 /* harmony export */   "changeAboutHtml": () => (/* binding */ changeAboutHtml),
 /* harmony export */   "changeAvatarHtml": () => (/* binding */ changeAvatarHtml),
 /* harmony export */   "changeDobHtml": () => (/* binding */ changeDobHtml),
@@ -7370,7 +7496,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function renderWelcomeMessage() {
   var topic = room.topic.replace(/%ROOM%/g, room.name);
-  return "\n        <li id=\"topic\" class=\"topic\">\n            <i @click=\"removeTopic\" class=\"fa-solid fa-circle-xmark \"></i>\n            <div class=\"segment\">\n                <a class=\"ribbon label\">Welcome Jafa</a>      \n                <img  alt=\"\" src=\"/images/defaults/welcome.svg\">\n                <p>".concat(topic, "</p>        \n             </div>    \n        </li>\n    ");
+  return "\n        <li id=\"topic\" class=\"topic\">\n            <i @click=\"removeTopic\" class=\"fa-solid fa-circle-xmark \"></i>\n            <div class=\"segment\">\n                <p class=\"ribbon label\">Welcome ".concat(name, "</p>      \n                <img  alt=\"\" src=\"/images/defaults/welcome.svg\">\n                <p>").concat(topic, "</p>        \n             </div>    \n        </li>\n    ");
 }
 function renderJoinMessage(message) {
   return "\n         <li class=\"w-full flex justify-center border-t border-gray-200\">\n            <div class=\"p-1\" @click=\"welcomeMessage('".concat(message.user.name, "')\">\n               <p class=\"rounded-md px-4 py-1 text-white bg-skin-primary text-[12px]\"><b class=\"cursor-pointer\">").concat(message.user.name, "</b> has joined the room.</p>\n            </div>\n        </li>\n    ");
@@ -7485,7 +7611,7 @@ function guestRegisterHtml() {
   return "\n        <div x-data=\"guestRegister\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Register</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4 text-left\">\n                <form class=\"w-full\" @submit.prevent=\"guestRegister\">\n                    <div x-show=\"errors.default\" x-text=\"errors.default\" class=\"error-default\"></div>\n                    <div class=\"mb-4\">\n                        <div class=\"h-10\">\n                            <label class=\"h-full\">\n                                <input x-model=\"email\" name=\"email\"  class=\"input-text\"\n                                       type=\"email\" placeholder=\"Email Address\" autoComplete=\"off\" required>\n                            </label>\n                        </div>\n                       <div x-show=\"errors.email\" x-text=\"errors.email\" class=\"error-text\"></div> \n                    </div>\n                    <div class=\"mb-4\">\n                        <div class=\"h-10\">\n                            <label class=\"h-full\">\n                                <input x-model=\"password\" name=\"password\"  class=\"input-text\"\n                                       type=\"password\" placeholder=\"Password\" autoComplete=\"off\" required >\n                            </label>\n                        </div>\n                        <div x-show=\"errors.password\" x-text=\"errors.password\" class=\"error-text\"></div>\n                    </div>\n                    <div class=\"text-center\"> \n                        <button type=\"submit\" class=\"w-36 btn btn-skin text-center\">Register</button>\n                    </div>  \n                </form>\n            </div>\n        </div>";
 }
 function logoutHtml() {
-  return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Logout</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"px-4 py-2\">\n                <p class=\"text-[14px] mb-2\">Are you really want to log out?</p>  \n                <div class=\"flex gap-2 justify-center\">\n                    <button @click=\"logout\" class=\" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5\">Yes<button>          \n                    <button @click=\"closeSmallModal\" class=\" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5\">No<button>          \n                </div>\n            </div>\n        </div>\n    ";
+  return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Logout</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"px-4 py-2\">\n                <p class=\"text-[14px] mb-2\">Are you sure, want to log out?</p>  \n                <div class=\"flex gap-2 justify-center\">\n                    <button @click=\"logout\" class=\"btn-action bg-green-500\">Yes<button>          \n                    <button @click=\"closeSmallModal\" class=\"btn-action bg-red-500\">No<button>          \n                </div>\n            </div>\n        </div>\n    ";
 }
 function changeAvatarHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Avatar</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                Select an image\n                <div class=\"w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(avatar, index) in avatars \" :key=\"index\">\n                      <div class=\"w-[50px] h-[50px] relative\">\n                        <img @click=\"setAvatar(index)\" class=\"w-full h-full rounded-full cursor-pointer\" :src=\"avatar\" alt=\"\" src=\"\"> \n                      </div>\n                  </template>\n                </div> \n                Or \n                <div class=\"mt-1\">\n                    <input x-ref='uploadAvatar' @change=\"changeAvatar($el)\" class=\"input-image\" type=\"file\"\n                               accept=\"image/*\">\n                    <button @click=\"$refs.uploadAvatar.click()\" class=\"w-36 btn btn-skin text-center\">Upload<button>\n                </div>  \n            </div>\n        </div>\n    ";
@@ -7516,9 +7642,6 @@ function changeDobHtml() {
 }
 function customizeTextHtml() {
   return "\n        <div class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Change Chat Option</p>\n                <i @click=\"closeCustomizeTextDialog\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-4\">\n                <template x-if=\"user.textFont\"> \n                    <p class=\"w-full clip\" :class=\"[user.textFont, user.textColor, user.textBold=='true' ? 'font-bold' : 'font-normal' ]\">Sample Text</p>\n                </template>    \n                <div class=\"w-full h-10 mb-4\">\n                    <select @change=\"console.log($el.value)\" x-model=\"user.textFont\" class=\"input-text\">\n                        <option>Select Font</option>\n                        <option value=\"signika\">Signika</option>\n                        <option value=\"grandstander\">Grandstander</option>\n                        <option value=\"comic\">Comic</option>\n                        <option value=\"orbitron\">Orbitron</option>\n                        <option value=\"quicksand\">Quicksand</option>\n                        <option value=\"lemonada\">Lemonada</option>\n                        <option value=\"grenze\">Grenze</option>\n                        <option value=\"kalam\">Kalam</option>\n                        <option value=\"merienda\">Merienda</option>\n                        <option value=\"amita\">Amita</option>\n                        <option value=\"averia\">Averia</option>\n                        <option value=\"turret\">Turret</option>\n                        <option value=\"sansita\">Sansita</option>\n                        <option value=\"comfortaa\">Comfortaa</option>\n                        <option value=\"charm\">Charm</option>\n                        <option value=\"lobster\">Lobster</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Bold</p>\n                <div class=\"w-full h-10 mb-2\">\n                    <select x-model=\"user.textBold\" class=\"input-text\">\n                        <option value=\"true\">Yes</option>\n                        <option value=\"false\">No</option>\n                    </select>\n                </div>\n                <p class=\"text-left font-bold text-[12px]\">Text Color</p>\n                <div class=\"w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar\">\n                  <template x-for=\"(color, index) in bgColors \" :key=\"index\">\n                    <div @click=\"setTextColor(index)\" class=\"h-6 w-10 cursor-pointer flex items-center justify-center\" :class=\"color\">\n                        <i x-show=\"isShowTick(index)\" x-transition class=\"fa-solid fa-check text-white text-center top-0 left-0\"></i>\n                    </div>\n                  </template>\n                </div>\n                <button @click=\"customizeText\" class=\"w-36 btn btn-skin text-center\">Change<button>\n            </div>\n        </div>\n    ";
-}
-function reportDialogHtml(id, type) {
-  return "\n        <div x-data=\"{ id: ".concat(id, ", type: '").concat(type, "' }\"\n         class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n            <div class=\"inline-flex items-center\"> \n                <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n            </div>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div x-data=\"report\" class=\"p-4\">\n                <p class=\"mb-4 text-[13px] text-start leading-[16px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                     <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                        <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                        <p x-text=\"reason\"></p>\n                    </div>\n                </template>\n                <button @click=\"report(id, type)\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n            </div>\n        </div>\n    ");
 }
 function messageModalHtml(pvtUsers) {
   var html = "\n        <div class=\"text-skin-on-primary h-full\">\n            <div class=\"px-4 py-1 flex justify-between items-center bg-skin-hover/90\">\n                <p class=\"text-md font-bold \">Messages</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-[10px]\">\n                <ul class=\"h-full \">\n    ";
@@ -7646,6 +7769,23 @@ function reportModalHtml(reports) {
   }
 
   html += '</ul></div></div>';
+  return html;
+}
+function reportDialogHtml(id, type) {
+  return "\n        <div x-data=\"{ id: ".concat(id, ", type: '").concat(type, "' }\"\n         class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n            <div class=\"inline-flex items-center\"> \n                <i class=\"fa-solid fa-triangle-exclamation text-red-500 text-2xl\"></i>\n                <p class=\"ml-2 text-md font-bold \">Report This Content</p>\n            </div>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div x-data=\"report\" class=\"p-4\">\n                <p class=\"mb-4 text-[13px] text-start leading-[16px]\">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>\n                <template x-for=\"(reason, index) in reasons\" :key=\"index\"> \n                     <div class=\"flex gap-2 items-center text-[13px] font-bold\">\n                        <i @click=\"selectedReason = reason\" class=\"cursor-pointer text-[15px]\" :class=\"selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' \"></i>\n                        <p x-text=\"reason\"></p>\n                    </div>\n                </template>\n                <button @click=\"report(id, type)\" class=\"w-36 btn btn-skin text-center mt-2\">Report<button>\n            </div>\n        </div>\n    ");
+}
+function blockedModalHtml(users) {
+  var html = "\n        <div class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Manage Blocked Users</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">\n                    <ul>\n        ";
+
+  if (users.length > 0) {
+    users.forEach(function (user) {
+      html += "\n                <li class=\"card-wrap\" xmlns=\"http://www.w3.org/1999/html\">\n                   <div class=\"flex flex-col w-full\">\n                       <div class=\"flex items-center justify-between\"> \n                           <div class=\"flex items-center gap-2\">\n                               <img class=\"avatar flex-none cursor-pointer\" src=\"".concat(user.avatar, "\" alt=\"\">\n                               <p class=\"username clip ").concat(user.nameColor, " ").concat(user.nameFont, "\">").concat(user.name, "</p>\n                           </div>  \n                           <i @click=\"unblock(").concat(user.id, ",()=>openBlockedModal())\" class=\"text-red-500 fas fa-times-circle text-2xl cursor-pointer\"></i> \n                       </div> \n                   </div>\n                </li>\n            ");
+    });
+  } else {
+    html += "\n            <li class=\"card-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <img class=\"w-[40px]\" src=\"/images/defaults/global-feed.webp\" alt=\"\">\n                    <p class=\"text-[12px] font-bold\" > No Blocked users</p>\n                </div>\n            </li>\n       ";
+  }
+
+  html += "</ul></div></div></div>";
   return html;
 }
 /**

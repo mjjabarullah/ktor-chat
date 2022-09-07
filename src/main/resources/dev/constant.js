@@ -102,7 +102,9 @@ export const Success = {
     ADMINSHIP_DELETED: 'Adminship post deleted successfully',
     GLOBAL_FEED_CREATED: 'Adminship post created successfully',
     GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
-    MESSAGE_REPORTED: 'Message reported successfully'
+    MESSAGE_REPORTED: 'Message reported successfully',
+    USER_BLOCKED: 'User blocked successfully',
+    USER_UNBLOCKED: 'User unblocked successfully'
 }
 
 /**
@@ -124,7 +126,9 @@ export const Errors = {
     CANT_PRIVATE: 'You cannot private to this user',
     NO_MIC_PERMISSION: 'You haven\'t given mic permission',
     CONTENT_EMPTY: 'Content cannot be empty',
-    REPORTING_FAILED: 'Message Reporting failed'
+    REPORTING_FAILED: 'Message reporting failed',
+    BLOCKING_FAILED: 'User blocking failed',
+    UNBLOCKING_FAILED: 'User unblocking failed'
 }
 
 /**

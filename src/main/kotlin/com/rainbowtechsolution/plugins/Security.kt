@@ -181,9 +181,9 @@ fun Application.configureSecurity() {
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                     val domainId = domain.id!!
 
-                    var user = userRepository.login(name, password, domainId) ?: throw UserNotFoundException()
+                    var user = userRepository.login(name, password, domainId) ?: throw UserNotFoundException("Username or Password invalid.")
                     user = user.copy(ip = ip, deviceId = deviceId, timezone = timezone, country = country)
-                    if (user.rank?.code == RankNames.GUEST) throw UserNotFoundException()
+                    if (user.rank?.code == RankNames.GUEST) throw UserNotFoundException("Username or Password invalid.")
 
                     userRepository.update(user)
                     ChatSession(user.id)

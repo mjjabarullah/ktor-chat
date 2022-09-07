@@ -8,7 +8,7 @@ export function renderWelcomeMessage() {
         <li id="topic" class="topic">
             <i @click="removeTopic" class="fa-solid fa-circle-xmark "></i>
             <div class="segment">
-                <a class="ribbon label">Welcome Jafa</a>      
+                <p class="ribbon label">Welcome ${name}</p>      
                 <img  alt="" src="/images/defaults/welcome.svg">
                 <p>${topic}</p>        
              </div>    
@@ -240,14 +240,14 @@ export function logoutHtml() {
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="px-4 py-2">
-                <p class="text-[14px] mb-2">Are you really want to log out?</p>  
+                <p class="text-[14px] mb-2">Are you sure, want to log out?</p>  
                 <div class="flex gap-2 justify-center">
-                    <button @click="logout" class=" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5">Yes<button>          
-                    <button @click="closeSmallModal" class=" text-center outline-none bg-skin-hover/20 text-skin-hover font-bold rounded-md text-sm py-1 px-5">No<button>          
+                    <button @click="logout" class="btn-action bg-green-500">Yes<button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">No<button>          
                 </div>
             </div>
         </div>
-    `;
+    `
 }
 
 export function changeAvatarHtml() {
@@ -518,31 +518,6 @@ export function customizeTextHtml() {
                   </template>
                 </div>
                 <button @click="customizeText" class="w-36 btn btn-skin text-center">Change<button>
-            </div>
-        </div>
-    `
-}
-
-export function reportDialogHtml(id, type) {
-    return `
-        <div x-data="{ id: ${id}, type: '${type}' }"
-         class="text-gray-700 text-center">
-            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
-            <div class="inline-flex items-center"> 
-                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
-                <p class="ml-2 text-md font-bold ">Report This Content</p>
-            </div>
-                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
-            </div> 
-            <div x-data="report" class="p-4">
-                <p class="mb-4 text-[13px] text-start leading-[16px]">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>
-                <template x-for="(reason, index) in reasons" :key="index"> 
-                     <div class="flex gap-2 items-center text-[13px] font-bold">
-                        <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
-                        <p x-text="reason"></p>
-                    </div>
-                </template>
-                <button @click="report(id, type)" class="w-36 btn btn-skin text-center mt-2">Report<button>
             </div>
         </div>
     `
@@ -981,6 +956,72 @@ export function reportModalHtml(reports) {
         `
     }
     html += '</ul></div></div>'
+    return html
+}
+
+export function reportDialogHtml(id, type) {
+    return `
+        <div x-data="{ id: ${id}, type: '${type}' }"
+         class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+            <div class="inline-flex items-center"> 
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+                <p class="ml-2 text-md font-bold ">Report This Content</p>
+            </div>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div x-data="report" class="p-4">
+                <p class="mb-4 text-[13px] text-start leading-[16px]">Please only submit actionable offences. Abuse or false reporting may lead to action taken against your own account. Select the reason to report this content.</p>
+                <template x-for="(reason, index) in reasons" :key="index"> 
+                     <div class="flex gap-2 items-center text-[13px] font-bold">
+                        <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
+                        <p x-text="reason"></p>
+                    </div>
+                </template>
+                <button @click="report(id, type)" class="w-36 btn btn-skin text-center mt-2">Report<button>
+            </div>
+        </div>
+    `
+}
+
+export function blockedModalHtml(users) {
+    let html = `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Manage Blocked Users</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <ul>
+        `
+    if (users.length > 0) {
+        users.forEach(user => {
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between"> 
+                           <div class="flex items-center gap-2">
+                               <img class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>  
+                           <i @click="unblock(${user.id},()=>openBlockedModal())" class="text-red-500 fas fa-times-circle text-2xl cursor-pointer"></i> 
+                       </div> 
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                    <p class="text-[12px] font-bold" > No Blocked users</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
     return html
 }
 

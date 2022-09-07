@@ -5,7 +5,6 @@ import * as fn from './functions'
 import {
     MessageType, ReportType, Status, Success, Errors, Css, Defaults, textColors, avatars, bgColors
 } from "./constant"
-import {roomModalLoadingHtml} from "./functions";
 
 Object.freeze(domain)
 Object.freeze(room)
@@ -72,6 +71,7 @@ document.addEventListener('alpine:init', () => {
             roomSocket: new WebSocket(`wss://${location.host}/chat/${domain.id}/room/${room.id}`),
             userSocket: new WebSocket(`wss://${location.host}/${domain.id}/member/${userId}`),
             roomUsers: [],
+            blockedUsers: [],
             onlineUsers: [],
             offlineUsers: [],
             pvtUsers: [],
@@ -103,7 +103,7 @@ document.addEventListener('alpine:init', () => {
 
                 this.$refs.mainEmojis.innerHTML = fn.getEmojisHtml()
 
-                this.getMessages()
+                this.getBlockedUsers()
 
                 this.reCheckPvtMessages()
 
@@ -117,10 +117,12 @@ document.addEventListener('alpine:init', () => {
 
                 this.getAdminships()
 
+                this.getMessages()
+
                 this.roomSocket.addEventListener('message', (e) => {
                     const message = JSON.parse(e.data)
                     this.onMessageReceived(message)
-                    message.user.id !== userId && message.type === MessageType.Chat && this.$refs.chatSound.play()
+                    message.type === MessageType.Chat && message.user.id !== userId && this.$refs.chatSound.play()
                 })
 
                 this.roomSocket.addEventListener('close', () => {
@@ -178,6 +180,10 @@ document.addEventListener('alpine:init', () => {
                 })
 
             },
+
+            /**
+             * Responsive
+             * */
             toggleLeft() {
                 this.showLeft = !this.showLeft
                 if (tablet.matches) return
@@ -187,6 +193,10 @@ document.addEventListener('alpine:init', () => {
                 this.showLeft = false
                 this.showRight = !this.showRight
             },
+
+            /**
+             * Global modals and functions
+             * */
             showSmallModal(html) {
                 this.$refs.modalContent.innerHTML = html
                 this.showModal = true
@@ -212,18 +222,6 @@ document.addEventListener('alpine:init', () => {
                 let content = this.$refs.fullModalContent
                 setTimeout(() => content.innerHTML = Defaults.EMPTY_STRING, 5e2)
             },
-            showUCGPolicyDialog() {
-                this.showSmallModal(fn.ucgPolicyHtml())
-            },
-            closeUGCPolicy() {
-                this.closeSmallModal()
-                this.showMessages = true
-                this.$refs.mainInput.focus()
-                localStorage.setItem("isUGCShowed", "true")
-                if (rank.code === Defaults.GUEST) {
-                    this.showSmallModal(fn.guestDialogHtml())
-                }
-            },
             showAlertMsg(msg, color) {
                 this.$refs.alertMsg.classList.add(color)
                 this.$refs.alertMsg.innerHTML = `
@@ -238,87 +236,46 @@ document.addEventListener('alpine:init', () => {
                     this.showAlert = false
                 }, 3e3)
             },
+            textArea(el, height) {
+                el.style.height = `${height}px`
+                el.style.height = `${el.scrollHeight}px`
+            },
+            showImageDialog(el) {
+                const html = `
+                    <div class="relative w-full mx-auto">
+                        <img src="${el.src}" class="mx-auto" alt="">
+                        <div class="bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1"> 
+                            <i @click="closeImgModal" class="fas fa-times-circle text-2xl "></i>
+                        </div>
+                    </div>
+                `
+                this.showImgModal(html)
+            },
+
+            /**
+             * UGC Dialog
+             * */
+            showUCGPolicyDialog() {
+                this.showSmallModal(fn.ucgPolicyHtml())
+            },
+            closeUGCPolicy() {
+                this.closeSmallModal()
+                this.showMessages = true
+                this.$refs.mainInput.focus()
+                localStorage.setItem("isUGCShowed", "true")
+                if (rank.code === Defaults.GUEST) {
+                    this.showSmallModal(fn.guestDialogHtml())
+                }
+            },
+
+            /**
+             * Profile
+             * */
             setStatusColor() {
                 this.user.status === Status.Online ? this.statusColor = Css.GREEN :
                     this.user.status === Status.Away ? this.statusColor = Css.YELLOW :
                         this.user.status === Status.Busy ? this.statusColor = Css.RED :
                             this.statusColor = Defaults.EMPTY_STRING
-            },
-            setUserStatusColor() {
-                this.user.status === Status.Online ? this.statusColor = Css.GREEN :
-                    this.user.status === Status.Away ? this.statusColor = Css.YELLOW :
-                        this.user.status === Status.Busy ? this.statusColor = Css.RED :
-                            this.statusColor = Defaults.EMPTY_STRING
-            },
-            getMessages() {
-                this.$refs.chatMessages.innerHTML = Defaults.EMPTY_STRING
-                axios.get(`${domain.id}/rooms/${room.id}/messages`).then(res =>
-                    res.data.forEach(message => this.onMessageReceived(message))
-                )
-            },
-            getReports() {
-                permission.reports &&
-                axios.get(`/${domain.id}/reports`).then(res => {
-                    this.reports = res.data
-                    this.reportNotifiCount = this.reports.length
-                })
-            },
-            getNews(callback = () => {
-            }) {
-                rank.code !== Defaults.GUEST &&
-                axios.get(`/${domain.id}/news`).then(res => {
-                    this.news = res.data
-                    this.newsUnreadCount = this.news.unReadCount
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
-                })
-            },
-            getAdminships(callback = () => {
-            }) {
-                permission.adminship &&
-                axios.get(`/${domain.id}/adminship`).then(res => {
-                    this.adminship = res.data
-                    this.adminshipUnreadCount = this.adminship.unReadCount
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
-                })
-            },
-            getGlobalFeed(callback = () => {
-            }) {
-                rank.code !== Defaults.GUEST &&
-                axios.get(`/${domain.id}/global-feed`).then(res => {
-                    this.globalFeed = res.data
-                    this.globalFeedUnreadCount = this.globalFeed.unReadCount
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
-                })
-            },
-            getPvtEmojis(el) {
-                el.innerHTML = fn.pvtEmojisHtml()
-            },
-            getRoomUsers() {
-                axios.get(`/${domain.id}/rooms/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
-                    this.roomUsers = res.data
-                    this.onlineUsers = []
-                    this.offlineUsers = []
-                    this.roomUsers.forEach(user => {
-                        if (user.sessions > 0 || user.status === Status.Stay) this.onlineUsers.push(user)
-                        else this.offlineUsers.push(user)
-                    })
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e)))
-            },
-            showGuestRegisterDialog() {
-                if (rank.code !== Defaults.GUEST) return
-                this.showSmallModal(fn.guestRegisterHtml())
-            },
-            getUserProfile(uId) {
-                if (mobile.matches) this.showRight = false
-                if (uId === userId) {
-                    this.showProfile = true
-                    return
-                }
-                axios.get(`/${domain.id}/users/${uId}`).then(res => {
-                    this.u = res.data
-                    this.setUserStatusColor()
-                    this.showUserProfile = true
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
             showLogoutDialog() {
                 this.showSmallModal(fn.logoutHtml())
@@ -587,21 +544,162 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.SOMETHING_WENT_WRONG, Css.ERROR)
                 })
             },
-            removeTopic() {
-                document.getElementById('topic').remove()
+            showGuestRegisterDialog() {
+                if (rank.code !== Defaults.GUEST) return
+                this.showSmallModal(fn.guestRegisterHtml())
             },
-            welcomeMessage(name) {
-                this.$refs.mainInput.value = `Welcome ${name}`
+
+            /**
+             * User blocking
+             * */
+            getBlockedUsers() {
+                axios.get(`/${domain.id}/users/blocked-users`).then(res => this.blockedUsers = res.data)
+            },
+            actionBlock() {
+                this.u.blocked ?
+                    this.unblock(this.u.id, () => this.u.blocked = false) :
+                    this.block(this.u.id, () => this.u.blocked = true)
+            },
+            block(userId, callback = () => {
+            }) {
+                const formData = new FormData()
+                formData.append('blocked', userId)
+                axios.post(`/${domain.id}/users/block`, formData).then(() => {
+                    this.showAlertMsg(Success.USER_BLOCKED, Css.SUCCESS)
+                    this.getBlockedUsers()
+                    if (typeof callback === Defaults.FUNC_TYPE) callback()
+                }).catch(e => this.showAlertMsg(Errors.BLOCKING_FAILED, Css.ERROR))
+            },
+            unblock(userId, callback = () => {
+            }) {
+                const formData = new FormData()
+                formData.append('blocked', userId)
+                axios.delete(`/${domain.id}/users/unblock`, {data: formData}).then(() => {
+                    this.showAlertMsg(Success.USER_UNBLOCKED, Css.SUCCESS)
+                    this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
+                    if (typeof callback === Defaults.FUNC_TYPE) callback()
+                }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
+            },
+            openBlockedModal() {
+                this.showProfile = false
+                this.showFullModal(fn.blockedModalHtml(this.blockedUsers))
+            },
+
+            /**
+             * User Profile
+             * */
+            getUserProfile(uId) {
+                if (mobile.matches) this.showRight = false
+                if (uId === userId) {
+                    this.showProfile = true
+                    return
+                }
+                axios.get(`/${domain.id}/users/${uId}`).then(res => {
+                    this.u = res.data
+                    const user = this.blockedUsers.find(user => user.id === this.u.id)
+                    this.u.blocked = user != null
+                    this.setUserStatusColor()
+                    this.showUserProfile = true
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            },
+            closeUserProfile() {
+                this.showUserProfile = false
+            },
+            setUserStatusColor() {
+                this.user.status === Status.Online ? this.statusColor = Css.GREEN :
+                    this.user.status === Status.Away ? this.statusColor = Css.YELLOW :
+                        this.user.status === Status.Busy ? this.statusColor = Css.RED :
+                            this.statusColor = Defaults.EMPTY_STRING
+            },
+            changeUserNameDialog() {
+                if (!permission.userName) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showSmallModal(fn.changeUserNameHtml())
+            },
+            changeUserName() {
+                if (!permission.userName) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                if (name.length < 4 || name.length > 12) {
+                    this.showAlertMsg(Errors.NAME_INVALID, Css.ERROR)
+                    return
+                }
+                const formData = new FormData()
+                formData.append('name', this.u.name)
+                axios.post(`/${domain.id}/users/${this.u.id}/update-name`, formData).then(() =>
+                    this.showAlertMsg(Success.NAME_CHANGED, Css.SUCCESS)
+                ).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+                this.showUserProfile = false
+                this.closeSmallModal()
+            },
+            changeUserAvatarDialog() {
+                if (!permission.avatar) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showSmallModal(fn.changeUserAvatarHtml())
+            },
+            setUserAvatar(index) {
+                if (!permission.avatar) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showLoader = true
+                const data = new FormData()
+                data.append('avatar', avatars[index])
+                axios.put(`/${domain.id}/users/${this.u.id}/update-default-avatar`, data).then(res => {
+                    this.showLoader = false
+                    this.showAlertMsg(Success.AVATAR_CHANGED, Css.SUCCESS)
+                }).catch(e => {
+                    this.showLoader = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+                this.showUserProfile = false
+                this.closeSmallModal()
+            },
+            changeUserAvatar(el) {
+                if (!permission.avatar) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showLoader = true
+                const formData = new FormData()
+                const file = el.files[0]
+                const pattern = /image-*/
+                if (file == null || file.type === Defaults.UNDEFINED) return
+                if (!file.type.match(pattern)) {
+                    this.showLoader = false
+                    this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
+                    return
+                }
+                formData.append('avatar', file)
+                axios.put(`/${domain.id}/users/${this.u.id}/update-avatar`, formData).then(() => {
+                    this.showLoader = false
+                    this.showAlertMsg(Success.AVATAR_CHANGED, Css.SUCCESS)
+                }).catch(e => {
+                    this.showLoader = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+                this.showUserProfile = false
+                this.closeSmallModal()
+            },
+
+            /**
+             * Messages
+             * */
+            getMessages() {
+                this.$refs.chatMessages.innerHTML = Defaults.EMPTY_STRING
+                axios.get(`${domain.id}/rooms/${room.id}/messages`).then(res =>
+                    res.data.forEach(message => this.onMessageReceived(message))
+                )
             },
             addMainEmo(emo) {
                 const input = this.$refs.mainInput
                 input.value === Defaults.EMPTY_STRING ? input.value = `${emo} ` : input.value += ` ${emo} `
                 this.showEmo = false
-                input.focus()
-            },
-            addPvtEmo(emo,) {
-                const input = this.$refs.pvtInput
-                input.value === Defaults.EMPTY_STRING ? input.value = `${emo} ` : input.value += ` ${emo} `
                 input.focus()
             },
             appendUserName(el) {
@@ -701,17 +799,6 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.UPLOAD_FAILED, Css.ERROR)
                 })
             },
-            showImageDialog(el) {
-                const html = `
-                    <div class="relative w-full mx-auto">
-                        <img src="${el.src}" class="mx-auto" alt="">
-                        <div class="bg-white rounded-full z-10 text-gray-700 absolute -top-2 -right-2 cursor-pointer px-1"> 
-                            <i @click="closeImgModal" class="fas fa-times-circle text-2xl "></i>
-                        </div>
-                    </div>
-                `
-                this.showImgModal(html)
-            },
             onMessageReceived(message) {
                 const chatMessages = this.$refs.chatMessages
                 if (message.type === MessageType.Join) {
@@ -724,7 +811,8 @@ document.addEventListener('alpine:init', () => {
                     }
                     chatMessages.insertAdjacentHTML('afterbegin', fn.renderJoinMessage(message))
                 } else if (message.type === MessageType.Chat) {
-                    chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
+                    let user = this.blockedUsers.find(user=>user.id === message.user.id)
+                    user == null && chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
                 } else if (message.type === MessageType.Leave) {
                     this.getRoomUsers()
                     message.user.id !== userId && chatMessages.insertAdjacentHTML('afterbegin', fn.renderLeaveMessage(message))
@@ -770,9 +858,23 @@ document.addEventListener('alpine:init', () => {
                         .catch(() => this.showAlertMsg(Errors.DELETE_MESSAGE, Css.ERROR))
                 } else this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
             },
-            reportDialog(id, type) {
-                const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
-                this.showSmallModal(fn.reportDialogHtml(id, reportType))
+            removeTopic() {
+                document.getElementById('topic').remove()
+            },
+            welcomeMessage(name) {
+                this.$refs.mainInput.value = `Welcome ${name}`
+            },
+
+            /**
+             * Private Messages
+             * */
+            getPvtEmojis(el) {
+                el.innerHTML = fn.pvtEmojisHtml()
+            },
+            addPvtEmo(emo,) {
+                const input = this.$refs.pvtInput
+                input.value === Defaults.EMPTY_STRING ? input.value = `${emo} ` : input.value += ` ${emo} `
+                input.focus()
             },
             openPvtDialog(id) {
                 const user = this.u
@@ -939,11 +1041,6 @@ document.addEventListener('alpine:init', () => {
                 }).catch(e => {
                 })
             },
-            openRoomsModal() {
-                if (mobile.matches) this.showLeft = false
-                this.showFullModal(fn.roomModalLoadingHtml())
-                axios.get(`/${domain.id}/rooms`).then(res => this.showFullModal(fn.roomModalHtml(res.data)))
-            },
             openMessageModal() {
                 this.showFullModal(fn.messageModalHtml(this.pvtUsers))
             },
@@ -979,8 +1076,43 @@ document.addEventListener('alpine:init', () => {
             makeItBehind(el) {
                 el.style.zIndex = "50"
             },
+
+            /**
+             * Rooms
+             * */
+            openRoomsModal() {
+                if (mobile.matches) this.showLeft = false
+                this.showFullModal(fn.roomModalLoadingHtml())
+                axios.get(`/${domain.id}/rooms`).then(res => this.showFullModal(fn.roomModalHtml(res.data)))
+            },
+            getRoomUsers() {
+                axios.get(`/${domain.id}/rooms/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
+                    this.roomUsers = res.data
+                    this.onlineUsers = []
+                    this.offlineUsers = []
+                    this.roomUsers.forEach(user => {
+                        if (user.sessions > 0 || user.status === Status.Stay) this.onlineUsers.push(user)
+                        else this.offlineUsers.push(user)
+                    })
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e)))
+            },
+
+            /**
+             * Reports
+             * */
+            getReports() {
+                permission.reports &&
+                axios.get(`/${domain.id}/reports`).then(res => {
+                    this.reports = res.data
+                    this.reportNotifiCount = this.reports.length
+                })
+            },
             openReportsModal() {
                 this.showFullModal(fn.reportModalHtml(this.reports))
+            },
+            reportDialog(id, type) {
+                const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed
+                this.showSmallModal(fn.reportDialogHtml(id, reportType))
             },
             openReportActionDialog(reportId, targetId, roomId, type) {
                 this.closeFullModal()
@@ -997,9 +1129,7 @@ document.addEventListener('alpine:init', () => {
                         if (e.response) {
                             if (e.response.status === 404) {
                                 this.showAlertMsg(e.response.data, Css.ERROR)
-                                const formData = new FormData()
-                                formData.append('domainId', domain.id)
-                                axios.delete(`/${domain.id}/reports/${reportId}/delete`, {data: formData})
+                                axios.delete(`/${domain.id}/reports/${reportId}/delete`)
                             }
                             return
                         }
@@ -1022,6 +1152,19 @@ document.addEventListener('alpine:init', () => {
                 const formData = new FormData()
                 formData.append('type', type)
                 axios.post(`/${domain.id}/reports/${reportId}/no-action`, formData).then(() => this.closeSmallModal())
+            },
+
+            /**
+             * Announcement
+             * */
+            getNews(callback = () => {
+            }) {
+                rank.code !== Defaults.GUEST &&
+                axios.get(`/${domain.id}/news`).then(res => {
+                    this.news = res.data
+                    this.newsUnreadCount = this.news.unReadCount
+                    if (typeof callback === Defaults.FUNC_TYPE) callback()
+                })
             },
             openNewsModal() {
                 if (mobile.matches) this.showLeft = false
@@ -1047,6 +1190,19 @@ document.addEventListener('alpine:init', () => {
                     this.openNewsModal()
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
+
+            /**
+             * AdminShip
+             * */
+            getAdminships(callback = () => {
+            }) {
+                permission.adminship &&
+                axios.get(`/${domain.id}/adminship`).then(res => {
+                    this.adminship = res.data
+                    this.adminshipUnreadCount = this.adminship.unReadCount
+                    if (typeof callback === Defaults.FUNC_TYPE) callback()
+                })
+            },
             openAdminshipModal() {
                 if (mobile.matches) this.showLeft = false
                 this.showFullModal(fn.adminshipModalHtml(this.adminship.adminships))
@@ -1070,6 +1226,19 @@ document.addEventListener('alpine:init', () => {
                     this.adminship.adminships = this.adminship.adminships.filter(adminship => adminship.id !== postId)
                     this.openAdminshipModal()
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            },
+
+            /*
+            * Global Feed
+            * */
+            getGlobalFeed(callback = () => {
+            }) {
+                rank.code !== Defaults.GUEST &&
+                axios.get(`/${domain.id}/global-feed`).then(res => {
+                    this.globalFeed = res.data
+                    this.globalFeedUnreadCount = this.globalFeed.unReadCount
+                    if (typeof callback === Defaults.FUNC_TYPE) callback()
+                })
             },
             openGlobalFeedModal() {
                 if (mobile.matches) this.showLeft = false
@@ -1095,81 +1264,10 @@ document.addEventListener('alpine:init', () => {
                     this.openGlobalFeedModal()
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
-            changeUserNameDialog() {
-                if (!permission.userName) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
-                    return
-                }
-                this.showSmallModal(fn.changeUserNameHtml())
-            },
-            changeUserName() {
-                if (!permission.userName) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
-                    return
-                }
-                if (name.length < 4 || name.length > 12) {
-                    this.showAlertMsg(Errors.NAME_INVALID, Css.ERROR)
-                    return
-                }
-                const formData = new FormData()
-                formData.append('name', this.u.name)
-                axios.post(`/${domain.id}/users/${this.u.id}/update-name`, formData).then(() =>
-                    this.showAlertMsg(Success.NAME_CHANGED, Css.SUCCESS)
-                ).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
-                this.showUserProfile = false
-                this.closeSmallModal()
-            },
-            changeUserAvatarDialog() {
-                if (!permission.avatar) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
-                    return
-                }
-                this.showSmallModal(fn.changeUserAvatarHtml())
-            },
-            setUserAvatar(index) {
-                if (!permission.avatar) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
-                    return
-                }
-                this.showLoader = true
-                const data = new FormData()
-                data.append('avatar', avatars[index])
-                axios.put(`/${domain.id}/users/${this.u.id}/update-default-avatar`, data).then(res => {
-                    this.showLoader = false
-                    this.showAlertMsg(Success.AVATAR_CHANGED, Css.SUCCESS)
-                }).catch(e => {
-                    this.showLoader = false
-                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
-                })
-                this.showUserProfile = false
-                this.closeSmallModal()
-            },
-            changeUserAvatar(el) {
-                if (!permission.avatar) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
-                    return
-                }
-                this.showLoader = true
-                const formData = new FormData()
-                const file = el.files[0]
-                const pattern = /image-*/
-                if (file == null || file.type === Defaults.UNDEFINED) return
-                if (!file.type.match(pattern)) {
-                    this.showLoader = false
-                    this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
-                    return
-                }
-                formData.append('avatar', file)
-                axios.put(`/${domain.id}/users/${this.u.id}/update-avatar`, formData).then(() => {
-                    this.showLoader = false
-                    this.showAlertMsg(Success.AVATAR_CHANGED, Css.SUCCESS)
-                }).catch(e => {
-                    this.showLoader = false
-                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
-                })
-                this.showUserProfile = false
-                this.closeSmallModal()
-            },
+
+            /**
+             * Actions
+             * */
             actionMute() {
                 if (!permission.mute) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
@@ -1191,11 +1289,7 @@ document.addEventListener('alpine:init', () => {
                     return
                 }
                 axios.post(`/user/${id}/ban`)
-            },
-            textArea(el, height) {
-                el.style.height = `${height}px`
-                el.style.height = `${el.scrollHeight}px`
-            },
+            }
         }
     })
 
