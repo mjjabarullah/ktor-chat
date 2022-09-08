@@ -30,8 +30,7 @@ import java.util.*
 fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
-    permissionRepository: PermissionRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
-    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository,
+    permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository,
     commentRepository: CommentRepository
 ) {
 
@@ -702,7 +701,7 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            val news = newsRepository.getNews(domainId, userId)
+                            val news = postRepository.getPosts(domainId, userId, PostType.Announcement)
                             call.respond(HttpStatusCode.OK, news)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -715,7 +714,7 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            newsRepository.readNews(domainId, userId)
+                            postRepository.readPost(domainId, userId, PostType.Announcement)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -730,7 +729,7 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            val adminships = adminshipRepository.getAdminships(domainId, userId)
+                            val adminships = postRepository.getPosts(domainId, userId, PostType.AdminShip)
                             call.respond(HttpStatusCode.OK, adminships)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -743,7 +742,7 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            adminshipRepository.readAdminship(domainId, userId)
+                            postRepository.readPost(domainId, userId, PostType.AdminShip)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -757,7 +756,7 @@ fun Route.domainRoutes(
                         try {
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            val globalFeeds = globalFeedRepository.getGlobalFeeds(domainId, userId)
+                            val globalFeeds = postRepository.getPosts(domainId, userId, PostType.GlobalFeed)
                             call.respond(HttpStatusCode.OK, globalFeeds)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -771,7 +770,7 @@ fun Route.domainRoutes(
                                 val postId = call.parameters["postId"]!!.toInt()
                                 val page = call.request.queryParameters["page"]?.toLong() ?: 0
                                 val offset = page * ChatDefaults.POST_PER_PAGE
-                                val comments = commentRepository.getComments(postId, CommentType.GlobalFeed, offset)
+                                val comments = commentRepository.getComments(postId, PostType.GlobalFeed, offset)
                                 call.respond(HttpStatusCode.OK, comments)
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -787,7 +786,7 @@ fun Route.domainRoutes(
                                 val params = call.receiveParameters()
                                 val content = params["content"].toString()
                                 var comment = Comment(
-                                    content = content, user = user, postId = postId, type = CommentType.GlobalFeed
+                                    content = content, user = user, postId = postId, type = PostType.GlobalFeed
                                 )
                                 val commentId = commentRepository.createComment(comment)
                                 comment = comment.copy(id = commentId)
@@ -827,10 +826,11 @@ fun Route.domainRoutes(
                                 }
                             }
                             val image = if (hasImage) filePath else null
-                            val globalFeed = GlobalFeed(
-                                content = content, image = image, user = User(userId), domainId = domainId
+                            val post = Post(
+                                content = content, image = image, user = User(userId), domainId = domainId,
+                                type = PostType.GlobalFeed
                             )
-                            globalFeedRepository.createGlobalFeed(globalFeed)
+                            postRepository.createPost(post = post)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.GlobalFeed
                             ).encodeToString()
@@ -847,7 +847,7 @@ fun Route.domainRoutes(
                             val chatSession = call.sessions.get<ChatSession>()
                             val userId = chatSession?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            globalFeedRepository.readGlobalFeed(domainId, userId)
+                            postRepository.readPost(domainId, userId, PostType.GlobalFeed)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()

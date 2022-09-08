@@ -1,11 +1,9 @@
 package com.rainbowtechsolution.controller
 
-
-import com.rainbowtechsolution.data.entity.SeenType
-import com.rainbowtechsolution.data.repository.SeenRepository
+import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.model.Seen
+import com.rainbowtechsolution.data.repository.SeenRepository
 import com.rainbowtechsolution.utils.dbQuery
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.update
@@ -23,7 +21,7 @@ class SeenController : SeenRepository {
         }
     }
 
-    override suspend fun makeSeen(domainId: Int, userId: Long, type: SeenType): Unit = dbQuery {
+    override suspend fun makeSeen(domainId: Int, userId: Long, type: PostType): Unit = dbQuery {
         Seeen.update({ (Seeen.domainId eq domainId) and (Seeen.userId eq userId) and (Seeen.type eq type) }) {
             it[createdAt] = LocalDateTime.now()
         }

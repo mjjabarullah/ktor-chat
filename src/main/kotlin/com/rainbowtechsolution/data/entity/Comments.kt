@@ -7,12 +7,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 object Comments : IntIdTable("comments") {
     val content = text("content")
     val userId = reference("user_id", Users.id, onDelete = ReferenceOption.CASCADE)
-    val postId = reference("post_id", GlobalFeeds.id, onDelete = ReferenceOption.CASCADE)
-    val type = enumerationByName<CommentType>("type", 20)
+    val postId = reference("post_id", Posts.id, onDelete = ReferenceOption.CASCADE)
+    val type = enumerationByName<PostType>("type", 20)
     val createdAt = datetime("created_at")
-}
-
-
-enum class CommentType {
-    GlobalFeed, AdminShip
 }

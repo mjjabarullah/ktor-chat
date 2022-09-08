@@ -1,9 +1,9 @@
 package com.rainbowtechsolution.data.model
 
-import com.rainbowtechsolution.data.entity.SeenType
+import com.rainbowtechsolution.data.entity.PostType
 
 data class Seen(
     val userId: Long,
     val domainId: Int,
-    val type: SeenType,
+    val type: PostType,
 )

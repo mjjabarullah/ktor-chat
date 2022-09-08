@@ -169,24 +169,4 @@ fun ResultRow.toReportModel(): Report {
 }
 
 
-fun ResultRow.toNewsModel(user: User): Announcement {
-    return Announcement(
-        id = this[Announcements.id].value,
-        content = this[Announcements.content],
-        image = this[Announcements.image],
-        user = user,
-        createdAt = this[Announcements.createdAt].format()
-    )
-}
-
-fun ResultRow.toAdminshipModel(user: User): Adminship {
-    return Adminship(
-        id = this[AdminShips.id].value,
-        content = this[AdminShips.content],
-        image = this[AdminShips.image],
-        user = user,
-        createdAt = this[AdminShips.createdAt].format()
-    )
-}
-
 

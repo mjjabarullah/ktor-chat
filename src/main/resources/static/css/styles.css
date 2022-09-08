@@ -1067,10 +1067,6 @@ video {
 .bg-white\/30{
   background-color: rgb(255 255 255 / 0.3);
 }
-.bg-gray-100{
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-}
 .to-skin-hover{
   --tw-gradient-to: rgb(var(--color-primary-hover));
 }

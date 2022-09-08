@@ -5,6 +5,7 @@ import com.rainbowtechsolution.common.Auth
 import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.MessageType
+import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.*
@@ -29,8 +30,7 @@ import java.io.IOException
 fun Route.adminRotes(
     domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
     rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
-    messageRepository: MessageRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
-    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository
+    messageRepository: MessageRepository, reportRepository: ReportRepository, postRepository: PostRepository
 ) {
 
 
@@ -329,10 +329,11 @@ fun Route.adminRotes(
                                 }
                             }
                             val image = if (hasImage) filePath else null
-                            val announcement = Announcement(
-                                content = content, image = image, user = User(userId), domainId = domainId
+                            val post = Post(
+                                content = content, image = image, user = User(userId), domainId = domainId,
+                                type = PostType.Announcement
                             )
-                            newsRepository.createNews(announcement)
+                            postRepository.createPost(post)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.News
                             ).encodeToString()
@@ -349,7 +350,7 @@ fun Route.adminRotes(
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val newsId = call.parameters["newsId"]!!.toInt()
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            newsRepository.deleteNews(newsId)
+                            postRepository.deletePost(newsId)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.DelNews
                             ).encodeToString()
@@ -392,10 +393,11 @@ fun Route.adminRotes(
                                 }
                             }
                             val image = if (hasImage) filePath else null
-                            val adminship = Adminship(
-                                content = content, image = image, user = User(userId), domainId = domainId
+                            val post = Post(
+                                content = content, image = image, user = User(userId), domainId = domainId,
+                                type = PostType.AdminShip
                             )
-                            adminshipRepository.createAdminship(adminship)
+                            postRepository.createPost(post)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.Adminship
                             ).encodeToString()
@@ -412,7 +414,7 @@ fun Route.adminRotes(
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val postId = call.parameters["postId"]!!.toInt()
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            adminshipRepository.deleteAdminship(postId)
+                            postRepository.deletePost(postId)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.DelAdminship
                             ).encodeToString()
@@ -432,7 +434,7 @@ fun Route.adminRotes(
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val postId = call.parameters["postId"]!!.toInt()
                             val domainId = call.parameters["domainId"]!!.toInt()
-                            globalFeedRepository.deleteGlobalFeed(postId)
+                            postRepository.deletePost(postId)
                             val message = Message(
                                 content = "", user = User(id = userId), type = MessageType.DelGlobalFeed
                             ).encodeToString()

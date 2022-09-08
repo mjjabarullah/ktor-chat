@@ -727,7 +727,7 @@ export function writeNewsDialogHtml() {
                 <div class="mb-4">
                    <textarea x-ref="newsInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
                         maxlength="3000" placeholder="write announcement"></textarea>
-                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <template x-if="image"> <img :src="image" class="mt-2 h-20" alt=""></template>
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
@@ -830,8 +830,8 @@ export function globalFeedModalHtml() {
                         </button> 
                     </template>
                     <ul>
-                        <template x-if="globalFeed.globalFeeds.length>0">
-                            <template x-for="feed in globalFeed.globalFeeds" :key="feed.id">
+                        <template x-if="globalFeed.posts.length>0">
+                            <template x-for="feed in globalFeed.posts" :key="feed.id">
                                 <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
                                     <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
@@ -905,7 +905,7 @@ export function globalFeedModalHtml() {
                                 </li>
                             </template>
                         </template>
-                        <template x-if="globalFeed.globalFeeds.length==0">
+                        <template x-if="globalFeed.posts.length==0">
                             <li class="card-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                     <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
@@ -931,11 +931,11 @@ export function writeGlobalFeedDialogHtml() {
                 <div class="mb-4">
                    <textarea x-ref="feedInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
                         maxlength="3000" placeholder="write announcement"></textarea>
-                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <template x-if="image"> <img :src="image" class="mt-2 h-20" alt=""></template>
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
-                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="mt-2 w-6 h-6" alt=""> 
+                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
                  <button @click.once="writeGlobalFeed" class="btn btn-skin text-center">Post<button>
                 </div>
             </div>

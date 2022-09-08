@@ -3,7 +3,7 @@ package com.rainbowtechsolution.data.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GlobalFeedRes(
-    val globalFeeds: List<GlobalFeed> = emptyList(),
+data class PostRes(
+    val posts: List<Post> = emptyList(),
     val unReadCount: Int = 0
 )

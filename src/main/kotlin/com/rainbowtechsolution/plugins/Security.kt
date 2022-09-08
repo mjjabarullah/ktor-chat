@@ -5,14 +5,14 @@ import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.common.Errors
 import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.data.entity.Gender
-import com.rainbowtechsolution.data.entity.SeenType
+import com.rainbowtechsolution.data.entity.PostType
+import com.rainbowtechsolution.data.model.ChatSession
+import com.rainbowtechsolution.data.model.Seen
+import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.repository.DomainRepository
 import com.rainbowtechsolution.data.repository.RankRepository
 import com.rainbowtechsolution.data.repository.SeenRepository
 import com.rainbowtechsolution.data.repository.UserRepository
-import com.rainbowtechsolution.data.model.ChatSession
-import com.rainbowtechsolution.data.model.Seen
-import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.exceptions.DomainNotFoundException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException
@@ -91,7 +91,7 @@ fun Application.configureSecurity() {
                     val rankId = rankRepository.findRankByCode(RankNames.USER, domainId)?.id ?: throw Exception()
                     val userId = userRepository.register(user, domainId, rankId)
 
-                    val seen = SeenType.values().map { Seen(userId, domainId, it) }
+                    val seen = PostType.values().map { Seen(userId, domainId, it) }
                     seenRepository.createSeen(seen)
 
                     ChatSession(userId)
@@ -142,7 +142,7 @@ fun Application.configureSecurity() {
                     val rankId = rankRepository.findRankByCode(RankNames.GUEST, domainId)?.id ?: throw Exception()
                     val userId = userRepository.register(user, domainId, rankId)
 
-                    val seen = SeenType.values().map { Seen(userId, domainId, it) }
+                    val seen = PostType.values().map { Seen(userId, domainId, it) }
                     seenRepository.createSeen(seen)
 
                     ChatSession(userId)

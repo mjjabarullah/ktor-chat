@@ -76,9 +76,9 @@ document.addEventListener('alpine:init', () => {
             offlineUsers: [],
             pvtUsers: [],
             reports: [],
-            news: {news: [], unReadCount: 0},
-            globalFeed: {globalFeeds: [], unReadCount: 0},
-            adminship: {adminships: [], unReadCount: 0},
+            news: {posts: [], unReadCount: 0},
+            globalFeed: {posts: [], unReadCount: 0},
+            adminship: {posts: [], unReadCount: 0},
             pvtNotifiCount: 0,
             reportNotifiCount: 0,
             notifiCount: 0,
@@ -1168,7 +1168,7 @@ document.addEventListener('alpine:init', () => {
             },
             openNewsModal() {
                 if (mobile.matches) this.showLeft = false
-                this.showFullModal(fn.newsModalHtml(this.news.news))
+                this.showFullModal(fn.newsModalHtml(this.news.posts))
                 this.newsUnreadCount !== 0 &&
                 axios.post(`/${domain.id}/news/read`).then(() => this.newsUnreadCount = this.news.unReadCount = 0)
             },
@@ -1186,7 +1186,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 axios.delete(`/${domain.id}/news/${newsId}/delete`).then(() => {
                     this.showAlertMsg(Success.NEWS_DELETED, Css.SUCCESS)
-                    this.news.news = this.news.news.filter(news => news.id !== newsId)
+                    this.news.posts = this.news.posts.filter(news => news.id !== newsId)
                     this.openNewsModal()
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
@@ -1205,7 +1205,7 @@ document.addEventListener('alpine:init', () => {
             },
             openAdminshipModal() {
                 if (mobile.matches) this.showLeft = false
-                this.showFullModal(fn.adminshipModalHtml(this.adminship.adminships))
+                this.showFullModal(fn.adminshipModalHtml(this.adminship.posts))
                 this.adminshipUnreadCount !== 0 &&
                 axios.post(`/${domain.id}/adminship/read`).then(() => this.adminshipUnreadCount = this.adminship.unReadCount = 0)
             },
@@ -1223,7 +1223,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 axios.delete(`/${domain.id}/adminship/${postId}/delete`).then(() => {
                     this.showAlertMsg(Success.ADMINSHIP_DELETED, Css.SUCCESS)
-                    this.adminship.adminships = this.adminship.adminships.filter(adminship => adminship.id !== postId)
+                    this.adminship.posts = this.adminship.posts.filter(adminship => adminship.id !== postId)
                     this.openAdminshipModal()
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
@@ -1240,7 +1240,7 @@ document.addEventListener('alpine:init', () => {
             },
             openGlobalFeedModal() {
                 if (mobile.matches) this.showLeft = false
-                this.showFullModal(fn.globalFeedModalHtml(this.globalFeed.globalFeeds))
+                this.showFullModal(fn.globalFeedModalHtml())
                 this.globalFeedUnreadCount !== 0 &&
                 axios.post(`/${domain.id}/global-feed/read`).then(() => this.globalFeedUnreadCount = this.globalFeed.unReadCount = 0)
             },
@@ -1258,7 +1258,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 axios.delete(`/${domain.id}/global-feed/${postId}/delete`).then(() => {
                     this.showAlertMsg(Success.GLOBAL_FEED_DELETED, Css.SUCCESS)
-                    this.globalFeed.globalFeeds = this.globalFeed.globalFeeds.filter(globalFeed => globalFeed.id !== postId)
+                    this.globalFeed.posts = this.globalFeed.posts.filter(globalFeed => globalFeed.id !== postId)
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
 
@@ -1445,7 +1445,7 @@ document.addEventListener('alpine:init', () => {
         return {
             showComments: false,
             getGFComments(postId) {
-                const post = this.globalFeed.globalFeeds.find(post => post.id === postId)
+                const post = this.globalFeed.posts.find(post => post.id === postId)
                 axios.get(`/${domain.id}/global-feed/${postId}/comments`).then(res => {
                     post.comments = res.data
                     this.showComments = !this.showComments
@@ -1453,7 +1453,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             writeGFComment(postId) {
-                const post = this.globalFeed.globalFeeds.find(post => post.id === postId)
+                const post = this.globalFeed.posts.find(post => post.id === postId)
                 const formData = new FormData()
                 const content = this.$refs.input.value
                 if (content === Defaults.EMPTY_STRING) {

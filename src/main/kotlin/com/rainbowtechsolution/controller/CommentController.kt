@@ -1,7 +1,7 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.data.entity.CommentType
 import com.rainbowtechsolution.data.entity.Comments
+import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.entity.Users
 import com.rainbowtechsolution.data.model.Comment
 import com.rainbowtechsolution.data.model.User
@@ -24,7 +24,7 @@ class CommentController : CommentRepository {
         }.value
     }
 
-    override suspend fun getComments(postId: Int, type: CommentType, offset: Long): List<Comment> = dbQuery {
+    override suspend fun getComments(postId: Int, type: PostType, offset: Long): List<Comment> = dbQuery {
         Comments
             .innerJoin(Users)
             .slice(
