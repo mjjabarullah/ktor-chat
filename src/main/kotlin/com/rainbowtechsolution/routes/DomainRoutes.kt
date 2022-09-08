@@ -5,10 +5,7 @@ import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.common.Errors
 import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.controller.WsController
-import com.rainbowtechsolution.data.entity.Gender
-import com.rainbowtechsolution.data.entity.MessageType
-import com.rainbowtechsolution.data.entity.ReportType
-import com.rainbowtechsolution.data.entity.Status
+import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.*
 import com.rainbowtechsolution.exceptions.*
@@ -34,7 +31,8 @@ fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
     permissionRepository: PermissionRepository, reportRepository: ReportRepository, newsRepository: NewsRepository,
-    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository
+    adminshipRepository: AdminshipRepository, globalFeedRepository: GlobalFeedRepository,
+    commentRepository: CommentRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -757,14 +755,47 @@ fun Route.domainRoutes(
                 route("/global-feed") {
                     get {
                         try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
+                            val userId = call.sessions.get<ChatSession>()?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
                             val globalFeeds = globalFeedRepository.getGlobalFeeds(domainId, userId)
                             call.respond(HttpStatusCode.OK, globalFeeds)
                         } catch (e: Exception) {
                             e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
+
+                    route("/{postId}/comments") {
+                        get {
+                            try {
+                                val postId = call.parameters["postId"]!!.toInt()
+                                val page = call.request.queryParameters["page"]?.toLong() ?: 0
+                                val offset = page * ChatDefaults.POST_PER_PAGE
+                                val comments = commentRepository.getComments(postId, CommentType.GlobalFeed, offset)
+                                call.respond(HttpStatusCode.OK, comments)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError)
+                            }
+                        }
+
+                        post("/create") {
+                            try {
+                                val userId = call.sessions.get<ChatSession>()?.id!!
+                                val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                                val postId = call.parameters["postId"]!!.toInt()
+                                val params = call.receiveParameters()
+                                val content = params["content"].toString()
+                                var comment = Comment(
+                                    content = content, user = user, postId = postId, type = CommentType.GlobalFeed
+                                )
+                                val commentId = commentRepository.createComment(comment)
+                                comment = comment.copy(id = commentId)
+                                call.respond(HttpStatusCode.OK, comment)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            }
                         }
                     }
 
@@ -824,6 +855,7 @@ fun Route.domainRoutes(
                         }
                     }
                 }
+
             }
         }
 

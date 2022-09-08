@@ -130,7 +130,7 @@
                                 <tbody>
                                 <tr @click="actionBlock">
                                     <th>
-                                        <div class="inline-flex items-center">
+                                        <div class="inline-flex items-center cursor-pointer">
                                             <i class="fa-solid fa-ban text-red-500"></i>
                                             <p class="ml-2" x-text="u.blocked?'UnBlock': 'Block'"></p>
                                         </div>
@@ -139,7 +139,7 @@
                                 </tr>
                                 <tr>
                                     <th>
-                                        <div class="inline-flex items-center">
+                                        <div class="inline-flex items-center cursor-pointer">
                                             <i class="fa-solid fa-flag text-red-500"></i>
                                             <p class="ml-2">Report</p>
                                         </div>
@@ -149,7 +149,7 @@
                                 <template x-if="permission.delMsg">
                                     <tr>
                                         <th>
-                                            <div class="inline-flex items-center">
+                                            <div class="inline-flex items-center cursor-pointer">
                                                 <i class="fa-solid fa-trash-can text-red-500"></i>
                                                 <p class="ml-2">Delete Account</p>
                                             </div>

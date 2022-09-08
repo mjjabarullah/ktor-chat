@@ -1,16 +1,13 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.data.entity.GlobalFeeds
-import com.rainbowtechsolution.data.entity.Seen
-import com.rainbowtechsolution.data.entity.SeenType
-import com.rainbowtechsolution.data.entity.Users
-import com.rainbowtechsolution.data.repository.GlobalFeedRepository
-import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.data.mappers.toGlobalFeedModel
+import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.model.GlobalFeed
 import com.rainbowtechsolution.data.model.GlobalFeedRes
 import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.data.repository.GlobalFeedRepository
+import com.rainbowtechsolution.data.repository.SeenRepository
 import com.rainbowtechsolution.utils.dbQuery
+import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.*
 import java.time.LocalDateTime
 
@@ -34,17 +31,22 @@ class GlobalFeedController(private val seenRepository: SeenRepository) : GlobalF
         val date = Seen
             .select { (Seen.domainId eq domainId) and (Seen.userId eq userId) and (Seen.type eq SeenType.GlobalFeed) }
             .first().let { it[Seen.createdAt] }
-        val subQuery = GlobalFeeds
+        val unReadQuery = GlobalFeeds
             .slice(GlobalFeeds.id.count())
             .select { (GlobalFeeds.createdAt greater date) and (GlobalFeeds.domainId eq domainId) }
-        val unReadCount = wrapAsExpression<Long>(subQuery).alias("unReadCount")
+        val unReadCount = wrapAsExpression<Long>(unReadQuery).alias("unReadCount")
+        val commentCountQuery = Comments
+            .slice(Comments.id.count())
+            .select { (Comments.postId eq GlobalFeeds.id) and (Comments.type eq CommentType.GlobalFeed) }
+        val commentCount = wrapAsExpression<Long>(commentCountQuery).alias("commentCount")
+
         val expressions = (GlobalFeeds.columns as List<Expression<*>>).toTypedArray()
         var count: Int? = 0
         val globalFeeds = GlobalFeeds
             .innerJoin(Users)
             .slice(
-                unReadCount, *expressions, Users.id, Users.name, Users.avatar, Users.gender, Users.nameColor,
-                Users.textColor, Users.nameFont, Users.textBold, Users.textFont
+                commentCount, unReadCount, *expressions, Users.id, Users.name, Users.avatar, Users.gender,
+                Users.nameColor, Users.textColor, Users.nameFont, Users.textBold, Users.textFont
             )
             .select { GlobalFeeds.domainId eq domainId }
             .limit(20)
@@ -56,12 +58,19 @@ class GlobalFeedController(private val seenRepository: SeenRepository) : GlobalF
                     gender = it[Users.gender].name, nameFont = it[Users.nameFont], nameColor = it[Users.nameColor],
                     textColor = it[Users.textColor], textFont = it[Users.textFont], textBold = it[Users.textBold]
                 )
-                it.toGlobalFeedModel(user)
+                GlobalFeed(
+                    id = it[GlobalFeeds.id].value,
+                    content = it[GlobalFeeds.content],
+                    image = it[GlobalFeeds.image],
+                    user = user,
+                    totalComments = it[commentCount]?.toInt() ?: 0,
+                    createdAt = it[GlobalFeeds.createdAt].format()
+                )
             }
         GlobalFeedRes(globalFeeds, count ?: 0)
     }
 
-    override suspend fun readGlobalFeed(domainId: Int, userId: Long)  = seenRepository.makeSeen(
+    override suspend fun readGlobalFeed(domainId: Int, userId: Long) = seenRepository.makeSeen(
         domainId, userId, SeenType.GlobalFeed
     )
 

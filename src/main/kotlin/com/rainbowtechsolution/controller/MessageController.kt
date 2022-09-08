@@ -81,7 +81,7 @@ class MessageController : MessageRepository {
             .innerJoin(Ranks)
             .slice(expressions)
             .select { Messages.roomId eq id }
-            .limit(20)
+            .limit(20, 0)
             .orderBy(Messages.id to SortOrder.DESC)
             .map {
                 val user = User(

@@ -51,6 +51,7 @@ object ChatDefaults {
     const val NEWS_IMAGE_UPLOAD_FOLDER = "uploads/news/images/"
     const val AVATAR_FOLDER = "uploads/avatars/"
     const val COLOR = "black"
+    const val POST_PER_PAGE = 10L
 
     private val permission = Permission(name = false, nameColor = false)
 

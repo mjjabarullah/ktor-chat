@@ -803,7 +803,7 @@ export function writeAdminshipDialogHtml() {
                 <div class="mb-4">
                    <textarea x-ref="adminshipInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
                         maxlength="3000" placeholder="write announcement"></textarea>
-                   <template x-if="image"> <img :src="image" class="h-20" alt=""></template>
+                   <template x-if="image"> <img :src="image" class="mt-2 h-20" alt=""></template>
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
@@ -815,57 +815,109 @@ export function writeAdminshipDialogHtml() {
     `
 }
 
-export function globalFeedModalHtml(feeds) {
-    let addNew = rank.code !== Defaults.GUEST ?
-        '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
-    let html = `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+export function globalFeedModalHtml() {
+    return `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Global Feed</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div>
             <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <template x-if="rank.code !== 'guest'">
+                        <button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                            <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
+                        </button> 
+                    </template>
                     <ul>
-        `
-    if (feeds.length > 0) {
-        feeds.forEach(feed => {
-            let user = feed.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = feed.image != null ? `<img @click="showImageDialog($el)" src="${feed.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
-            let content = feed.content.replaceAll('\r\n', '<br>')
-            let delFeed = permission.delGlobalFeed ? `<i @click="delGlobalFeed(${feed.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between"> 
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>  
-                           <div class="flex items-center gap-2">
-                                <p class="date">${feed.createdAt}</p>${delFeed}
-                           </div>                       
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>  
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Global Feeds</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
+                        <template x-if="globalFeed.globalFeeds.length>0">
+                            <template x-for="feed in globalFeed.globalFeeds" :key="feed.id">
+                                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                                    <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img @click="getUserProfile(feed.user.id)" class="avatar flex-none cursor-pointer" :src="feed.user.avatar" alt="">
+                                               <div class="text-start">
+                                                   <p class="username clip" :class="[feed.user.nameColor, feed.user.nameFont]" x-text="feed.user.name"></p>
+                                                   <p class="date" x-text="feed.createdAt"></p>
+                                               </div>
+                                           </div> 
+                                           <template x-if="permission.delGlobalFeed">
+                                              <i @click="delGlobalFeed(feed.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                           </template>                       
+                                       </div>
+                                        <div class="card-content">
+                                           <p class="chat clip" :class="[feed.user.textColor, feed.user.textFont, feed.user.textBold?'font-bold':'font-normal' ]" x-text="feed.content"></p> 
+                                           <template x-if="feed.image"> 
+                                               <img @click="showImageDialog($el)" :src="feed.image" alt="" class="post-image">
+                                           </template>
+                                        </div>  
+                                    </div>
+                                    <div x-data="comments" class="flex flex-col">
+                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
+                                            <div class="flex items-center gap-2"> 
+                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
+                                                <p class="text-[12px]">10</p> 
+                                              </div>  
+                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
+                                                <p class="text-[12px]">10</p> 
+                                              </div>  
+                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
+                                                <p class="text-[12px]">10</p> 
+                                              </div>
+                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
+                                                <p class="text-[12px]">10</p> 
+                                              </div>
+                                            </div>
+                                            <div @click="getGFComments(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
+                                                <p class="text-[12px]" x-text="feed.totalComments"></p> 
+                                            </div>
+                                        </div>
+                                         <label class="h-10">
+                                            <input x-ref="input" @keyup.enter="writeGFComment(feed.id)" class="input-text" 
+                                            type="text" placeholder="Write comment here.." autocomplete="off" required maxlength="300">
+                                        </label>
+                                        <ul x-show="showComments">
+                                            <template x-for="comment in feed.comments" :key="comment.id">
+                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                    <div class="flex justify-between "> 
+                                                       <div class="flex gap-2 text-start">
+                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                           <div>
+                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                               <p class="date" x-text="comment.createdAt"></p>
+                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                           </div>
+                                                       </div> 
+                                                       <template x-if="permission.delComment">
+                                                          <i @click="delComment(comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                       </template>                       
+                                                    </div>  
+                                                </li> 
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </template>
+                        </template>
+                        <template x-if="globalFeed.globalFeeds.length==0">
+                            <li class="card-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                                    <p class="text-[12px] font-bold" > No Global Feeds</p>
+                                </div>
+                            </li>
+                        </template
+                    </ul> 
+                </div> 
+            </div> 
+        </div>
+    `
 }
 
 export function writeGlobalFeedDialogHtml() {
@@ -883,7 +935,7 @@ export function writeGlobalFeedDialogHtml() {
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
-                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
+                 <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="mt-2 w-6 h-6" alt=""> 
                  <button @click.once="writeGlobalFeed" class="btn btn-skin text-center">Post<button>
                 </div>
             </div>
@@ -1031,3 +1083,57 @@ export function blockedModalHtml(users) {
 export function getErrorMsg(e) {
     return e.response ? e.response.data : Errors.SOMETHING_WENT_WRONG
 }
+
+
+/*
+* let addNew = rank.code !== Defaults.GUEST ?
+        '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
+    let html = `
+        <div x-data="{feeds:${feeds}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Global Feed</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (feeds.length > 0) {
+        feeds.forEach(feed => {
+            let user = feed.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = feed.image != null ? `<img @click="showImageDialog($el)" src="${feed.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
+            let content = feed.content.replaceAll('\r\n', '<br>')
+            let delFeed = permission.delGlobalFeed ? `<i @click="delGlobalFeed(${feed.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between">
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>
+                           <div class="flex items-center gap-2">
+                                <p class="date">${feed.createdAt}</p>${delFeed}
+                           </div>
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                       </div>
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                    <p class="text-[12px] font-bold" > No Global Feeds</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+* */

@@ -10,5 +10,7 @@ data class GlobalFeed(
     val user: User? = null,
     val domainId: Int? = null,
     val unReadCount: Int? = null,
+    val comments: List<Comment> = emptyList(),
+    val totalComments: Int = 0,
     val createdAt: String? = null
 )

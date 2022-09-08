@@ -841,7 +841,7 @@ body {
 }
 
 .icon-sm {
-    @apply text-[10px] text-gray-300 cursor-pointer
+    @apply text-[10px] text-gray-400 cursor-pointer
 }
 
 .icon-white {
@@ -885,7 +885,7 @@ body {
 }
 
 .date {
-    @apply text-[9px] lg:text-[10px] italic font-light text-gray-300 whitespace-pre
+    @apply text-[9px] lg:text-[10px] italic font-light text-gray-400 whitespace-pre
 }
 
 .input-text {
@@ -893,7 +893,7 @@ body {
 }
 
 .text-area {
-    @apply w-full bg-skin-primary/5 rounded-md px-2 text-[12px] lg:text-[14px] border focus:ring-skin-primary focus:border-skin-primary block outline-none overflow-hidden resize-none
+    @apply w-full bg-skin-primary/5 rounded-md py-1 px-2 text-[12px] lg:text-[14px] border focus:ring-skin-primary focus:border-skin-primary block outline-none overflow-hidden resize-none
 }
 
 .input-message {
@@ -1263,7 +1263,7 @@ input:checked + .slider {
 }
 
 .full-modal-wrap {
-    @apply fixed bg-white z-[60] h-screen right-0 w-full md:w-[350px] lg:w-[400px] shadow-xl shadow-black/50
+    @apply fixed bg-white z-[60] h-screen right-0 w-full md:w-[320px] lg:w-[350px] shadow-xl shadow-black/50
 }
 
 .full-modal {
@@ -1271,11 +1271,33 @@ input:checked + .slider {
 }
 
 .card-wrap {
-    @apply w-full bg-white p-2 my-2 rounded-md shadow-md shadow-black/10 border border-gray-200
+    @apply w-full bg-white pt-2 pb-4 my-2 text-black border-b border-gray-200
+}
+
+.card-content{
+   @apply text-start p-2 mt-4 bg-gray-100 rounded-sm shadow-sm shadow-black/10 relative after:absolute
+   after:h-0 after:w-0 after:bg-transparent after:-top-[32px] after:left-2 after:border after:border-[16px]
+   after:h-0 after:w-0 after:border-transparent after:border-b-gray-100
 }
 
 .card-wrap img.avatar {
-    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ring-skin-primary
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ml-1 ring-skin-primary
+}
+
+.card-content img.post-image{
+    @apply px-4 w-full mt-2 cursor-pointer rounded-lg min-h-[250px] object-cover
+}
+
+.card-wrap input.input-text {
+    @apply bg-gray-100 text-[12px] lg:text-[13px] focus:ring-gray-200 focus:border-gray-200
+}
+
+.comment-wrap {
+    @apply w-full bg-gray-100 p-2 my-1 text-black rounded-sm
+}
+
+.comment-wrap img.avatar {
+    @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ml-0 ring-skin-primary
 }
 
 .btn-join {

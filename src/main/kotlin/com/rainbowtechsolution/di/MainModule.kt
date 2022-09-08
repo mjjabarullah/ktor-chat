@@ -18,4 +18,5 @@ val mainModule = module {
     single<NewsRepository> { NewsController(get()) }
     single<AdminshipRepository> { AdminshipController(get()) }
     single<GlobalFeedRepository> { GlobalFeedController(get()) }
+    single<CommentRepository> { CommentController() }
 }

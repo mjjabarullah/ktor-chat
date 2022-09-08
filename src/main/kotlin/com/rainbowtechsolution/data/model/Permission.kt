@@ -24,7 +24,6 @@ data class Permission(
     val status: Boolean = false,
     val delMsg: Boolean = false,
     val reports: Boolean = false,
-    val writeGlobalFeed: Boolean = true, /* TODO :Change*/
     val delGlobalFeed: Boolean = true, /* TODO :Change*/
     val adminship: Boolean = true, /* TODO :Change*/
     val writeAdminship: Boolean = true, /* TODO :Change*/

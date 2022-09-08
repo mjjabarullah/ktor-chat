@@ -82,6 +82,7 @@ export const Status = {Stay: 'Stay', Online: 'Online', Away: 'Away', Busy: 'Busy
  * */
 export const ReportType = {Chat: 'Chat', PvtChat: 'PvtChat', NewsFeed: 'NewsFeed'}
 
+
 /**
  * Success
  * */
@@ -100,8 +101,8 @@ export const Success = {
     NEWS_DELETED: 'Announcement deleted successfully',
     ADMINSHIP_CREATED: 'Adminship post created successfully',
     ADMINSHIP_DELETED: 'Adminship post deleted successfully',
-    GLOBAL_FEED_CREATED: 'Adminship post created successfully',
-    GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
+    GLOBAL_FEED_CREATED: 'Global Feed post created successfully',
+    GLOBAL_FEED_DELETED: 'Global Feed post deleted successfully',
     MESSAGE_REPORTED: 'Message reported successfully',
     USER_BLOCKED: 'User blocked successfully',
     USER_UNBLOCKED: 'User unblocked successfully'

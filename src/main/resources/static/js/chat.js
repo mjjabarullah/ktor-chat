@@ -6381,17 +6381,17 @@ document.addEventListener('alpine:init', function () {
           li != null && li.remove();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.News) {
           message.user.id !== userId && this.getNews();
-          rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play();
+          message.user.id !== userId && rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.DelNews) {
           this.getNews();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Adminship) {
           message.user.id !== userId && this.getAdminships();
-          permission.adminship && this.user.notifiSound && this.$refs.newsSound.play();
+          message.user.id !== userId && permission.adminship && this.user.notifiSound && this.$refs.newsSound.play();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.DelAdminship) {
           this.getAdminships();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.GlobalFeed) {
           message.user.id !== userId && this.getGlobalFeed();
-          rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play();
+          message.user.id !== userId && rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.DelGlobalFeed) {
           this.getGlobalFeed();
         } else if (message.type === _constant__WEBPACK_IMPORTED_MODULE_2__.MessageType.Mute) {
@@ -6927,11 +6927,9 @@ document.addEventListener('alpine:init', function () {
       getGlobalFeed: function getGlobalFeed() {
         var _this46 = this;
 
-        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
         rank.code !== _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST && axios.get("/".concat(domain.id, "/global-feed")).then(function (res) {
           _this46.globalFeed = res.data;
           _this46.globalFeedUnreadCount = _this46.globalFeed.unReadCount;
-          if (_typeof(callback) === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.FUNC_TYPE) callback();
         });
       },
       openGlobalFeedModal: function openGlobalFeedModal() {
@@ -6944,7 +6942,7 @@ document.addEventListener('alpine:init', function () {
         });
       },
       writeGlobalFeedDialog: function writeGlobalFeedDialog() {
-        if (!permission.writeGlobalFeed) {
+        if (rank.code === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           return;
         }
@@ -6965,8 +6963,6 @@ document.addEventListener('alpine:init', function () {
           _this48.globalFeed.globalFeeds = _this48.globalFeed.globalFeeds.filter(function (globalFeed) {
             return globalFeed.id !== postId;
           });
-
-          _this48.openGlobalFeedModal();
         })["catch"](function (e) {
           return _this48.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
@@ -7173,13 +7169,16 @@ document.addEventListener('alpine:init', function () {
 
         var input = this.$refs.input;
 
-        if (!permission.writeGlobalFeed) {
+        if (rank.code === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.GUEST) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.PERMISSION_DENIED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
           return;
         }
 
         if (this.content === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) {
           this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.CONTENT_EMPTY, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          this.$nextTick(function () {
+            return _this59.$refs.feedInput.focus();
+          });
           return;
         }
 
@@ -7191,9 +7190,7 @@ document.addEventListener('alpine:init', function () {
 
           _this59.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Success.GLOBAL_FEED_CREATED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.SUCCESS);
 
-          _this59.getGlobalFeed(function () {
-            _this59.openGlobalFeedModal();
-          });
+          _this59.getGlobalFeed();
         })["catch"](function (e) {
           return _this59.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
@@ -7218,6 +7215,51 @@ document.addEventListener('alpine:init', function () {
           return _this60.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.REPORTING_FAILED, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
         });
         this.closeSmallModal();
+      }
+    };
+  });
+  alpinejs__WEBPACK_IMPORTED_MODULE_0__["default"].data('comments', function () {
+    return {
+      showComments: false,
+      getGFComments: function getGFComments(postId) {
+        var _this61 = this;
+
+        var post = this.globalFeed.globalFeeds.find(function (post) {
+          return post.id === postId;
+        });
+        axios.get("/".concat(domain.id, "/global-feed/").concat(postId, "/comments")).then(function (res) {
+          post.comments = res.data;
+          _this61.showComments = !_this61.showComments;
+        })["catch"](function (e) {
+          return _this61.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
+      },
+      writeGFComment: function writeGFComment(postId) {
+        var _this62 = this;
+
+        var post = this.globalFeed.globalFeeds.find(function (post) {
+          return post.id === postId;
+        });
+        var formData = new FormData();
+        var content = this.$refs.input.value;
+
+        if (content === _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING) {
+          this.showAlertMsg(_constant__WEBPACK_IMPORTED_MODULE_2__.Errors.CONTENT_EMPTY, _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+          return;
+        }
+
+        formData.append('content', content);
+        axios.post("/".concat(domain.id, "/global-feed/").concat(postId, "/comments/create"), formData).then(function (res) {
+          post.comments.unshift(res.data);
+          post.totalComments += 1;
+          _this62.showComments = true;
+
+          _this62.$nextTick(function () {
+            return _this62.$refs.input.value = _constant__WEBPACK_IMPORTED_MODULE_2__.Defaults.EMPTY_STRING;
+          });
+        })["catch"](function (e) {
+          return _this62.showAlertMsg(_functions__WEBPACK_IMPORTED_MODULE_1__.getErrorMsg(e), _constant__WEBPACK_IMPORTED_MODULE_2__.Css.ERROR);
+        });
       }
     };
   });
@@ -7321,8 +7363,8 @@ var Success = {
   NEWS_DELETED: 'Announcement deleted successfully',
   ADMINSHIP_CREATED: 'Adminship post created successfully',
   ADMINSHIP_DELETED: 'Adminship post deleted successfully',
-  GLOBAL_FEED_CREATED: 'Adminship post created successfully',
-  GLOBAL_FEED_DELETED: 'Adminship post deleted successfully',
+  GLOBAL_FEED_CREATED: 'Global Feed post created successfully',
+  GLOBAL_FEED_DELETED: 'Global Feed post deleted successfully',
   MESSAGE_REPORTED: 'Message reported successfully',
   USER_BLOCKED: 'User blocked successfully',
   USER_UNBLOCKED: 'User unblocked successfully'
@@ -7726,30 +7768,13 @@ function adminshipModalHtml(adminships) {
   return html;
 }
 function writeAdminshipDialogHtml() {
-  return "\n        <div x-data=\"adminship\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Adminship Post</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"adminshipInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeAdminship\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
+  return "\n        <div x-data=\"adminship\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Adminship Post</p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"adminshipInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"mt-2 h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeAdminship\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
 }
-function globalFeedModalHtml(feeds) {
-  var addNew = rank.code !== _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.GUEST ? '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
-  var html = "\n        <div class=\"flex flex-col text-skin-on-primary h-full w-full text-center\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Global Feed</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">".concat(addNew, "\n                    <ul>\n        ");
-
-  if (feeds.length > 0) {
-    feeds.forEach(function (feed) {
-      var user = feed.user;
-      var fontStyle = user.textBold ? 'font-bold' : 'font-normal';
-      var image = feed.image != null ? "<img @click=\"showImageDialog($el)\" src=\"".concat(feed.image, "\" alt=\"\" class=\"w-full mt-2 cursor-pointer\">") : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
-      var content = feed.content.replaceAll('\r\n', '<br>');
-      var delFeed = permission.delGlobalFeed ? "<i @click=\"delGlobalFeed(".concat(feed.id, ")\" class=\"fa-solid fa-trash-can icon-sm\"></i>") : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
-      html += "\n                <li class=\"card-wrap\" xmlns=\"http://www.w3.org/1999/html\">\n                   <div class=\"flex flex-col w-full\">\n                       <div class=\"flex items-center justify-between\"> \n                           <div class=\"flex items-center gap-2\">\n                               <img @click=\"getUserProfile(".concat(user.id, ")\" class=\"avatar flex-none cursor-pointer\" src=\"").concat(user.avatar, "\" alt=\"\">\n                               <p class=\"username clip ").concat(user.nameColor, " ").concat(user.nameFont, "\">").concat(user.name, "</p>\n                           </div>  \n                           <div class=\"flex items-center gap-2\">\n                                <p class=\"date\">").concat(feed.createdAt, "</p>").concat(delFeed, "\n                           </div>                       \n                       </div>\n                       <div class=\"text-start mt-2\">\n                           <p class=\"chat clip ").concat(user.textColor, " ").concat(fontStyle, " ").concat(user.textFont, "\">").concat(content, "</p>").concat(image, "\n                       </div>  \n                   </div>\n                </li>\n            ");
-    });
-  } else {
-    html += "\n            <li class=\"card-wrap\">\n               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                    <img class=\"w-[40px]\" src=\"/images/defaults/global-feed.webp\" alt=\"\">\n                    <p class=\"text-[12px] font-bold\" > No Global Feeds</p>\n                </div>\n            </li>\n       ";
-  }
-
-  html += "</ul></div></div></div>";
-  return html;
+function globalFeedModalHtml() {
+  return "\n        <div class=\"flex flex-col text-skin-on-primary h-full w-full text-center\" xmlns=\"http://www.w3.org/1999/html\">\n            <div class=\"sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none\">\n                <p class=\"text-md font-bold \">Global Feed</p>\n                <i @click=\"closeFullModal\" class=\"fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer\"></i>\n            </div>\n            <div class=\"p-[10px] flex-1 relative\">\n                <div class=\"h-full absolute inset-0 overflow-y-auto scrollbar px-2\">\n                    <template x-if=\"rank.code !== 'guest'\">\n                        <button @click=\"writeGlobalFeedDialog\" class=\"flex-none mx-auto my-2 btn-sm btn-skin\"> \n                            <i class=\"fa-solid fa-pen-to-square\"></i>&nbsp;&nbsp;Add New \n                        </button> \n                    </template>\n                    <ul>\n                        <template x-if=\"globalFeed.globalFeeds.length>0\">\n                            <template x-for=\"feed in globalFeed.globalFeeds\" :key=\"feed.id\">\n                                <li class=\"card-wrap\" xmlns=\"http://www.w3.org/1999/html\">\n                                    <div class=\"flex flex-col w-full\">\n                                       <div class=\"flex items-center justify-between\"> \n                                           <div class=\"flex items-center gap-2\">\n                                               <img @click=\"getUserProfile(feed.user.id)\" class=\"avatar flex-none cursor-pointer\" :src=\"feed.user.avatar\" alt=\"\">\n                                               <div class=\"text-start\">\n                                                   <p class=\"username clip\" :class=\"[feed.user.nameColor, feed.user.nameFont]\" x-text=\"feed.user.name\"></p>\n                                                   <p class=\"date\" x-text=\"feed.createdAt\"></p>\n                                               </div>\n                                           </div> \n                                           <template x-if=\"permission.delGlobalFeed\">\n                                              <i @click=\"delGlobalFeed(feed.id)\" class=\"fa-solid fa-trash-can icon-sm\"></i>\n                                           </template>                       \n                                       </div>\n                                        <div class=\"card-content\">\n                                           <p class=\"chat clip\" :class=\"[feed.user.textColor, feed.user.textFont, feed.user.textBold?'font-bold':'font-normal' ]\" x-text=\"feed.content\"></p> \n                                           <template x-if=\"feed.image\"> \n                                               <img @click=\"showImageDialog($el)\" :src=\"feed.image\" alt=\"\" class=\"post-image\">\n                                           </template>\n                                        </div>  \n                                    </div>\n                                    <div x-data=\"comments\" class=\"flex flex-col\">\n                                        <div class=\"flex mt-4 mb-2 justify-between items-center px-1\">\n                                            <div class=\"flex items-center gap-2\"> \n                                              <div @click=\"feedLike(feed.id)\" class=\"cursor-pointer flex items-center justify-center gap-1\">\n                                                <img class=\"w-[20px] h-[20px]\" alt=\"\" src=\"/images/defaults/like.webp\"> \n                                                <p class=\"text-[12px]\">10</p> \n                                              </div>  \n                                              <div @click=\"feedLike(feed.id)\" class=\"cursor-pointer flex items-center justify-center gap-1\">\n                                                <img class=\"w-[20px] h-[20px]\" alt=\"\" src=\"/images/defaults/heart.webp\"> \n                                                <p class=\"text-[12px]\">10</p> \n                                              </div>  \n                                              <div @click=\"feedLike(feed.id)\" class=\"cursor-pointer flex items-center justify-center gap-1\">\n                                                <img class=\"w-[20px] h-[20px]\" alt=\"\" src=\"/images/defaults/lol.webp\"> \n                                                <p class=\"text-[12px]\">10</p> \n                                              </div>\n                                              <div @click=\"feedLike(feed.id)\" class=\"cursor-pointer flex items-center justify-center gap-1\">\n                                                <img class=\"w-[20px] h-[20px]\" alt=\"\" src=\"/images/defaults/dislike.webp\"> \n                                                <p class=\"text-[12px]\">10</p> \n                                              </div>\n                                            </div>\n                                            <div @click=\"getGFComments(feed.id)\" class=\"cursor-pointer flex items-center justify-center gap-1\">\n                                                <img class=\"w-[20px] h-[20px]\" alt=\"\" src=\"/images/defaults/comment.webp\"> \n                                                <p class=\"text-[12px]\" x-text=\"feed.totalComments\"></p> \n                                            </div>\n                                        </div>\n                                         <label class=\"h-10\">\n                                            <input x-ref=\"input\" @keyup.enter=\"writeGFComment(feed.id)\" class=\"input-text\" \n                                            type=\"text\" placeholder=\"Write comment here..\" autocomplete=\"off\" required maxlength=\"300\">\n                                        </label>\n                                        <ul x-show=\"showComments\">\n                                            <template x-for=\"comment in feed.comments\" :key=\"comment.id\">\n                                                <li class=\"comment-wrap\" xmlns=\"http://www.w3.org/1999/html\">\n                                                    <div class=\"flex justify-between \"> \n                                                       <div class=\"flex gap-2 text-start\">\n                                                           <img @click=\"getUserProfile(comment.user.id)\" class=\"avatar flex-none cursor-pointer\" :src=\"comment.user.avatar\" alt=\"\">\n                                                           <div>\n                                                               <p class=\"username clip\" :class=\"[comment.user.nameColor, comment.user.nameFont]\" x-text=\"comment.user.name\"></p>\n                                                               <p class=\"date\" x-text=\"comment.createdAt\"></p>\n                                                               <p class=\"chat clip mt-1\" :class=\"[comment.user.textColor]\" x-text=\"comment.content\"></p>\n                                                           </div>\n                                                       </div> \n                                                       <template x-if=\"permission.delComment\">\n                                                          <i @click=\"delComment(comment.id)\" class=\"fa-solid fa-trash-can icon-sm\"></i>\n                                                       </template>                       \n                                                    </div>  \n                                                </li> \n                                            </template>\n                                        </ul>\n                                    </div>\n                                </li>\n                            </template>\n                        </template>\n                        <template x-if=\"globalFeed.globalFeeds.length==0\">\n                            <li class=\"card-wrap\">\n                               <div class=\"flex flex-col w-full text-gray-600 gap-2 items-center \">\n                                    <img class=\"w-[40px]\" src=\"/images/defaults/global-feed.webp\" alt=\"\">\n                                    <p class=\"text-[12px] font-bold\" > No Global Feeds</p>\n                                </div>\n                            </li>\n                        </template\n                    </ul> \n                </div> \n            </div> \n        </div>\n    ";
 }
 function writeGlobalFeedDialogHtml() {
-  return "\n        <div x-data=\"globalFeed\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Global Feed </p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"feedInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeGlobalFeed\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
+  return "\n        <div x-data=\"globalFeed\" class=\"text-gray-700 text-center\">\n            <div class=\"px-4 py-1 flex justify-between items-center border-b border-gray-200\">\n                <p class=\"text-md font-bold \">Write Global Feed </p>\n                <i @click=\"closeSmallModal\" class=\"fas fa-times-circle text-2xl cursor-pointer\"></i>\n            </div> \n            <div class=\"p-4\">\n                <div class=\"mb-4\">\n                   <textarea x-ref=\"feedInput\" @keyup=\"textArea($el, 120)\" class=\"text-area h-[120px]\" x-model=\"content\" type=\"text\" \n                        maxlength=\"3000\" placeholder=\"write announcement\"></textarea>\n                   <template x-if=\"image\"> <img :src=\"image\" class=\"h-20\" alt=\"\"></template>\n                   <input x-ref=\"input\" @change=\"addImage($el)\" type=\"file\" name=\"image\" class=\"hidden\">\n                </div>\n                <div class=\"flex justify-end gap-2 items-center\"> \n                 <img @click=\"$refs.input.click()\" src=\"/images/defaults/picture.webp\" class=\"mt-2 w-6 h-6\" alt=\"\"> \n                 <button @click.once=\"writeGlobalFeed\" class=\"btn btn-skin text-center\">Post<button>\n                </div>\n            </div>\n        </div>\n    ";
 }
 function renderReportChatMessage(message, id, targetId, roomId, type) {
   var image = message.image ? "<img @click=\"showImageDialog($el)\" src=\"".concat(message.image, "\" alt=\"\" class=\"lobby-image\">") : _constant__WEBPACK_IMPORTED_MODULE_0__.Defaults.EMPTY_STRING;
@@ -7795,6 +7820,58 @@ function blockedModalHtml(users) {
 function getErrorMsg(e) {
   return e.response ? e.response.data : _constant__WEBPACK_IMPORTED_MODULE_0__.Errors.SOMETHING_WENT_WRONG;
 }
+/*
+* let addNew = rank.code !== Defaults.GUEST ?
+        '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
+    let html = `
+        <div x-data="{feeds:${feeds}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Global Feed</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (feeds.length > 0) {
+        feeds.forEach(feed => {
+            let user = feed.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = feed.image != null ? `<img @click="showImageDialog($el)" src="${feed.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
+            let content = feed.content.replaceAll('\r\n', '<br>')
+            let delFeed = permission.delGlobalFeed ? `<i @click="delGlobalFeed(${feed.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between">
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>
+                           <div class="flex items-center gap-2">
+                                <p class="date">${feed.createdAt}</p>${delFeed}
+                           </div>
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                       </div>
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                    <p class="text-[12px] font-bold" > No Global Feeds</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+* */
 
 /***/ }),
 

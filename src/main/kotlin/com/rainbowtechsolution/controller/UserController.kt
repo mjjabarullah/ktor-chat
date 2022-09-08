@@ -9,6 +9,7 @@ import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.mappers.toUserModel
 import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.checkPassword
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.*
@@ -281,19 +282,28 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun unblockUser(blocker: Long, blocked: Long):Unit= dbQuery {
-        Blocks.deleteWhere { (Blocks.blocker eq blocker) and (Blocks.blocked eq blocked)  }
+    override suspend fun unblockUser(blocker: Long, blocked: Long): Unit = dbQuery {
+        Blocks.deleteWhere { (Blocks.blocker eq blocker) and (Blocks.blocked eq blocked) }
     }
 
     override suspend fun getBlockedUsers(userId: Long): List<User> = dbQuery {
         val expressions = listOf<Expression<*>>(
             Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.gender
         )
-        val bTable = Users.slice(expressions).selectAll().alias("blocked")
+        val userTable = Users.slice(expressions).selectAll().alias("blocked")
         Blocks
-            .innerJoin(bTable, { blocked }, { bTable[Users.id] })
+            .innerJoin(userTable, { blocked }, { userTable[Users.id] })
             .select { Blocks.blocker eq userId }
             .orderBy(Blocks.createdAt to SortOrder.DESC)
-            .map { it.toUserModel(bTable) }
+            .map {
+                User(
+                    id = it[userTable[Users.id]].value,
+                    name = it[userTable[Users.name]].capitalize(),
+                    avatar = it[userTable[Users.avatar]],
+                    gender = it[userTable[Users.gender]].name,
+                    nameColor = it[userTable[Users.nameColor]],
+                    nameFont = it[userTable[Users.nameFont]]
+                )
+            }
     }
 }

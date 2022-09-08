@@ -82,17 +82,6 @@ fun ResultRow.toUserModel(): User {
     )
 }
 
-fun ResultRow.toUserModel(userAlias: QueryAlias): User {
-    return User(
-        id = this[userAlias[Users.id]].value,
-        name = this[userAlias[Users.name]].capitalize(),
-        avatar = this[userAlias[Users.avatar]],
-        gender = this[userAlias[Users.gender]].name,
-        nameColor = this[userAlias[Users.nameColor]],
-        nameFont = this[userAlias[Users.nameFont]]
-    )
-}
-
 fun ResultRow.toRankModel(): Rank {
     val permission = if (this.hasValue(Permissions.id)) toPermissionModel() else null
     return Rank(
@@ -200,12 +189,4 @@ fun ResultRow.toAdminshipModel(user: User): Adminship {
     )
 }
 
-fun ResultRow.toGlobalFeedModel(user: User): GlobalFeed {
-    return GlobalFeed(
-        id = this[GlobalFeeds.id].value,
-        content = this[GlobalFeeds.content],
-        image = this[GlobalFeeds.image],
-        user = user,
-        createdAt = this[GlobalFeeds.createdAt].format()
-    )
-}
+

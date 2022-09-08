@@ -22,6 +22,7 @@ fun Application.configureRouting() {
     val newsRepository by inject<NewsRepository>()
     val adminshipRepository by inject<AdminshipRepository>()
     val globalFeedRepository by inject<GlobalFeedRepository>()
+    val commentRepository by inject<CommentRepository>()
 
     install(Resources)
 
@@ -31,14 +32,14 @@ fun Application.configureRouting() {
         domains = domainRepository.getAllDomain().map { "${it.slug}.$host" }
     }
 
-
     routing {
 
         wsRoutes(wsRepository, userRepository, roomRepository)
 
         domainRoutes(
             domains, roomRepository, userRepository, messageRepository, domainRepository, rankRepository,
-            permissionRepository, reportRepository, newsRepository, adminshipRepository, globalFeedRepository
+            permissionRepository, reportRepository, newsRepository, adminshipRepository, globalFeedRepository,
+            commentRepository
         )
 
         mainRoutes(roomRepository, userRepository)
