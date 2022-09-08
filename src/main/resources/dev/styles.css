@@ -1274,17 +1274,17 @@ input:checked + .slider {
     @apply w-full bg-white pt-2 pb-4 my-2 text-black border-b border-gray-200
 }
 
-.card-content{
-   @apply text-start p-2 mt-4 bg-gray-100 rounded-sm shadow-sm shadow-black/10 relative after:absolute
-   after:h-0 after:w-0 after:bg-transparent after:-top-[32px] after:left-2 after:border after:border-[16px]
-   after:h-0 after:w-0 after:border-transparent after:border-b-gray-100
+.card-content {
+    @apply text-start p-2 mt-4 bg-gray-100 rounded-sm shadow-sm shadow-black/10 relative after:absolute
+    after:h-0 after:w-0 after:bg-transparent after:-top-[32px] after:left-2 after:border after:border-[16px]
+    after:h-0 after:w-0 after:border-transparent after:border-b-gray-100
 }
 
 .card-wrap img.avatar {
     @apply w-[38px] h-[38px] ring-[0.1px] mt-0 ml-1 ring-skin-primary
 }
 
-.card-content img.post-image{
+.card-content img.post-image {
     @apply px-4 w-full mt-2 cursor-pointer rounded-lg min-h-[250px] object-cover
 }
 
@@ -1304,7 +1304,7 @@ input:checked + .slider {
     @apply text-[10px] text-center outline-none text-skin-on-primary font-bold rounded-md py-[3px] px-2 btn-skin
 }
 
-.btn-action{
+.btn-action {
     @apply text-center outline-none text-white font-bold rounded-md text-sm py-1 px-5
 }
 
@@ -1339,6 +1339,14 @@ input:checked + .slider {
 
 .offline.user-wrap {
     @apply lg:hover:bg-white
+}
+
+.reaction {
+    @apply cursor-pointer flex items-center justify-center gap-1 px-[6px] py-[2px]
+}
+
+.reacted {
+    @apply bg-skin-primary/20 rounded-lg
 }
 
 @layer utilities {

@@ -4,7 +4,7 @@ import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.model.Post
 import com.rainbowtechsolution.data.model.PostRes
 
-interface PostRepository {
+interface PostRepository : PostReactRepository, SeenRepository {
 
     suspend fun createPost(post: Post): Int
 

@@ -14,7 +14,6 @@ val mainModule = module {
     single<MessageRepository> { MessageController() }
     single<WsRepository> { WsController(get(), get()) }
     single<ReportRepository> { ReportController() }
-    single<SeenRepository> { SeenController() }
-    single<PostRepository> { PostController(get()) }
+    single<PostRepository> { PostController() }
     single<CommentRepository> { CommentController() }
 }

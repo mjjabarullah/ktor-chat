@@ -43,7 +43,7 @@ fun Application.configureRouting() {
 
         adminRotes(
             domains, domainRepository, userRepository, rankRepository, permissionRepository, roomRepository,
-            messageRepository, reportRepository, postRepository
+            messageRepository, reportRepository, postRepository, commentRepository
         )
 
         chatRoutes(messageRepository, roomRepository, userRepository, domainRepository)

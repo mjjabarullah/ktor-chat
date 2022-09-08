@@ -9,10 +9,7 @@ import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.model.ChatSession
 import com.rainbowtechsolution.data.model.Seen
 import com.rainbowtechsolution.data.model.User
-import com.rainbowtechsolution.data.repository.DomainRepository
-import com.rainbowtechsolution.data.repository.RankRepository
-import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.data.repository.UserRepository
+import com.rainbowtechsolution.data.repository.*
 import com.rainbowtechsolution.exceptions.DomainNotFoundException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException
@@ -40,7 +37,7 @@ fun Application.configureSecurity() {
     val userRepository by inject<UserRepository>()
     val domainRepository by inject<DomainRepository>()
     val rankRepository by inject<RankRepository>()
-    val seenRepository by inject<SeenRepository>()
+    val postRepository by inject<PostRepository>()
 
     val config = environment.config
     val signKey = config.property("session.secretSignKey").getString()
@@ -92,7 +89,7 @@ fun Application.configureSecurity() {
                     val userId = userRepository.register(user, domainId, rankId)
 
                     val seen = PostType.values().map { Seen(userId, domainId, it) }
-                    seenRepository.createSeen(seen)
+                    postRepository.createSeen(seen)
 
                     ChatSession(userId)
                 } catch (e: ConstraintViolationException) {
@@ -143,7 +140,7 @@ fun Application.configureSecurity() {
                     val userId = userRepository.register(user, domainId, rankId)
 
                     val seen = PostType.values().map { Seen(userId, domainId, it) }
-                    seenRepository.createSeen(seen)
+                    postRepository.createSeen(seen)
 
                     ChatSession(userId)
                 } catch (e: UserAlreadyFoundException) {
@@ -181,7 +178,8 @@ fun Application.configureSecurity() {
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                     val domainId = domain.id!!
 
-                    var user = userRepository.login(name, password, domainId) ?: throw UserNotFoundException("Username or Password invalid.")
+                    var user = userRepository.login(name, password, domainId)
+                        ?: throw UserNotFoundException("Username or Password invalid.")
                     user = user.copy(ip = ip, deviceId = deviceId, timezone = timezone, country = country)
                     if (user.rank?.code == RankNames.GUEST) throw UserNotFoundException("Username or Password invalid.")
 

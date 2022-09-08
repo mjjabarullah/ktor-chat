@@ -12,6 +12,14 @@ data class Post(
     val domainId: Int,
     val type: PostType,
     val comments: List<Comment> = emptyList(),
-    val totalComments: Int = 0,
+    val commentsCount: Int = 0,
+    val likeCount: Int = 0,
+    val dislikeCount: Int = 0,
+    val loveCount: Int = 0,
+    val lolCount: Int = 0,
+    val liked: Boolean = false,
+    val loved: Boolean = false,
+    val laughed: Boolean = false,
+    val disliked: Boolean = false,
     val createdAt: String? = null
 )

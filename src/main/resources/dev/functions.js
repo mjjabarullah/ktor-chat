@@ -1,4 +1,4 @@
-import {Defaults, Errors} from './constant'
+import {Defaults, Errors, ReactType} from './constant'
 import {emojis} from './emojis'
 
 
@@ -740,56 +740,108 @@ export function writeNewsDialogHtml() {
 }
 
 export function adminshipModalHtml(adminships) {
-    let addNew = permission.adminship ?
-        '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
-    let html = `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+    return `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Adminship</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div>
             <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <template x-if="rank.code !== 'guest'">
+                        <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                            <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
+                        </button> 
+                    </template>
                     <ul>
-        `
-    if (adminships.length > 0) {
-        adminships.forEach(adminship => {
-            let user = adminship.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = adminship.image != null ? `<img @click="showImageDialog($el)" src="${adminship.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
-            let content = adminship.content.replaceAll('\r\n', '<br>')
-            let delAdminship = permission.delAdminship ? `<i @click="delAdminship(${adminship.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between"> 
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>  
-                           <div class="flex items-center gap-2">
-                                <p class="date">${adminship.createdAt}</p>${delAdminship}
-                           </div>                       
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>  
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
-                    <p class="text-[12px] font-bold" > No AdminShip Posts</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
+                        <template x-if="adminship.posts.length>0">
+                            <template x-for="post in adminship.posts" :key="post.id">
+                                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                                    <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
+                                               <div class="text-start">
+                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                                   <p class="date" x-text="post.createdAt"></p>
+                                               </div>
+                                           </div> 
+                                           <template x-if="permission.delAdminship">
+                                              <i @click="delAdminship(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                           </template>                       
+                                       </div>
+                                        <div class="card-content">
+                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                           <template x-if="post.image"> 
+                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
+                                           </template>
+                                        </div>  
+                                    </div>
+                                    <div x-data="comments" class="flex flex-col">
+                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
+                                            <div class="flex items-center gap-2"> 
+                                              <div @click="postReact(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
+                                                <p class="text-[12px]" x-text="post.likeCount">10</p> 
+                                              </div>  
+                                              <div @click="postReact(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
+                                                <p class="text-[12px]" x-text="post.loveCount">10</p> 
+                                              </div>  
+                                              <div @click="postReact(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
+                                                <p class="text-[12px]" x-text="post.lolCount">10</p> 
+                                              </div>
+                                              <div @click="postReact(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
+                                                <p class="text-[12px]" x-text="post.dislikeCount">10</p> 
+                                              </div>
+                                            </div>
+                                            <div @click="getASComments(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
+                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
+                                            </div>
+                                        </div>
+                                         <label class="h-10">
+                                            <input x-ref="input" @keyup.enter="writeASComment(post.id)" class="input-text" 
+                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                        </label>
+                                        <ul x-show="showComments">
+                                            <template x-for="comment in post.comments" :key="comment.id">
+                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                    <div class="flex justify-between "> 
+                                                       <div class="flex gap-2 text-start">
+                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                           <div>
+                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                               <p class="date" x-text="comment.createdAt"></p>
+                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                           </div>
+                                                       </div> 
+                                                       <template x-if="permission.delComment || post.user.id === userId">
+                                                          <i @click="delASComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                       </template>                       
+                                                    </div>  
+                                                </li> 
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </template>
+                        </template>
+                        <template x-if="adminship.posts.length==0">
+                            <li class="card-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                                    <p class="text-[12px] font-bold" > No Adminship Posts</p>
+                                </div>
+                            </li>
+                        </template
+                    </ul> 
+                </div> 
+            </div> 
+        </div>
+    `
 }
 
 export function writeAdminshipDialogHtml() {
@@ -801,7 +853,7 @@ export function writeAdminshipDialogHtml() {
             </div> 
             <div class="p-4">
                 <div class="mb-4">
-                   <textarea x-ref="adminshipInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
+                   <textarea x-ref="postInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
                         maxlength="3000" placeholder="write announcement"></textarea>
                    <template x-if="image"> <img :src="image" class="mt-2 h-20" alt=""></template>
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
@@ -831,59 +883,59 @@ export function globalFeedModalHtml() {
                     </template>
                     <ul>
                         <template x-if="globalFeed.posts.length>0">
-                            <template x-for="feed in globalFeed.posts" :key="feed.id">
+                            <template x-for="post in globalFeed.posts" :key="post.id">
                                 <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
                                     <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
                                            <div class="flex items-center gap-2">
-                                               <img @click="getUserProfile(feed.user.id)" class="avatar flex-none cursor-pointer" :src="feed.user.avatar" alt="">
+                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
                                                <div class="text-start">
-                                                   <p class="username clip" :class="[feed.user.nameColor, feed.user.nameFont]" x-text="feed.user.name"></p>
-                                                   <p class="date" x-text="feed.createdAt"></p>
+                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                                   <p class="date" x-text="post.createdAt"></p>
                                                </div>
                                            </div> 
                                            <template x-if="permission.delGlobalFeed">
-                                              <i @click="delGlobalFeed(feed.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                              <i @click="delGlobalFeed(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                            </template>                       
                                        </div>
                                         <div class="card-content">
-                                           <p class="chat clip" :class="[feed.user.textColor, feed.user.textFont, feed.user.textBold?'font-bold':'font-normal' ]" x-text="feed.content"></p> 
-                                           <template x-if="feed.image"> 
-                                               <img @click="showImageDialog($el)" :src="feed.image" alt="" class="post-image">
+                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                           <template x-if="post.image"> 
+                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
                                            </template>
                                         </div>  
                                     </div>
                                     <div x-data="comments" class="flex flex-col">
-                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
-                                            <div class="flex items-center gap-2"> 
-                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]">10</p> 
+                                        <div class="flex m-2 justify-between items-center">
+                                            <div class="flex items-center gap-1"> 
+                                              <div @click="gfReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                                <img class="w-4 h-4" alt="" src="/images/defaults/like.webp"> 
+                                                <p class="text-[12px]" x-text="post.likeCount">10</p> 
                                               </div>  
-                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]">10</p> 
+                                              <div @click="gfReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                                <img class="w-4 h-4" alt="" src="/images/defaults/heart.webp"> 
+                                                <p class="text-[12px]" x-text="post.loveCount">10</p> 
                                               </div>  
-                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]">10</p> 
+                                              <div @click="gfReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                                <img class="w-4 h-4" alt="" src="/images/defaults/lol.webp"> 
+                                                <p class="text-[12px]" x-text="post.lolCount">10</p> 
                                               </div>
-                                              <div @click="feedLike(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]">10</p> 
+                                              <div @click="gfReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                                <img class="w-4 h-4" alt="" src="/images/defaults/dislike.webp"> 
+                                                <p class="text-[12px]" x-text="post.dislikeCount">10</p> 
                                               </div>
                                             </div>
-                                            <div @click="getGFComments(feed.id)" class="cursor-pointer flex items-center justify-center gap-1">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
-                                                <p class="text-[12px]" x-text="feed.totalComments"></p> 
+                                            <div @click="getGFComments(post.id)" class="reaction">
+                                                <img class="w-4 h-4" alt="" src="/images/defaults/comment.webp"> 
+                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
                                         </div>
                                          <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeGFComment(feed.id)" class="input-text" 
-                                            type="text" placeholder="Write comment here.." autocomplete="off" required maxlength="300">
+                                            <input x-ref="input" @keyup.enter="writeGFComment(post.id)" class="input-text" 
+                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
                                         </label>
                                         <ul x-show="showComments">
-                                            <template x-for="comment in feed.comments" :key="comment.id">
+                                            <template x-for="comment in post.comments" :key="comment.id">
                                                 <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
                                                     <div class="flex justify-between "> 
                                                        <div class="flex gap-2 text-start">
@@ -894,8 +946,8 @@ export function globalFeedModalHtml() {
                                                                <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
                                                            </div>
                                                        </div> 
-                                                       <template x-if="permission.delComment">
-                                                          <i @click="delComment(comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                       <template x-if="permission.delComment || post.user.id === userId">
+                                                          <i @click="delGFComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                                        </template>                       
                                                     </div>  
                                                 </li> 
@@ -929,7 +981,7 @@ export function writeGlobalFeedDialogHtml() {
             </div> 
             <div class="p-4">
                 <div class="mb-4">
-                   <textarea x-ref="feedInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
+                   <textarea x-ref="postInput" @keyup="textArea($el, 120)" class="text-area h-[120px]" x-model="content" type="text" 
                         maxlength="3000" placeholder="write announcement"></textarea>
                    <template x-if="image"> <img :src="image" class="mt-2 h-20" alt=""></template>
                    <input x-ref="input" @change="addImage($el)" type="file" name="image" class="hidden">
@@ -1067,7 +1119,7 @@ export function blockedModalHtml(users) {
         html += `
             <li class="card-wrap">
                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                    <img class="w-[40px]" src="/images/defaults/global-post.webp" alt="">
                     <p class="text-[12px] font-bold" > No Blocked users</p>
                 </div>
             </li>
@@ -1084,12 +1136,49 @@ export function getErrorMsg(e) {
     return e.response ? e.response.data : Errors.SOMETHING_WENT_WRONG
 }
 
+export function makeReaction(post, reactType) {
+    if (reactType === ReactType.Like) {
+        post.likeCount++
+        post.liked = true
+    } else if (reactType === ReactType.Love) {
+        post.loveCount++
+        post.loved = true
+    } else if (reactType === ReactType.Lol) {
+        post.lolCount++
+        post.laughed = true
+    } else if (reactType === ReactType.Dislike) {
+        post.dislikeCount++
+        post.disliked = true
+    }
+}
+
+export function updateReaction(post, oldReaction, newReaction) {
+    removeReaction(post, oldReaction)
+    makeReaction(post, newReaction)
+}
+
+export function removeReaction(post, reactType) {
+    if (reactType === ReactType.Like) {
+        post.likeCount--
+        post.liked = false
+    } else if (reactType === ReactType.Love) {
+        post.loveCount--
+        post.loved = false
+    } else if (reactType === ReactType.Lol) {
+        post.lolCount--
+        post.laughed = false
+    } else if (reactType === ReactType.Dislike) {
+        post.dislikeCount--
+        post.disliked = false
+    }
+}
+
 
 /*
 * let addNew = rank.code !== Defaults.GUEST ?
         '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
     let html = `
-        <div x-data="{feeds:${feeds}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+        <div x-data="{posts:${feeds}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Global Feed</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
@@ -1130,6 +1219,60 @@ export function getErrorMsg(e) {
                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                     <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
                     <p class="text-[12px] font-bold" > No Global Feeds</p>
+                </div>
+            </li>
+       `
+    }
+    html += `</ul></div></div></div>`
+    return html
+* */
+
+
+/*
+*  let addNew = permission.adminship ?
+        '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
+    let html = `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Adminship</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                    <ul>
+        `
+    if (adminships.length > 0) {
+        adminships.forEach(adminship => {
+            let user = adminship.user
+            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
+            let image = adminship.image != null ? `<img @click="showImageDialog($el)" src="${adminship.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
+            let content = adminship.content.replaceAll('\r\n', '<br>')
+            let delAdminship = permission.delAdminship ? `<i @click="delAdminship(${adminship.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
+            html += `
+                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                   <div class="flex flex-col w-full">
+                       <div class="flex items-center justify-between">
+                           <div class="flex items-center gap-2">
+                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
+                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
+                           </div>
+                           <div class="flex items-center gap-2">
+                                <p class="date">${adminship.createdAt}</p>${delAdminship}
+                           </div>
+                       </div>
+                       <div class="text-start mt-2">
+                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
+                       </div>
+                   </div>
+                </li>
+            `
+        })
+    } else {
+        html += `
+            <li class="card-wrap">
+               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
+                    <p class="text-[12px] font-bold" > No AdminShip Posts</p>
                 </div>
             </li>
        `

@@ -3,6 +3,7 @@ package com.rainbowtechsolution.routes
 
 import com.rainbowtechsolution.common.Auth
 import com.rainbowtechsolution.common.ChatDefaults
+import com.rainbowtechsolution.common.Errors
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.entity.PostType
@@ -25,12 +26,14 @@ import io.ktor.server.sessions.*
 import kotlinx.coroutines.async
 import java.io.File
 import java.io.IOException
+import java.time.LocalDateTime
 
 
 fun Route.adminRotes(
     domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
     rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
-    messageRepository: MessageRepository, reportRepository: ReportRepository, postRepository: PostRepository
+    messageRepository: MessageRepository, reportRepository: ReportRepository, postRepository: PostRepository,
+    commentRepository: CommentRepository
 ) {
 
 
@@ -409,21 +412,69 @@ fun Route.adminRotes(
                         }
                     }
 
-                    delete("/{postId}/delete") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val postId = call.parameters["postId"]!!.toInt()
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            postRepository.deletePost(postId)
-                            val message = Message(
-                                content = "", user = User(id = userId), type = MessageType.DelAdminship
-                            ).encodeToString()
-                            WsController.broadcastToDomain(domainId, message)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                    route("/{postId}") {
+
+                        route("/comments") {
+                            get {
+                                try {
+                                    val postId = call.parameters["postId"]!!.toInt()
+                                    val page = call.request.queryParameters["page"]?.toLong() ?: 0
+                                    val offset = page * ChatDefaults.POST_PER_PAGE
+                                    val comments = commentRepository.getComments(postId, PostType.AdminShip, offset)
+                                    call.respond(HttpStatusCode.OK, comments)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    call.respond(HttpStatusCode.InternalServerError)
+                                }
+                            }
+
+                            post("/create") {
+                                try {
+                                    val userId = call.sessions.get<ChatSession>()?.id!!
+                                    val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                                    val postId = call.parameters["postId"]!!.toInt()
+                                    val params = call.receiveParameters()
+                                    val content = params["content"].toString()
+                                    var comment = Comment(
+                                        content = content, user = user, postId = postId, type = PostType.AdminShip
+                                    )
+                                    val commentId = commentRepository.createComment(comment)
+                                    comment = comment.copy(id = commentId, createdAt = LocalDateTime.now().format())
+                                    call.respond(HttpStatusCode.OK, comment)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                                }
+                            }
+
+                            delete("/{commentId}/delete") {
+                                try {
+                                    val commentId = call.parameters["commentId"]!!.toInt()
+                                    commentRepository.deleteComment(commentId)
+                                    call.respond(HttpStatusCode.OK)
+                                } catch (e: Exception) {
+                                    call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                                }
+                            }
                         }
+
+                        delete("/delete") {
+                            try {
+                                val userId = call.sessions.get<ChatSession>()?.id!!
+                                val postId = call.parameters["postId"]!!.toInt()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                postRepository.deletePost(postId)
+                                val message = Message(
+                                    content = "", user = User(id = userId), type = MessageType.DelAdminship
+                                ).encodeToString()
+                                WsController.broadcastToDomain(domainId, message)
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                            }
+                        }
+
                     }
                 }
 
