@@ -772,8 +772,7 @@ fun Route.domainRoutes(
                         var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
                         val uploadDir = File(filePath)
                         try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
+                            val userId = call.sessions.get<ChatSession>()?.id!!
                             val domainId = call.parameters["domainId"]!!.toInt()
                             val parts = call.receiveMultipart()
 
@@ -794,7 +793,7 @@ fun Route.domainRoutes(
                             }
                             val image = if (hasImage) filePath else null
                             val post = Post(
-                                content = content, image = image, user = User(userId), domainId = domainId,
+                                content = content, image = image, user = User(id = userId), domainId = domainId,
                                 type = PostType.GlobalFeed
                             )
                             postRepository.createPost(post = post)

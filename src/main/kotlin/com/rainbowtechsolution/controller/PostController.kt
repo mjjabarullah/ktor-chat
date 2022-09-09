@@ -19,13 +19,13 @@ class PostController : PostRepository {
             Posts.insertAndGetId {
                 it[content] = post.content
                 it[image] = post.image
-                it[userId] = post.user.id!!
-                it[domainId] = post.domainId
-                it[type] = post.type
+                it[userId] = post.user?.id!!
+                it[domainId] = post.domainId!!
+                it[type] = post.type!!
                 it[createdAt] = LocalDateTime.now()
             }.value
         }
-        readPost(post.domainId, post.user.id!!, post.type)
+        readPost(post.domainId!!, post.user?.id!!, post.type!!)
         return postId
     }
 

@@ -15,12 +15,12 @@ fun Application.module() {
     configureDatabase()
     configureKoinDi()
     configureSockets()
-    configureRouting()
     configureTemplating()
     configureMonitoring()
     configureCompression()
     configureSerialization()
     configureSecurity()
+    configureRouting()
     configureStatusPages()
     configureCachingHeaders()
 }
