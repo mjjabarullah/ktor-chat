@@ -15,5 +15,4 @@ val mainModule = module {
     single<WsRepository> { WsController(get(), get()) }
     single<ReportRepository> { ReportController() }
     single<PostRepository> { PostController() }
-    single<CommentRepository> { CommentController() }
 }

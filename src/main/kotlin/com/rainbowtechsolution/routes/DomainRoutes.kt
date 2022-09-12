@@ -31,8 +31,7 @@ import java.util.*
 fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
-    permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository,
-    commentRepository: CommentRepository,
+    permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -697,198 +696,21 @@ fun Route.domainRoutes(
                 }
 
                 route("/news") {
-                    get {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val news = postRepository.getPosts(domainId, userId, PostType.Announcement)
-                            call.respond(HttpStatusCode.OK, news)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/read") {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            postRepository.readPost(domainId, userId, PostType.Announcement)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
+                    postRoute(
+                        userRepository, postRepository, PostType.Announcement, MessageType.News
+                    )
                 }
 
                 route("/adminship") {
-                    get {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val adminships = postRepository.getPosts(domainId, userId, PostType.AdminShip)
-                            call.respond(HttpStatusCode.OK, adminships)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/read") {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            postRepository.readPost(domainId, userId, PostType.AdminShip)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
+                    postRoute(
+                        userRepository, postRepository, PostType.AdminShip, MessageType.Adminship
+                    )
                 }
 
                 route("/global-feed") {
-                    get {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val globalFeeds = postRepository.getPosts(domainId, userId, PostType.GlobalFeed)
-                            call.respond(HttpStatusCode.OK, globalFeeds)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/create") {
-                        var content = ""
-                        val renderFormat = "webp"
-                        val imageName = "${getUUID()}.$renderFormat"
-                        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
-                        val uploadDir = File(filePath)
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val parts = call.receiveMultipart()
-
-                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                            }
-                            filePath += imageName
-                            var hasImage = false
-                            parts.forEachPart { part ->
-                                when (part) {
-                                    is PartData.FormItem -> content = part.value
-                                    is PartData.FileItem -> {
-                                        hasImage = true
-                                        part.saveImage(filePath, renderFormat)
-                                    }
-                                    else -> Unit
-                                }
-                            }
-                            val image = if (hasImage) filePath else null
-                            val post = Post(
-                                content = content, image = image, user = User(id = userId), domainId = domainId,
-                                type = PostType.GlobalFeed
-                            )
-                            postRepository.createPost(post = post)
-                            val message = Message(
-                                content = "", user = User(id = userId), type = MessageType.GlobalFeed
-                            ).encodeToString()
-                            WsController.broadcastToDomain(domainId, message)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/read") {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            postRepository.readPost(domainId, userId, PostType.GlobalFeed)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    route("/{postId}") {
-
-                        post("/react") {
-                            try {
-                                val userId = call.sessions.get<ChatSession>()?.id!!
-                                val postId = call.parameters["postId"]!!.toInt()
-                                val paramReactType = call.receiveParameters()["type"].toString()
-                                val reactType = ReactType.valueOf(paramReactType)
-                                var reaction = postRepository.getPostReactionByUserId(postId, userId)
-                                reaction = if (reaction == null) postRepository.react(postId, userId, reactType)
-                                else {
-                                    if (reaction.oldReaction == reactType) {
-                                        postRepository.deleteReaction(postId, userId)
-                                        Reaction()
-                                    } else postRepository.updateReaction(postId, userId, reactType)
-                                        .copy(oldReaction = reaction.oldReaction)
-                                }
-                                call.respond(HttpStatusCode.OK, reaction)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                call.respond(HttpStatusCode.InternalServerError)
-                            }
-                        }
-
-                        route("/comments") {
-                            get {
-                                try {
-                                    val postId = call.parameters["postId"]!!.toInt()
-                                    val page = call.request.queryParameters["page"]?.toLong() ?: 0
-                                    val offset = page * ChatDefaults.POST_PER_PAGE
-                                    val comments = commentRepository.getComments(postId, PostType.GlobalFeed, offset)
-                                    call.respond(HttpStatusCode.OK, comments)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    call.respond(HttpStatusCode.InternalServerError)
-                                }
-                            }
-
-                            post("/create") {
-                                try {
-                                    val userId = call.sessions.get<ChatSession>()?.id!!
-                                    val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                                    val postId = call.parameters["postId"]!!.toInt()
-                                    val params = call.receiveParameters()
-                                    val content = params["content"].toString()
-                                    var comment = Comment(
-                                        content = content, user = user, postId = postId, type = PostType.GlobalFeed
-                                    )
-                                    val commentId = commentRepository.createComment(comment)
-                                    comment = comment.copy(id = commentId, createdAt = LocalDateTime.now().format())
-                                    call.respond(HttpStatusCode.OK, comment)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                                }
-                            }
-
-                            delete("/{commentId}/delete") {
-                                try {
-                                    val commentId = call.parameters["commentId"]!!.toInt()
-                                    commentRepository.deleteComment(commentId)
-                                    call.respond(HttpStatusCode.OK)
-                                } catch (e: Exception) {
-                                    call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                                }
-                            }
-                        }
-                    }
+                    postRoute(
+                        userRepository, postRepository, PostType.GlobalFeed, MessageType.GlobalFeed
+                    )
                 }
             }
         }
@@ -985,6 +807,148 @@ fun Route.domainRoutes(
                     val chatSession = call.principal<ChatSession>()
                     call.sessions.set(chatSession)
                     call.respond(HttpStatusCode.OK)
+                }
+            }
+        }
+    }
+}
+
+fun Route.postRoute(
+    userRepository: UserRepository, postRepository: PostRepository, postType: PostType, messageType: MessageType
+) {
+
+    get {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val globalFeeds = postRepository.getPosts(domainId, userId, postType)
+            call.respond(HttpStatusCode.OK, globalFeeds)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/create") {
+        var content = ""
+        val renderFormat = "webp"
+        val imageName = "${getUUID()}.$renderFormat"
+        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+        val uploadDir = File(filePath)
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val parts = call.receiveMultipart()
+
+            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+            }
+            filePath += imageName
+            var hasImage = false
+            parts.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> content = part.value
+                    is PartData.FileItem -> {
+                        hasImage = true
+                        part.saveImage(filePath, renderFormat)
+                    }
+                    else -> Unit
+                }
+            }
+            val image = if (hasImage) filePath else null
+            val post = Post(
+                content = content, image = image, user = User(id = userId), domainId = domainId,
+                type = postType
+            )
+            postRepository.createPost(post = post)
+            val message = Message(
+                content = "", user = User(id = userId), type = messageType
+            ).encodeToString()
+            WsController.broadcastToDomain(domainId, message)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/read") {
+        try {
+            val chatSession = call.sessions.get<ChatSession>()
+            val userId = chatSession?.id!!
+            val domainId = call.parameters["domainId"]!!.toInt()
+            postRepository.readPost(domainId, userId, postType)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    route("/{postId}") {
+
+        post("/react") {
+            try {
+                val userId = call.sessions.get<ChatSession>()?.id!!
+                val postId = call.parameters["postId"]!!.toInt()
+                val paramReactType = call.receiveParameters()["type"].toString()
+                val reactType = ReactType.valueOf(paramReactType)
+                var reaction = postRepository.getPostReactionByUserId(postId, userId)
+                reaction = if (reaction == null) postRepository.react(postId, userId, reactType)
+                else {
+                    if (reaction.oldReaction == reactType) {
+                        postRepository.deleteReaction(postId, userId)
+                        Reaction()
+                    } else postRepository.updateReaction(postId, userId, reactType)
+                        .copy(oldReaction = reaction.oldReaction)
+                }
+                call.respond(HttpStatusCode.OK, reaction)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
+
+        route("/comments") {
+            get {
+                try {
+                    val postId = call.parameters["postId"]!!.toInt()
+                    val page = call.request.queryParameters["page"]?.toLong() ?: 0
+                    val offset = page * ChatDefaults.POST_PER_PAGE
+                    val comments = postRepository.getComments(postId, postType, offset)
+                    call.respond(HttpStatusCode.OK, comments)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
+
+            post("/create") {
+                try {
+                    val userId = call.sessions.get<ChatSession>()?.id!!
+                    val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                    val postId = call.parameters["postId"]!!.toInt()
+                    val params = call.receiveParameters()
+                    val content = params["content"].toString()
+                    var comment = Comment(
+                        content = content, user = user, postId = postId, type = postType
+                    )
+                    val commentId = postRepository.createComment(comment)
+                    comment = comment.copy(id = commentId, createdAt = LocalDateTime.now().format())
+                    call.respond(HttpStatusCode.OK, comment)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                }
+            }
+
+            delete("/{commentId}/delete") {
+                try {
+                    val commentId = call.parameters["commentId"]!!.toInt()
+                    postRepository.deleteComment(commentId)
+                    call.respond(HttpStatusCode.OK)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                 }
             }
         }

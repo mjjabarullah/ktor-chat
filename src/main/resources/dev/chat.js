@@ -3,9 +3,18 @@
 import Alpine from 'alpinejs'
 import * as fn from './functions'
 import {
-    MessageType, ReportType, Status, Success, Errors, Css, Defaults, textColors, avatars, bgColors, ReactType
+    avatars,
+    bgColors,
+    Css,
+    Defaults,
+    Errors,
+    MessageType,
+    ReactType,
+    ReportType,
+    Status,
+    Success,
+    textColors
 } from "./constant"
-import {comment} from "postcss";
 
 Object.freeze(domain)
 Object.freeze(room)
@@ -826,21 +835,21 @@ document.addEventListener('alpine:init', () => {
                 }
                 if (message.type === MessageType.News) {
                     this.getNews()
-                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play()
+                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.DelNews) {
                     this.getNews()
                 }
                 if (message.type === MessageType.Adminship) {
                     this.getAdminships()
-                    message.user.id !== userId && permission.adminship && this.user.notifiSound && this.$refs.newsSound.play()
+                    message.user.id !== userId && permission.adminship && this.user.notifiSound && this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.DelAdminship) {
                     this.getAdminships()
                 }
                 if (message.type === MessageType.GlobalFeed) {
                     this.getGlobalFeed()
-                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.newsSound.play()
+                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.DelGlobalFeed) {
                     this.getGlobalFeed()
@@ -1166,16 +1175,15 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/reports/${reportId}/no-action`, formData).then(() => this.closeSmallModal())
             },
 
+
             /**
              * Announcement
              * */
-            getNews(callback = () => {
-            }) {
+            getNews() {
                 rank.code !== Defaults.GUEST &&
                 axios.get(`/${domain.id}/news`).then(res => {
                     this.news = res.data
                     this.newsUnreadCount = this.news.unReadCount
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
                 })
             },
             openNewsModal() {
@@ -1196,23 +1204,19 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                axios.delete(`/${domain.id}/news/${newsId}/delete`).then(() => {
-                    this.showAlertMsg(Success.NEWS_DELETED, Css.SUCCESS)
-                    this.news.posts = this.news.posts.filter(news => news.id !== newsId)
-                    this.openNewsModal()
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+                axios.delete(`/${domain.id}/news/${newsId}/delete`)
+                    .then(() => this.showAlertMsg(Success.NEWS_DELETED, Css.SUCCESS))
+                    .catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
 
             /**
              * AdminShip
              * */
-            getAdminships(callback = () => {
-            }) {
+            getAdminships() {
                 permission.adminship &&
                 axios.get(`/${domain.id}/adminship`).then(res => {
                     this.adminship = res.data
                     this.adminshipUnreadCount = this.adminship.unReadCount
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
                 })
             },
             openAdminshipModal() {
@@ -1228,6 +1232,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.writeAdminshipDialogHtml())
             },
+
             delAdminship(postId) {
                 if (!permission.delAdminship) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
@@ -1262,19 +1267,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.writeGlobalFeedDialogHtml())
             },
-            gfReact(postId, type) {
-                const reactType = type === 1 ? ReactType.Like : type === 2 ? ReactType.Love : type === 3 ? ReactType.Lol : type === 4 ? ReactType.Dislike : Defaults.EMPTY_STRING
-                if (reactType === Defaults.EMPTY_STRING) return
-                const post = this.globalFeed.posts.find(post => post.id === postId)
-                const formData = new FormData()
-                formData.append('type', reactType)
-                axios.post(`/${domain.id}/global-feed/${postId}/react`, formData).then(res => {
-                    let reaction = res.data
-                    !reaction.oldReaction && !reaction.newReaction && fn.removeReaction(post, reactType)
-                    reaction.oldReaction && reaction.newReaction && fn.updateReaction(post, reaction.oldReaction, reaction.newReaction)
-                    !reaction.oldReaction && reaction.newReaction && fn.makeReaction(post, reaction.newReaction)
-                })
-            },
+
             delGlobalFeed(postId) {
                 if (!permission.delGlobalFeed) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
@@ -1367,9 +1360,6 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/news/create`, formData).then(() => {
                     this.closeSmallModal()
                     this.showAlertMsg(Success.NEWS_CREATED, Css.SUCCESS)
-                    this.getNews(() => {
-                        this.openNewsModal()
-                    })
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             }
         }
@@ -1403,9 +1393,6 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/adminship/create`, formData).then(() => {
                     this.closeSmallModal()
                     this.showAlertMsg(Success.ADMINSHIP_CREATED, Css.SUCCESS)
-                    this.getAdminships(() => {
-                        this.openAdminshipModal()
-                    })
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             }
         }
@@ -1463,27 +1450,52 @@ document.addEventListener('alpine:init', () => {
         }
     })
 
-    Alpine.data('comments', () => {
+    Alpine.data('post', () => {
         return {
             showComments: false,
-            getPostClicked: 0,
-            /**
-             * Global Feed
-             * */
-            getGFComments(postId) {
-                const post = this.globalFeed.posts.find(post => post.id === postId)
-                if (this.getPostClicked && post.comments.length > 0) {
+            getCommentClicked: 0,
+            type: 0,
+            slug: '',
+            setData(type) {
+                this.type = type
+                this.slug = type === 1 ? 'news' : type === 2 ? 'global-feed' : type === 3 ? 'adminship' : Defaults.EMPTY_STRING
+            },
+            getReactType(type) {
+                return type === 1 ? ReactType.Like : type === 2 ? ReactType.Love :
+                    type === 3 ? ReactType.Lol : type === 4 ? ReactType.Dislike : Defaults.EMPTY_STRING
+            },
+            getPost(postId) {
+                return this.type === 1 ? this.news.posts.find(post => post.id === postId) :
+                    this.type === 2 ? this.globalFeed.posts.find(post => post.id === postId) :
+                        this.type === 3 ? this.adminship.posts.find(post => post.id === postId) : null
+            },
+            postReact(postId, type) {
+                const reactType = this.getReactType(type)
+                if (reactType === Defaults.EMPTY_STRING) return
+                const post = this.getPost(postId)
+                const formData = new FormData()
+                formData.append('type', reactType)
+                axios.post(`/${domain.id}/${this.slug}/${postId}/react`, formData).then(res => {
+                    let reaction = res.data
+                    !reaction.oldReaction && !reaction.newReaction && fn.removeReaction(post, reactType)
+                    reaction.oldReaction && reaction.newReaction && fn.updateReaction(post, reaction.oldReaction, reaction.newReaction)
+                    !reaction.oldReaction && reaction.newReaction && fn.makeReaction(post, reaction.newReaction)
+                })
+            },
+            getComments(postId) {
+                const post = this.getPost(postId)
+                if (this.getCommentClicked && post.comments.length > 0) {
                     this.showComments = !this.showComments
                     return
                 }
-                axios.get(`/${domain.id}/global-feed/${postId}/comments`).then(res => {
+                axios.get(`/${domain.id}/${this.slug}/${postId}/comments`).then(res => {
                     post.comments = res.data
                     this.showComments = true
-                    this.getPostClicked = true
+                    this.getCommentClicked = true
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
-            writeGFComment(postId) {
-                const post = this.globalFeed.posts.find(post => post.id === postId)
+            writeComment(postId) {
+                const post = this.getPost(postId)
                 const formData = new FormData()
                 const content = this.$refs.input.value
                 if (content === Defaults.EMPTY_STRING) {
@@ -1491,56 +1503,16 @@ document.addEventListener('alpine:init', () => {
                     return
                 }
                 formData.append('content', content)
-                axios.post(`/${domain.id}/global-feed/${postId}/comments/create`, formData).then(res => {
+                axios.post(`/${domain.id}/${this.slug}/${postId}/comments/create`, formData).then(res => {
                     post.comments.unshift(res.data)
                     post.commentsCount++
                     this.showComments = true
                     this.$nextTick(() => this.$refs.input.value = Defaults.EMPTY_STRING)
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
-            delGFComment(postId, commentId) {
-                const post = this.globalFeed.posts.find(post => post.id === postId)
-                axios.delete(`/${domain.id}/global-feed/${postId}/comments/${commentId}/delete`).then(() => {
-                    post.comments = post.comments.filter(comment => comment.id !== commentId)
-                    post.commentsCount--
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
-            },
-
-            /**
-             * Adminship
-             * */
-            getASComments(postId) {
-                const post = this.adminship.posts.find(post => post.id === postId)
-                if (this.getPostClicked && post.comments.length > 0) {
-                    this.showComments = !this.showComments
-                    return
-                }
-
-                axios.get(`/${domain.id}/adminship/${postId}/comments`).then(res => {
-                    post.comments = res.data
-                    this.showComments = true
-                    this.getPostClicked = true
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
-            },
-            writeASComment(postId) {
-                const post = this.adminship.posts.find(post => post.id === postId)
-                const formData = new FormData()
-                const content = this.$refs.input.value
-                if (content === Defaults.EMPTY_STRING) {
-                    this.showAlertMsg(Errors.CONTENT_EMPTY, Css.ERROR)
-                    return
-                }
-                formData.append('content', content)
-                axios.post(`/${domain.id}/adminship/${postId}/comments/create`, formData).then(res => {
-                    post.comments.unshift(res.data)
-                    post.commentsCount++
-                    this.showComments = true
-                    this.$nextTick(() => this.$refs.input.value = Defaults.EMPTY_STRING)
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
-            },
-            delASComment(postId, commentId) {
-                const post = this.adminship.posts.find(post => post.id === postId)
-                axios.delete(`/${domain.id}/adminship/${postId}/comments/${commentId}/delete`).then(() => {
+            delComment(postId, commentId) {
+                const post = this.getPost(postId)
+                axios.delete(`/${domain.id}/${this.slug}/${postId}/comments/${commentId}/delete`).then(() => {
                     post.comments = post.comments.filter(comment => comment.id !== commentId)
                     post.commentsCount--
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))

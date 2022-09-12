@@ -83,6 +83,12 @@ export const Status = {Stay: 'Stay', Online: 'Online', Away: 'Away', Busy: 'Busy
 export const ReportType = {Chat: 'Chat', PvtChat: 'PvtChat', NewsFeed: 'NewsFeed'}
 
 /**
+ * Post Type
+ * */
+export const PostType = {Announcement: 'Announcement', GlobalFeed: 'GlobalFeed', Adminship: 'Adminship'}
+
+
+/**
  * React Type
  * */
 export const ReactType = {Like: 'Like', Love: 'Love', Lol: 'Lol', Dislike: 'Dislike'}

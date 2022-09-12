@@ -663,57 +663,109 @@ export function roomModalHtml(rooms) {
     return html
 }
 
-export function newsModalHtml(news) {
-    let addNew = permission.writeNews ?
-        '<button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
-    let html = `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
+export function newsModalHtml() {
+    return `
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Announcements</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div>
             <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <template x-if="rank.code !== 'guest'">
+                        <button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                            <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
+                        </button> 
+                    </template>
                     <ul>
-        `
-    if (news.length > 0) {
-        news.forEach(news => {
-            let user = news.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = news.image != null ? `<img @click="showImageDialog($el)" src="${news.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
-            let content = news.content.replaceAll('\r\n', '<br>')
-            let delNews = permission.delNews ? `<i @click="delNews(${news.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between"> 
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>  
-                           <div class="flex items-center gap-2">
-                                <p class="date">${news.createdAt}</p>${delNews}
-                           </div>                       
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>  
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Announcements</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
+                        <template x-if="news.posts.length>0">
+                            <template x-for="post in news.posts" :key="post.id">
+                                <li x-data="post" x-init="setData(1)" class="card-wrap" >
+                                    <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
+                                               <div class="text-start">
+                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                                   <p class="date" x-text="post.createdAt"></p>
+                                               </div>
+                                           </div> 
+                                           <template x-if="permission.delNews">
+                                              <i @click="delNews(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                           </template>                       
+                                       </div>
+                                        <div class="card-content">
+                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                           <template x-if="post.image"> 
+                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
+                                           </template>
+                                        </div>  
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
+                                            <div class="flex items-center gap-2"> 
+                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
+                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
+                                              </div>  
+                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
+                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
+                                              </div>  
+                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
+                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
+                                              </div>
+                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
+                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
+                                              </div>
+                                            </div>
+                                            <div @click="getComments(post.id)" class="reaction">
+                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
+                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
+                                            </div>
+                                        </div>
+                                         <label class="h-10">
+                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                        </label>
+                                        <ul x-show="showComments">
+                                            <template x-for="comment in post.comments" :key="comment.id">
+                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                    <div class="flex justify-between "> 
+                                                       <div class="flex gap-2 text-start">
+                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                           <div>
+                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                               <p class="date" x-text="comment.createdAt"></p>
+                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                           </div>
+                                                       </div> 
+                                                       <template x-if="permission.delComment || post.user.id === userId">
+                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                       </template>                       
+                                                    </div>  
+                                                </li> 
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </template>
+                        </template>
+                        <template x-if="news.posts.length==0">
+                            <li class="card-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
+                                    <p class="text-[12px] font-bold" > No Announcements</p>
+                                </div>
+                            </li>
+                        </template
+                    </ul> 
+                </div> 
+            </div> 
+        </div>
+    `
 }
 
 export function writeNewsDialogHtml() {
@@ -739,7 +791,7 @@ export function writeNewsDialogHtml() {
     `
 }
 
-export function adminshipModalHtml(adminships) {
+export function adminshipModalHtml() {
     return `
         <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
@@ -756,7 +808,7 @@ export function adminshipModalHtml(adminships) {
                     <ul>
                         <template x-if="adminship.posts.length>0">
                             <template x-for="post in adminship.posts" :key="post.id">
-                                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                                <li x-data="post" x-init="setData(3)" class="card-wrap">
                                     <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
                                            <div class="flex items-center gap-2">
@@ -777,33 +829,33 @@ export function adminshipModalHtml(adminships) {
                                            </template>
                                         </div>  
                                     </div>
-                                    <div x-data="comments" class="flex flex-col">
+                                    <div class="flex flex-col">
                                         <div class="flex mt-4 mb-2 justify-between items-center px-1">
                                             <div class="flex items-center gap-2"> 
-                                              <div @click="postReact(post.id)" class="reaction">
+                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]" x-text="post.likeCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
                                               </div>  
-                                              <div @click="postReact(post.id)" class="reaction">
+                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]" x-text="post.loveCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
                                               </div>  
-                                              <div @click="postReact(post.id)" class="reaction">
+                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]" x-text="post.lolCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
                                               </div>
-                                              <div @click="postReact(post.id)" class="reaction">
+                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]" x-text="post.dislikeCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
                                               </div>
                                             </div>
-                                            <div @click="getASComments(post.id)" class="reaction">
+                                            <div @click="getComments(post.id)" class="reaction">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
                                         </div>
                                          <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeASComment(post.id)" class="input-text" 
+                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
                                             type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
                                         </label>
                                         <ul x-show="showComments">
@@ -819,7 +871,7 @@ export function adminshipModalHtml(adminships) {
                                                            </div>
                                                        </div> 
                                                        <template x-if="permission.delComment || post.user.id === userId">
-                                                          <i @click="delASComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                                        </template>                       
                                                     </div>  
                                                 </li> 
@@ -884,7 +936,7 @@ export function globalFeedModalHtml() {
                     <ul>
                         <template x-if="globalFeed.posts.length>0">
                             <template x-for="post in globalFeed.posts" :key="post.id">
-                                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
+                                <li x-data="post" x-init="setData(2)" class="card-wrap" >
                                     <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
                                            <div class="flex items-center gap-2">
@@ -905,33 +957,33 @@ export function globalFeedModalHtml() {
                                            </template>
                                         </div>  
                                     </div>
-                                    <div x-data="comments" class="flex flex-col">
+                                    <div  class="flex flex-col">
                                         <div class="flex m-2 justify-between items-center">
                                             <div class="flex items-center gap-1"> 
-                                              <div @click="gfReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]" x-text="post.likeCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
                                               </div>  
-                                              <div @click="gfReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]" x-text="post.loveCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
                                               </div>  
-                                              <div @click="gfReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]" x-text="post.lolCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
                                               </div>
-                                              <div @click="gfReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]" x-text="post.dislikeCount">10</p> 
+                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
                                               </div>
                                             </div>
-                                            <div @click="getGFComments(post.id)" class="reaction">
+                                            <div @click="getComments(post.id)" class="reaction">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/comment.webp"> 
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
                                         </div>
                                          <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeGFComment(post.id)" class="input-text" 
+                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
                                             type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
                                         </label>
                                         <ul x-show="showComments">
@@ -947,7 +999,7 @@ export function globalFeedModalHtml() {
                                                            </div>
                                                        </div> 
                                                        <template x-if="permission.delComment || post.user.id === userId">
-                                                          <i @click="delGFComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                                        </template>                       
                                                     </div>  
                                                 </li> 

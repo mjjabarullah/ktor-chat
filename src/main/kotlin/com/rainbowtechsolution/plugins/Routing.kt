@@ -20,7 +20,6 @@ fun Application.configureRouting() {
     val wsRepository by inject<WsRepository>()
     val reportRepository by inject<ReportRepository>()
     val postRepository by inject<PostRepository>()
-    val commentRepository by inject<CommentRepository>()
 
     install(Resources)
 
@@ -36,14 +35,14 @@ fun Application.configureRouting() {
 
         domainRoutes(
             domains, roomRepository, userRepository, messageRepository, domainRepository, rankRepository,
-            permissionRepository, reportRepository, postRepository, commentRepository
+            permissionRepository, reportRepository, postRepository
         )
 
         mainRoutes(roomRepository, userRepository)
 
         adminRotes(
             domains, domainRepository, userRepository, rankRepository, permissionRepository, roomRepository,
-            messageRepository, reportRepository, postRepository, commentRepository
+            messageRepository, reportRepository, postRepository
         )
 
         chatRoutes(messageRepository, roomRepository, userRepository, domainRepository)
