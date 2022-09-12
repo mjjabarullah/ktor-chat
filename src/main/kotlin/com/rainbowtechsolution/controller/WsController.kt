@@ -63,14 +63,6 @@ class WsController(
             }
         }
 
-        suspend fun broadCastToStaff(users: List<Long>, message: String) {
-            members.values.forEach {
-                if (users.contains(it.id)) {
-                    send(it.socket, message)
-                }
-            }
-        }
-
         private suspend fun send(socket: WebSocketSession?, message: String) {
             try {
                 if (socket?.isActive == true) socket.send(Frame.Text(message))

@@ -56,8 +56,6 @@ interface UserRepository {
 
     suspend fun changePrivate(id: Long, private: Boolean)
 
-    suspend fun getStaffIdsByDomainId(domainId: Int): List<Long>
-
     suspend fun mute(id: Long)
 
     suspend fun unMute(id: Long)

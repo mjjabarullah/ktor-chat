@@ -115,7 +115,6 @@ fun Route.adminRotes(
                                 val targetId = params["targetId"]!!.toLong()
                                 val domainId = call.parameters["domainId"]!!.toInt()
                                 val roomId = params["roomId"]!!.toInt()
-                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                                 when (ReportType.valueOf(params["type"].toString())) {
                                     ReportType.Chat -> {
                                         messageRepository.deleteMessage(targetId)
@@ -130,8 +129,8 @@ fun Route.adminRotes(
                                         /*TODO*/
                                     }
                                 }
-                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -144,14 +143,13 @@ fun Route.adminRotes(
                                 val reportId = call.parameters["reportId"]!!.toInt()
                                 val params = call.receiveParameters()
                                 val domainId = call.parameters["domainId"]!!.toInt()
-                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                                 when (ReportType.valueOf(params["type"].toString())) {
                                     ReportType.Chat -> reportRepository.deleteReportById(reportId)
                                     ReportType.PvtChat -> Unit/*TODO*/
                                     ReportType.NewsFeed -> Unit/*TODO*/
                                 }
-                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -163,10 +161,9 @@ fun Route.adminRotes(
                             try {
                                 val reportId = call.parameters["reportId"]!!.toInt()
                                 val domainId = call.parameters["domainId"]!!.toInt()
-                                val staffIds = userRepository.getStaffIdsByDomainId(domainId)
                                 reportRepository.deleteReportById(reportId)
-                                val message = PvtMessage(content = "", type = MessageType.ActionTaken)
-                                WsController.broadCastToStaff(staffIds, message.encodeToString())
+                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 e.printStackTrace()

@@ -3,17 +3,7 @@
 import Alpine from 'alpinejs'
 import * as fn from './functions'
 import {
-    avatars,
-    bgColors,
-    Css,
-    Defaults,
-    Errors,
-    MessageType,
-    ReactType,
-    ReportType,
-    Status,
-    Success,
-    textColors
+    avatars, bgColors, Css, Defaults, Errors, MessageType, ReactType, ReportType, Status, Success, textColors
 } from "./constant"
 
 Object.freeze(domain)
@@ -576,33 +566,33 @@ document.addEventListener('alpine:init', () => {
                 axios.get(`/${domain.id}/users/blocked-users`).then(res => this.blockedUsers = res.data)
             },
             actionBlock() {
-                this.u.blocked ?
-                    this.unblock(this.u.id, () => this.u.blocked = false) :
-                    this.block(this.u.id, () => this.u.blocked = true)
+                if (this.u.blocked) {
+                    this.unblock(this.u.id)
+                    this.u.blocked = false
+                } else {
+                    this.block(this.u.id)
+                    this.u.blocked = true
+                }
             },
-            block(userId, callback = () => {
-            }) {
+            block(userId) {
                 const formData = new FormData()
                 formData.append('blocked', userId)
                 axios.post(`/${domain.id}/users/block`, formData).then(() => {
                     this.showAlertMsg(Success.USER_BLOCKED, Css.SUCCESS)
                     this.getBlockedUsers()
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
                 }).catch(e => this.showAlertMsg(Errors.BLOCKING_FAILED, Css.ERROR))
             },
-            unblock(userId, callback = () => {
-            }) {
+            unblock(userId) {
                 const formData = new FormData()
                 formData.append('blocked', userId)
                 axios.delete(`/${domain.id}/users/unblock`, {data: formData}).then(() => {
                     this.showAlertMsg(Success.USER_UNBLOCKED, Css.SUCCESS)
                     this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
-                    if (typeof callback === Defaults.FUNC_TYPE) callback()
                 }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
             },
             openBlockedModal() {
                 this.showProfile = false
-                this.showFullModal(fn.blockedModalHtml(this.blockedUsers))
+                this.showFullModal(fn.blockedModalHtml())
             },
 
             /**
@@ -820,9 +810,9 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             onMessageReceived(message) {
-                const chatMessages = this.$refs.chatMessages
                 if (message.type === MessageType.Join) {
                     this.getRoomUsers()
+                    const chatMessages = this.$refs.chatMessages
                     if (message.user.id === userId) {
                         setTimeout(() => {
                             chatMessages.insertAdjacentHTML('afterbegin', fn.renderWelcomeMessage())
@@ -832,10 +822,12 @@ document.addEventListener('alpine:init', () => {
                     chatMessages.insertAdjacentHTML('afterbegin', fn.renderJoinMessage(message))
                 }
                 if (message.type === MessageType.Chat) {
+                    const chatMessages = this.$refs.chatMessages
                     let user = this.blockedUsers.find(user => user.id === message.user.id)
                     user == null && chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
                 }
                 if (message.type === MessageType.Leave) {
+                    const chatMessages = this.$refs.chatMessages
                     this.getRoomUsers()
                     message.user.id !== userId && chatMessages.insertAdjacentHTML('afterbegin', fn.renderLeaveMessage(message))
                 }
@@ -847,22 +839,23 @@ document.addEventListener('alpine:init', () => {
                     this.getNews()
                     message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
                 }
-                if (message.type === MessageType.DelNews) {
-                    this.getNews()
+                if (message.type === MessageType.GlobalFeed) {
+                    this.getGlobalFeed()
+                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.Adminship) {
                     this.getAdminships()
                     message.user.id !== userId && permission.adminship && this.user.notifiSound && this.$refs.postSound.play()
                 }
-                if (message.type === MessageType.DelAdminship) {
-                    this.getAdminships()
+                if (message.type === MessageType.DelNews) this.getNews()
+                if (message.type === MessageType.DelGlobalFeed) this.getGlobalFeed()
+                if (message.type === MessageType.DelAdminship) this.getAdminships()
+                if (message.type === MessageType.Report) {
+                    this.getReports()
+                    permission.reports && this.user.notifiSound && this.$refs.postSound.play()
                 }
-                if (message.type === MessageType.GlobalFeed) {
-                    this.getGlobalFeed()
-                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
-                }
-                if (message.type === MessageType.DelGlobalFeed) {
-                    this.getGlobalFeed()
+                if (message.type === MessageType.ActionTaken) {
+                    permission.reports && this.getReports()
                 }
                 if (message.type === MessageType.Mute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
@@ -885,8 +878,7 @@ document.addEventListener('alpine:init', () => {
             },
             deleteChat(id) {
                 if (permission.delMsg) {
-                    axios.delete(`/${domain.id}/rooms/${room.id}/messages/${id}/delete`)
-                        .catch(() => this.showAlertMsg(Errors.DELETE_MESSAGE, Css.ERROR))
+                    axios.delete(`/${domain.id}/rooms/${room.id}/messages/${id}/delete`).catch(() => this.showAlertMsg(Errors.DELETE_MESSAGE, Css.ERROR))
                 } else this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
             },
             removeTopic() {
@@ -1059,8 +1051,6 @@ document.addEventListener('alpine:init', () => {
                     }
                     user.messages.unshift(message)
                     this.setPvtNotifiCount()
-                } else if (message.type === MessageType.Report || message.type === MessageType.ActionTaken) {
-                    this.getReports()
                 } else if (message.type === MessageType.DataChanges) {
                     location.reload()
                 }
@@ -1150,7 +1140,7 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             openReportsModal() {
-                this.showFullModal(fn.reportModalHtml(this.reports))
+                this.showFullModal(fn.reportModalHtml())
             },
             reportDialog(id, type) {
                 const reportType = type === 1 ? ReportType.Chat : (type === 2) ? ReportType.PvtChat : ReportType.NewsFeed

@@ -684,9 +684,8 @@ fun Route.domainRoutes(
                             val reason = params["reason"].toString()
                             val type = ReportType.valueOf(params["type"].toString())
                             reportRepository.createReport(userId, targetId, domainId, type, reason, roomId)
-                            val staffIds = userRepository.getStaffIdsByDomainId(domainId)
-                            val message = PvtMessage(content = "", type = MessageType.Report)
-                            WsController.broadCastToStaff(staffIds, message.encodeToString())
+                            val message = Message(content = "", type = MessageType.Report)
+                            WsController.broadcastToDomain(domainId, message.encodeToString())
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()

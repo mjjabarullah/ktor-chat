@@ -232,13 +232,6 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun getStaffIdsByDomainId(domainId: Int): List<Long> = dbQuery {
-        Users
-            .slice(Users.id)
-            .select { (Users.domainId eq domainId) and (Users.staff eq true) }
-            .map { it[Users.id].value }
-    }
-
     override suspend fun mute(id: Long): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {

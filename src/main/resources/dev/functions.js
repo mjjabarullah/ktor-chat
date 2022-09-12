@@ -8,7 +8,7 @@ export function renderWelcomeMessage() {
         <li id="topic" class="topic">
             <i @click="removeTopic" class="fa-solid fa-circle-xmark "></i>
             <div class="segment">
-                <p class="ribbon label">Welcome ${name}</p>      
+                <p class="ribbon label bg-gradient-to-r from-skin-primary to-skin-hover">Welcome ${name}</p>      
                 <img  alt="" src="/images/defaults/welcome.svg">
                 <p>${topic}</p>        
              </div>    
@@ -76,7 +76,7 @@ export function getEmojisHtml() {
     let head = '<div class="emo-head">'
     let emos = ''
     emojis.forEach((emoji, index) => {
-        emos += `<div x-show="emoTab === ${index}"  class="emojis">`
+        emos += `<div x-show="emoTab === ${index}"  class="emojis" >`
         Object.keys(emoji).forEach(key => {
             if (key === 'head') head += `<img @click="emoTab=${index}" class="head" src="${emoji[key]}" :class="[emoTab==${index}?'active': '']" alt="${key}">`
             else emos += `<img @click="addMainEmo('${key}')" class="emoticon" src="${emoji[key]}" alt="${key}"> `
@@ -105,7 +105,7 @@ export function pvtEmojisHtml() {
 export function appendEmojis(content) {
     if (content === '') return content
     let result = ''
-    const words = content.split(" ")
+    const words = content.split(' ')
     words.forEach(word => {
         if (word.startsWith(':')) {
             let src = getEmoSource(word)
@@ -623,7 +623,7 @@ export function roomModalLoadingHtml() {
    `
 }
 
-export function roomModalHtml(rooms) {
+export function roomModalHtml() {
     return `
         <div class="text-skin-on-primary h-full">
             <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
@@ -778,7 +778,7 @@ export function writeNewsDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeNews" class="btn btn-skin text-center">Post<button>
+                 <button @click.once="writeNews" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
                 </div>
             </div>
         </div>
@@ -906,7 +906,7 @@ export function writeAdminshipDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeAdminship" class="btn btn-skin text-center">Post<button>
+                 <button @click.once="writeAdminship" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
                 </div>
             </div>
         </div>
@@ -1034,7 +1034,7 @@ export function writeGlobalFeedDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeGlobalFeed" class="btn btn-skin text-center">Post<button>
+                 <button @click.once="writeGlobalFeed" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
                 </div>
             </div>
         </div>
@@ -1068,8 +1068,8 @@ export function renderReportChatMessage(message, id, targetId, roomId, type) {
     </div></div>`
 }
 
-export function reportModalHtml(reports) {
-    let html = `
+export function reportModalHtml() {
+    return `
         <div class="text-skin-on-primary h-full">
             <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                 <p class="text-md font-bold ">Reports</p>
@@ -1077,36 +1077,34 @@ export function reportModalHtml(reports) {
             </div> 
             <div class="p-[10px]">
                 <ul class="h-full ">
-    `
-    if (reports.length > 0) {
-        reports.forEach(rpt => {
-            html += `
-                <li @click="openReportActionDialog(${rpt.id}, ${rpt.targetId}, ${rpt.roomId}, '${rpt.type}')" class="report-user-wrap">
-                   <div class="w-full gap-2">
-                        <div class="flex h-full w-full items-center">
-                            <img class="avatar flex-none mx-1" src="${rpt.avatar}">
-                            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
-                                <p class="ellipsis username clip text-black"> ${rpt.name}
-                                <p class="flex items-center clip ellipsis text-gray-500 text-[13px]">Reason : ${rpt.reason}</p>
-                                <p class="date">${rpt.createdAt}</p>
+                    <template x-if="reports.length>0">
+                        <template x-for="report in reports" :key="report.id">
+                           <li @click="openReportActionDialog(report.id,report.targetId,report.roomId,report.type)" class="report-user-wrap">
+                               <div class="w-full gap-2">
+                                    <div class="flex h-full w-full items-center">
+                                        <img class="avatar flex-none mx-1" :src="report.avatar">
+                                        <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
+                                            <p class="ellipsis username clip text-black" x-text="report.name">
+                                            <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="'Reason : '+report.reason"></p>
+                                            <p class="date" x-text="report.createdAt"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                         </template>
+                    </template>
+                    <template x-if="reports.length==0">
+                       <li class="pvt-user-wrap">
+                           <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                <img class="w-[40px]" src="/images/defaults/flag.webp" alt="">
+                                <p class="text-[12px] font-bold" > No Reports</p>
                             </div>
-                        </div>
-                    </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="pvt-user-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/flag.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Reports</p>
-                </div>
-            </li>
-        `
-    }
-    html += '</ul></div></div>'
-    return html
+                       </li>
+                    </template
+                </ul> 
+            </div> 
+        </div>
+    `
 }
 
 export function reportDialogHtml(id, type) {
@@ -1134,8 +1132,8 @@ export function reportDialogHtml(id, type) {
     `
 }
 
-export function blockedModalHtml(users) {
-    let html = `
+export function blockedModalHtml() {
+    return `
         <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Manage Blocked Users</p>
@@ -1144,40 +1142,36 @@ export function blockedModalHtml(users) {
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <ul>
-        `
-    if (users.length > 0) {
-        users.forEach(user => {
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between"> 
-                           <div class="flex items-center gap-2">
-                               <img class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>  
-                           <i @click="unblock(${user.id},()=>openBlockedModal())" class="text-red-500 fas fa-times-circle text-2xl cursor-pointer"></i> 
-                       </div> 
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/global-post.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Blocked users</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
+                        <template x-if="blockedUsers.length>0"> 
+                            <template x-for="user in blockedUsers" :key="index"> 
+                                <li class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" xmlns="http://www.w3.org/1999/html">
+                                   <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img class="avatar flex-none cursor-pointer" :src="user.avatar" alt="">
+                                               <p class="username clip" :class="user.nameColor, user.nameFont" x-text="user.name"></p>
+                                           </div>  
+                                           <i @click="unblock(user.id)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
+                                       </div> 
+                                   </div>
+                               </li>
+                            </template>
+                        </template>
+                        <template x-if="blockedUsers.length==0">
+                           <li class="card-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/blocked.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No Blocked users</p>
+                                </div>
+                           </li>
+                        </template>
+                   </ul> 
+               </div>
+           </div>
+       </div>
+    `
 }
 
-/**
- * Utility Functions
- * */
 export function getErrorMsg(e) {
     return e.response ? e.response.data : Errors.SOMETHING_WENT_WRONG
 }
@@ -1218,111 +1212,3 @@ export function removeReaction(post, reactType) {
         post.disliked = false
     }
 }
-
-
-/*
-* let addNew = rank.code !== Defaults.GUEST ?
-        '<button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
-    let html = `
-        <div x-data="{posts:${feeds}" class="flex flex-col text-skin-on-primary h-full w-full text-center">
-            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
-                <p class="text-md font-bold ">Global Feed</p>
-                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
-            </div>
-            <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
-                    <ul>
-        `
-    if (feeds.length > 0) {
-        feeds.forEach(feed => {
-            let user = feed.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = feed.image != null ? `<img @click="showImageDialog($el)" src="${feed.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
-            let content = feed.content.replaceAll('\r\n', '<br>')
-            let delFeed = permission.delGlobalFeed ? `<i @click="delGlobalFeed(${feed.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between">
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>
-                           <div class="flex items-center gap-2">
-                                <p class="date">${feed.createdAt}</p>${delFeed}
-                           </div>
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Global Feeds</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
-* */
-
-
-/*
-*  let addNew = permission.adminship ?
-        '<button @click="writeAdminShipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"><i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New</button>' : Defaults.EMPTY_STRING
-    let html = `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
-            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
-                <p class="text-md font-bold ">Adminship</p>
-                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
-            </div>
-            <div class="p-[10px] flex-1 relative">
-                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">${addNew}
-                    <ul>
-        `
-    if (adminships.length > 0) {
-        adminships.forEach(adminship => {
-            let user = adminship.user
-            let fontStyle = user.textBold ? 'font-bold' : 'font-normal'
-            let image = adminship.image != null ? `<img @click="showImageDialog($el)" src="${adminship.image}" alt="" class="w-full mt-2 cursor-pointer">` : Defaults.EMPTY_STRING
-            let content = adminship.content.replaceAll('\r\n', '<br>')
-            let delAdminship = permission.delAdminship ? `<i @click="delAdminship(${adminship.id})" class="fa-solid fa-trash-can icon-sm"></i>` : Defaults.EMPTY_STRING
-            html += `
-                <li class="card-wrap" xmlns="http://www.w3.org/1999/html">
-                   <div class="flex flex-col w-full">
-                       <div class="flex items-center justify-between">
-                           <div class="flex items-center gap-2">
-                               <img @click="getUserProfile(${user.id})" class="avatar flex-none cursor-pointer" src="${user.avatar}" alt="">
-                               <p class="username clip ${user.nameColor} ${user.nameFont}">${user.name}</p>
-                           </div>
-                           <div class="flex items-center gap-2">
-                                <p class="date">${adminship.createdAt}</p>${delAdminship}
-                           </div>
-                       </div>
-                       <div class="text-start mt-2">
-                           <p class="chat clip ${user.textColor} ${fontStyle} ${user.textFont}">${content}</p>${image}
-                       </div>
-                   </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="card-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
-                    <p class="text-[12px] font-bold" > No AdminShip Posts</p>
-                </div>
-            </li>
-       `
-    }
-    html += `</ul></div></div></div>`
-    return html
-* */
