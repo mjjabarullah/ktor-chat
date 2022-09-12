@@ -102,7 +102,7 @@ export function pvtEmojisHtml() {
     return head + emos
 }
 
-function appendEmojis(content) {
+export function appendEmojis(content) {
     if (content === '') return content
     let result = ''
     const words = content.split(" ")
@@ -523,8 +523,8 @@ export function customizeTextHtml() {
     `
 }
 
-export function messageModalHtml(pvtUsers) {
-    let html = `
+export function messageModalHtml() {
+    return `
         <div class="text-skin-on-primary h-full">
             <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                 <p class="text-md font-bold ">Messages</p>
@@ -532,42 +532,34 @@ export function messageModalHtml(pvtUsers) {
             </div> 
             <div class="p-[10px]">
                 <ul class="h-full ">
+                    <template x-if="pvtUsers.length>0" >
+                        <template x-for="pvtUser in pvtUsers" :key="pvtUser.id">
+                            <li @click="openPvtDialog(pvtUser.id)" class="pvt-user-wrap">
+                               <div class="w-full gap-2">
+                                    <div class="flex h-full w-full items-center">
+                                        <img class="avatar flex-none mx-1" :src="pvtUser.avatar">
+                                        <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
+                                            <p class="ellipsis username clip" :class="[pvtUser.nameColor, pvtUser.nameFont]" x-text="pvtUser.name">
+                                            <p class="flex items-center clip ellipsis text-gray-500 text-[12px]" x-text="getPvtMessage(pvtUser)"></p>
+                                        </div>
+                                       <p x-show="user.unReadCount>0" class="count-md" x-text="user.unReadCount"></p>
+                                    </div>
+                                </div>
+                            </li> 
+                        </template>
+                    </template>
+                    <template x-if="pvtUsers.length === 0"> 
+                        <li class="pvt-user-wrap">
+                           <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                <img class="w-[40px]" src="/images/defaults/topic.webp" alt="">
+                                <p class="text-[12px] font-bold" > No Messages</p>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
     `
-    if (pvtUsers.length > 0) {
-        pvtUsers.forEach(user => {
-            let count = user.unReadCount > 0 ? `<p class="count-md">${user.unReadCount}</p>` : Defaults.EMPTY_STRING
-            const message = user.messages[0]
-            const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} : `
-            let content = message != null ? appendEmojis(message.content) : Defaults.EMPTY_STRING
-            if (message.image && content === Defaults.EMPTY_STRING) content += '(Image)'
-            if (message.audio && content === Defaults.EMPTY_STRING) content += '(Audio)'
-            content = person + content
-            html += `
-                <li @click="openPvtDialog(${user.id})" class="pvt-user-wrap">
-                   <div class="w-full gap-2">
-                        <div class="flex h-full w-full items-center">
-                            <img class="avatar flex-none mx-1" src="${user.avatar}">
-                            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
-                                <p class="ellipsis username clip ${user.nameColor} ${user.nameFont}"> ${user.name}
-                                <p class="flex items-center clip ellipsis text-gray-500 text-[12px]">${content}</p>
-                            </div>${count}
-                        </div>
-                    </div>
-                </li>
-            `
-        })
-    } else {
-        html += `
-            <li class="pvt-user-wrap">
-               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                    <img class="w-[40px]" src="/images/defaults/topic.webp" alt="">
-                    <p class="text-[12px] font-bold" > No Messages</p>
-                </div>
-            </li>
-        `
-    }
-    html += '</ul></div></div>'
-    return html
 }
 
 export function changeUserNameHtml() {
@@ -632,7 +624,7 @@ export function roomModalLoadingHtml() {
 }
 
 export function roomModalHtml(rooms) {
-    let html = `
+    return `
         <div class="text-skin-on-primary h-full">
             <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                 <p class="text-md font-bold ">Room List</p>
@@ -640,27 +632,29 @@ export function roomModalHtml(rooms) {
             </div> 
             <div class="p-[10px]">
                 <ul class="h-full">
+                    <template x-for="rm in rooms" :key="rm.id">
+                       <li class="my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 ">
+                            <i class="fa-solid fa-earth-americas text-3xl flex-none text-skin-hover"></i>
+                            <div class="flex-1 text-left ml-2 text-black">
+                                <p class="font-bold text-[12px]" x-text="rm.name"></p>
+                                <div>
+                                    <i class="fa-solid fa-user-group "></i><span class="ml-2" x-text="rm.onlineUsers"></span>
+                                </div>
+                            </div>
+                            <template x-if="rm.id === room.id"> 
+                                 <p class="text-black text-[10px] font-bold">(Current Room)</p>
+                            </template>
+                             <template x-if="rm.id !== room.id"> 
+                                 <form class="flex-none" :action="'/${domain.id}/rooms/'+rm.id+'/join'" method="post">
+                                    <button type="submit" class="btn-join">Join<i class="fa-solid fa-angles-right ml-2"></i></button>
+                                 </form>
+                            </template>
+                       </li> 
+                    </template>
+                </ul> 
+            </div>
+        </div>
     `
-    rooms.forEach(rm => {
-        const submitBtn = rm.id === room.id ?
-            '<p class="text-black text-[10px] font-bold">(Current Room)</p>' :
-            `<form class="flex-none" action="/${domain.id}/rooms/${rm.id}/join" method="post">
-                <button type="submit" class="btn-join">Join&nbsp&nbsp<i class="fa-solid fa-angles-right"></i></button>
-            </form>`
-        html += `
-            <li class="my-2 px-2 py-1 border border-gray-200 flex items-center rounded shadow-md shadow-black/5 ">
-                <i class="fa-solid fa-earth-americas text-3xl flex-none text-skin-hover"></i>
-                <div class="flex-1 text-left ml-2 text-black">
-                    <p class="font-bold text-[12px]">${rm.name}</p>
-                    <div>
-                        <i class="fa-solid fa-user-group "></i>&nbsp&nbsp${rm.onlineUsers}
-                    </div>
-                </div>${submitBtn}
-            </li>
-        `
-    })
-    html += `</ul></div></div>`
-    return html
 }
 
 export function newsModalHtml() {

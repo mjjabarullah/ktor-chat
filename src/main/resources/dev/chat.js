@@ -78,8 +78,7 @@ document.addEventListener('alpine:init', () => {
             statusColor: '',
             userStatusColor: '',
             emoTab: 0,
-            roomSocket: new WebSocket(`wss://${location.host}/chat/${domain.id}/room/${room.id}`),
-            userSocket: new WebSocket(`wss://${location.host}/${domain.id}/member/${userId}`),
+            rooms: [],
             roomUsers: [],
             blockedUsers: [],
             onlineUsers: [],
@@ -99,19 +98,9 @@ document.addEventListener('alpine:init', () => {
             isRecording: false,
             remainingTime: Defaults.MAX_RECORDING_TIME,
             init() {
-                this.showRight = desktop.matches || tablet.matches
-                this.showLeft = desktop.matches
+                this.responsive()
 
-                desktop.onchange = () => {
-                    this.showLeft = desktop.matches
-                    this.showRight = desktop.matches || tablet.matches
-                }
-
-                tablet.onchange = () => this.showRight = desktop.matches || tablet.matches
-
-                this.recorder = new MicRecorder({bitrate: 80})
-
-                this.$refs.mainEmojis.innerHTML = fn.getEmojisHtml()
+                this.connectWs()
 
                 this.getBlockedUsers()
 
@@ -129,19 +118,9 @@ document.addEventListener('alpine:init', () => {
 
                 this.getMessages()
 
-                this.roomSocket.addEventListener('message', (e) => {
-                    const message = JSON.parse(e.data)
-                    this.onMessageReceived(message)
-                    message.type === MessageType.Chat && message.user.id !== userId && this.$refs.chatSound.play()
-                })
+                this.recorder = new MicRecorder({bitrate: 80})
 
-                this.roomSocket.addEventListener('close', () => {
-                }/*location.reload()*/)
-
-                this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
-
-                this.userSocket.addEventListener('close', () => {
-                } /*location.reload()*/)
+                this.$refs.mainEmojis.innerHTML = fn.getEmojisHtml()
 
                 const isUGCShowed = localStorage.getItem('isUGCShowed')
                 if (isUGCShowed !== "true") {
@@ -192,8 +171,39 @@ document.addEventListener('alpine:init', () => {
             },
 
             /**
+             * Websocket
+             * */
+            connectWs() {
+                this.roomSocket = new WebSocket(`wss://${location.host}/chat/${domain.id}/room/${room.id}`)
+                this.userSocket = new WebSocket(`wss://${location.host}/${domain.id}/member/${userId}`)
+                this.roomSocket.addEventListener('message', (e) => {
+                    const message = JSON.parse(e.data)
+                    this.onMessageReceived(message)
+                    message.type === MessageType.Chat && message.user.id !== userId && this.$refs.chatSound.play()
+                })
+
+                this.roomSocket.addEventListener('close', () => {
+                }/*location.reload()*/)
+
+                this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
+
+                this.userSocket.addEventListener('close', () => {
+                } /*location.reload()*/)
+            },
+            /**
              * Responsive
              * */
+            responsive() {
+                this.showRight = desktop.matches || tablet.matches
+                this.showLeft = desktop.matches
+
+                desktop.onchange = () => {
+                    this.showLeft = desktop.matches
+                    this.showRight = desktop.matches || tablet.matches
+                }
+
+                tablet.onchange = () => this.showRight = desktop.matches || tablet.matches
+            },
             toggleLeft() {
                 this.showLeft = !this.showLeft
                 if (tablet.matches) return
@@ -889,6 +899,14 @@ document.addEventListener('alpine:init', () => {
             /**
              * Private Messages
              * */
+            getPvtMessage(user) {
+                const message = user.messages[0]
+                const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} :`
+                let content = message != null ? fn.appendEmojis(message.content) : Defaults.EMPTY_STRING
+                if (message.image && content === Defaults.EMPTY_STRING) content += '(Image)'
+                if (message.audio && content === Defaults.EMPTY_STRING) content += '(Audio)'
+                return person + content
+            },
             getPvtEmojis(el) {
                 el.innerHTML = fn.pvtEmojisHtml()
             },
@@ -1063,7 +1081,7 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             openMessageModal() {
-                this.showFullModal(fn.messageModalHtml(this.pvtUsers))
+                this.showFullModal(fn.messageModalHtml())
             },
             setAllSeen(sender) {
                 axios.post(`${domain.id}/pvt/${sender}/all-seen`).then(res => {
@@ -1082,7 +1100,7 @@ document.addEventListener('alpine:init', () => {
                             user.unReadCount++
                             unSeen = true
                         }
-                        message.content = appendEmojis(message.content)
+                        message.content = fn.appendEmojis(message.content)
                     })
                     if (unSeen === true) count++
                 })
@@ -1104,7 +1122,10 @@ document.addEventListener('alpine:init', () => {
             openRoomsModal() {
                 if (mobile.matches) this.showLeft = false
                 this.showFullModal(fn.roomModalLoadingHtml())
-                axios.get(`/${domain.id}/rooms`).then(res => this.showFullModal(fn.roomModalHtml(res.data)))
+                axios.get(`/${domain.id}/rooms`).then(res => {
+                    this.rooms = res.data
+                    this.showFullModal(fn.roomModalHtml())
+                })
             },
             getRoomUsers() {
                 axios.get(`/${domain.id}/rooms/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
