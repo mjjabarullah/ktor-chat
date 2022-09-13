@@ -1,10 +1,8 @@
 package com.rainbowtechsolution.data.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.common.Validation
 import com.rainbowtechsolution.data.entity.Gender
-import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.*
@@ -16,6 +14,8 @@ data class User(
     var name: String? = null,
     var email: String? = null,
     var password: String? = null,
+    var owner: Boolean = false,
+    var bot: Boolean = false,
     var gender: String? = null,
     var avatar: String? = null,
     var dob: String? = null,
@@ -42,9 +42,9 @@ data class User(
     var pvtSound: Boolean = false,
     var nameSound: Boolean = false,
     var notifiSound: Boolean = false,
-    var muted: Boolean = false,
-    var kicked: Boolean = false,
-    var banned: Boolean = false,
+    var muted: Long = 0,
+    var kicked: Long = 0,
+    var banned: Long = 0,
     var muteMsg: String? = null,
     var kickMsg: String? = null,
     var banMsg: String? = null,

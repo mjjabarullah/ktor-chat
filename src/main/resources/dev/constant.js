@@ -33,29 +33,51 @@ export const MessageType = {
     Mute: 'Mute',
     UnMute: 'UnMute',
     Kick: 'Kick',
-    Ban: 'Ban'
+    Ban: 'Ban',
+    Notification: 'Notification'
 }
 
 /**
  * Status Type
  * */
-export const Status = {Stay: 'Stay', Online: 'Online', Away: 'Away', Busy: 'Busy'}
+export const Status = {
+    Stay: 'Stay',
+    Online: 'Online',
+    Away: 'Away',
+    Busy: 'Busy',
+    Muted: 'Muted',
+    Kicked: 'Kicked',
+    Banned: 'Banned'
+}
 
 /**
  * Report Type
  * */
-export const ReportType = {Chat: 'Chat', PvtChat: 'PvtChat', NewsFeed: 'NewsFeed'}
+export const ReportType = {
+    Chat: 'Chat',
+    PvtChat: 'PvtChat',
+    NewsFeed: 'NewsFeed'
+}
 
 /**
  * Post Type
  * */
-export const PostType = {Announcement: 'Announcement', GlobalFeed: 'GlobalFeed', Adminship: 'Adminship'}
+export const PostType = {
+    Announcement: 'Announcement',
+    GlobalFeed: 'GlobalFeed',
+    Adminship: 'Adminship'
+}
 
 
 /**
  * React Type
  * */
-export const ReactType = {Like: 'Like', Love: 'Love', Lol: 'Lol', Dislike: 'Dislike'}
+export const ReactType = {
+    Like: 'Like',
+    Love: 'Love',
+    Lol: 'Lol',
+    Dislike: 'Dislike'
+}
 
 
 /**
@@ -106,16 +128,18 @@ export const Errors = {
     CONTENT_EMPTY: 'Content cannot be empty',
     REPORTING_FAILED: 'Message reporting failed',
     BLOCKING_FAILED: 'User blocking failed',
-    UNBLOCKING_FAILED: 'User unblocking failed',
-    MUTED: 'You have been muted',
-    UNMUTED: 'You have been unmuted'
+    UNBLOCKING_FAILED: 'User unblocking failed'
 }
 
 /**
  * Css classes
  * */
 export const Css = {
-    SUCCESS: 'success', ERROR: 'error', GREEN: 'green', YELLOW: 'yellow', RED: 'red'
+    SUCCESS: 'success',
+    ERROR: 'error',
+    GREEN: 'green',
+    YELLOW: 'yellow',
+    RED: 'red'
 }
 
 /**
@@ -127,7 +151,6 @@ export const Defaults = {
     FUNC_TYPE: 'function',
     GUEST: 'guest',
     MAX_RECORDING_TIME: 180,
-    MIN_RECORDING_TIME: 10,
-    timing: [2, 5, 10, 15, 30, 60, 24 * 60, 2 * 24 * 60, 3 * 24 * 60, 4 * 24 * 60, 5 * 24 * 60, 6 * 24 * 60, 7 * 24 * 60, 14 * 24 * 60, 30 * 24 * 60]
+    MIN_RECORDING_TIME: 10
 }
 

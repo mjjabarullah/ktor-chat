@@ -57,7 +57,7 @@
                                 <tbody>
                                 <tr>
                                     <th>Status</th>
-                                    <td class="font-bold" x-text="u.status" :class="userStatusColor"></td>
+                                    <td class="font-bold" x-text="u.status" :class="u.statusColor"></td>
                                 </tr>
                                 <tr>
                                     <th>Gender</th>
@@ -93,7 +93,7 @@
                                             <th>
                                                 <div class="inline-flex items-center cursor-pointer">
                                                     <i class="fa-regular fa-hand text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.muted?'Unmute': 'Mute'"></p>
+                                                    <p class="ml-2" x-text="u.muted>0?'Unmute': 'Mute'"></p>
                                                 </div>
                                             </th>
                                             <td></td>
@@ -104,7 +104,7 @@
                                             <th>
                                                 <div class="inline-flex items-center cursor-pointer">
                                                     <i class="fa-solid fa-user-slash text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.kicked?'Unkick': 'Kick'"></p>
+                                                    <p class="ml-2" x-text="u.kicked>0?'Unkick': 'Kick'"></p>
                                                 </div>
                                             </th>
                                             <td></td>
@@ -115,7 +115,7 @@
                                             <th>
                                                 <div class="inline-flex items-center cursor-pointer">
                                                     <i class="fa-solid fa-ban text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.kicked?'Unban': 'Ban'"></p>
+                                                    <p class="ml-2" x-text="u.banned>0?'Unban': 'Ban'"></p>
                                                 </div>
                                             </th>
                                             <td></td>

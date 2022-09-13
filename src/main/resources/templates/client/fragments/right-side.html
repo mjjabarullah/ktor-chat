@@ -29,7 +29,7 @@
                                     <p x-text="user.mood" class="mood ellipsis clip"
                                        :class="[user.nameColor, user.nameFont]"></p>
                                 </div>
-                                <template x-if="user.muted">
+                                <template x-if="user.muted > 0">
                                     <img class="gender flex-none" src="/images/actions/muted.webp">
                                 </template>
                                 <img class="gender flex-none"

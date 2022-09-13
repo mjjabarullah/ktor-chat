@@ -49,6 +49,7 @@ document.addEventListener('alpine:init', () => {
                 textBold: `${textBold}`,
                 textFont: textFont,
                 status: status,
+                statusColor: '',
                 joined: joined,
                 dob: dob,
                 points: points,
@@ -65,8 +66,6 @@ document.addEventListener('alpine:init', () => {
             u: null,
             bgColors: bgColors,
             avatars: avatars,
-            statusColor: '',
-            userStatusColor: '',
             emoTab: 0,
             rooms: [],
             roomUsers: [],
@@ -75,19 +74,26 @@ document.addEventListener('alpine:init', () => {
             offlineUsers: [],
             pvtUsers: [],
             reports: [],
+            notification: {notifications: [], unReadCount: 0},
             news: {posts: [], unReadCount: 0},
             globalFeed: {posts: [], unReadCount: 0},
             adminship: {posts: [], unReadCount: 0},
             pvtNotifiCount: 0,
-            reportNotifiCount: 0,
-            notifiCount: 0,
+            notifyUnreadCount: 0,
             newsUnreadCount: 0,
             adminshipUnreadCount: 0,
             globalFeedUnreadCount: 0,
             totalCount: 0,
             isRecording: false,
             remainingTime: Defaults.MAX_RECORDING_TIME,
+            muteInterval: null,
             init() {
+                this.checkMute()
+                this.muteInterval = setInterval(() => {
+                    if (this.user.muted > 0) this.checkMute()
+                    else if (this.muteInterval) clearInterval(this.muteInterval)
+                }, 1e4)
+
                 this.responsive()
 
                 this.connectWs()
@@ -107,6 +113,8 @@ document.addEventListener('alpine:init', () => {
                 this.getAdminships()
 
                 this.getMessages()
+
+                this.getNotifications()
 
                 this.recorder = new MicRecorder({bitrate: 80})
 
@@ -278,14 +286,35 @@ document.addEventListener('alpine:init', () => {
                 }
             },
 
+
+            /**
+             *
+             * */
+            getNotifications() {
+                axios.get(`/${domain.id}/users/notifications`).then(res => {
+                    this.notification = res.data
+                    this.notifyUnreadCount = this.notification.unReadCount
+                })
+            },
+            openNotificationModal() {
+                this.showFullModal(fn.notificationModalHtml())
+            },
+            closeNotificationModal() {
+                axios.put(`/${domain.id}/users/notifications/read`).then(res => {
+                    this.notification.notifications.forEach(notification => notification.seen = true)
+                    this.notification.unReadCount = this.notifyUnreadCount = 0
+                })
+                this.closeFullModal()
+            },
+
             /**
              * Profile
              * */
             setStatusColor() {
-                this.user.status === Status.Online ? this.statusColor = Css.GREEN :
-                    this.user.status === Status.Away ? this.statusColor = Css.YELLOW :
-                        this.user.status === Status.Busy ? this.statusColor = Css.RED :
-                            this.statusColor = Defaults.EMPTY_STRING
+                this.user.status === Status.Online ? this.user.statusColor = Css.GREEN :
+                    this.user.status === Status.Away ? this.user.statusColor = Css.YELLOW :
+                        this.user.status === Status.Busy || this.user.status === Status.Muted || this.user.status === Status.Kicked || this.user.status === Status.Banned ? this.user.statusColor = Css.RED :
+                            this.user.statusColor = Defaults.EMPTY_STRING
             },
             showLogoutDialog() {
                 this.showSmallModal(fn.logoutHtml())
@@ -450,9 +479,11 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeStatusDialog() {
+                if (this.user.muted > 0 || this.user.kicked > 0 || this.user.banned > 0) return
                 this.showSmallModal(fn.changeStatusHtml())
             },
             changeStatus() {
+                /*TODO change status bug*/
                 if (this.user.status === Defaults.EMPTY_STRING) return
                 const formData = new FormData()
                 formData.append('status', this.user.status)
@@ -583,6 +614,11 @@ document.addEventListener('alpine:init', () => {
                     this.u = res.data
                     const user = this.blockedUsers.find(user => user.id === this.u.id)
                     this.u.blocked = user != null
+                    this.u.tempStatus = this.u.status
+                    this.u.statusColor = ''
+                    this.u.muted > 0 ? this.u.status = Status.Muted :
+                        this.u.kicked > 0 ? this.u.status = Status.Kicked :
+                            this.u.banned > 0 ? this.u.status = Status.Banned : this.u.status
                     this.setUserStatusColor()
                     this.showUserProfile = true
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
@@ -591,10 +627,10 @@ document.addEventListener('alpine:init', () => {
                 this.showUserProfile = false
             },
             setUserStatusColor() {
-                this.user.status === Status.Online ? this.statusColor = Css.GREEN :
-                    this.user.status === Status.Away ? this.statusColor = Css.YELLOW :
-                        this.user.status === Status.Busy ? this.statusColor = Css.RED :
-                            this.statusColor = Defaults.EMPTY_STRING
+                this.u.status === Status.Online ? this.u.statusColor = Css.GREEN :
+                    this.u.status === Status.Away ? this.u.statusColor = Css.YELLOW :
+                        this.u.status === Status.Busy || this.u.status === Status.Muted || this.u.status === Status.Kicked || this.u.status === Status.Banned ? this.u.statusColor = Css.RED :
+                            this.u.statusColor = Defaults.EMPTY_STRING
             },
             changeUserNameDialog() {
                 if (!permission.userName) {
@@ -697,7 +733,7 @@ document.addEventListener('alpine:init', () => {
                 this.roomSocket.send(JSON.stringify(message))
             },
             sendMessage() {
-                if (this.user.muted) {
+                if (this.user.muted > 0) {
                     this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
                     return
                 }
@@ -837,11 +873,11 @@ document.addEventListener('alpine:init', () => {
                 if (message.type === MessageType.ActionTaken) if (permission.reports) this.getReports()
                 if (message.type === MessageType.Mute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
-                    if (user) user.muted = true
+                    if (user) user.muted = 123456789
                 }
                 if (message.type === MessageType.UnMute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
-                    if (user) user.muted = false
+                    if (user) user.muted = 0
                 }
             },
             deleteChat(id) {
@@ -921,6 +957,10 @@ document.addEventListener('alpine:init', () => {
                 }
             },
             sendPvtMessage(id, input) {
+                if (this.user.muted > 0) {
+                    this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
+                    return
+                }
                 const user = this.pvtUsers.find(user => user.id === id)
                 if (!user.private || !permission.private) {
                     this.showAlertMsg(Errors.CANT_PRIVATE, Css.ERROR)
@@ -1020,18 +1060,22 @@ document.addEventListener('alpine:init', () => {
                     user.messages.unshift(message)
                     this.setPvtNotifiCount()
                 }
-                message.type === MessageType.DataChanges && location.reload()
+                if (message.type === MessageType.DataChanges) location.reload()
                 if (message.type === MessageType.Mute) {
-                    this.user.muted = true
-                    this.$refs.mainInput.disabled = this.user.muted
-                    this.showAlertMsg(Errors.MUTED, Css.ERROR)
+                    this.checkMute()
+                    this.muteInterval = setInterval(() => {
+                        if (this.user.muted > 0) this.checkMute()
+                        else if (this.muteInterval) clearInterval(this.muteInterval)
+                    }, 1e4)
                 }
                 if (message.type === MessageType.UnMute) {
-                    if (message.user.id === userId) {
-                        this.user.muted = false
-                        this.$refs.mainInput.disabled = this.user.muted
-                        this.showAlertMsg(Errors.UNMUTED, Css.SUCCESS)
-                    }
+                    this.user.muted = res.data
+                    this.$refs.mainInput.disabled = this.user.muted > 0
+                    if (this.muteInterval) clearInterval(this.muteInterval)
+                }
+                if (message.type === MessageType.Notification) {
+                    this.getNotifications()
+                    if (this.user.notifiSound) this.$refs.notifySound.play()
                 }
             },
             reCheckPvtMessages() {
@@ -1115,7 +1159,6 @@ document.addEventListener('alpine:init', () => {
                 permission.reports &&
                 axios.get(`/${domain.id}/reports`).then(res => {
                     this.reports = res.data
-                    this.reportNotifiCount = this.reports.length
                 })
             },
             openReportsModal() {
@@ -1249,6 +1292,10 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/global-feed/read`).then(() => this.globalFeedUnreadCount = this.globalFeed.unReadCount = 0)
             },
             writeGlobalFeedDialog() {
+                if (this.user.muted > 0) {
+                    this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
+                    return
+                }
                 if (rank.code === Defaults.GUEST) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
@@ -1293,26 +1340,43 @@ document.addEventListener('alpine:init', () => {
                     this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
                 }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
             },
-
             actionMuteDialog() {
                 if (!permission.mute) {
-                    this.showAlertMsg(Success.USER_UNBLOCKED.replace(/%USER%/g, this.u.name), Css.ERROR)
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                if (!this.u.muted) this.showSmallModal(fn.muteDialogHtml(userId, name))
-                else this.unmute()
+                this.u.muted !== 0 ? this.unmute() : this.showSmallModal(fn.muteDialogHtml(userId, name))
             },
-            mute() {
-                axios.put(`/${domain.id}/users/${this.u.id}/mute`).then(() => {
-                    this.u.muted = true
+            mute(time, reason) {
+                if (!permission.mute) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                let formData = new FormData()
+                formData.append('time', time)
+                formData.append('reason', reason)
+                axios.put(`/${domain.id}/users/${this.u.id}/mute`, formData).then(res => {
+                    this.u.muted = res.data
+                    this.u.status = Status.Muted
+                    this.setUserStatusColor()
                     this.showAlertMsg(Success.USER_MUTED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
                     this.closeSmallModal()
                 })
             },
             unmute() {
                 axios.put(`/${domain.id}/users/${this.u.id}/unmute`).then(() => {
-                    this.u.muted = false
+                    this.u.muted = 0
+                    this.u.status = this.u.tempStatus
+                    this.setUserStatusColor()
                     this.showAlertMsg(Success.USER_UNMUTED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                })
+            },
+            checkMute() {
+                axios.get(`/${domain.id}/users/check-mute`).then(res => {
+                    this.user.muted = res.data
+                    this.user.muted > 0 ? this.user.status = Status.Muted : this.user.status = status
+                    this.setStatusColor()
+                    this.$refs.mainInput.disabled = this.user.muted > 0
                 })
             },
             kickUser(id) {
@@ -1335,8 +1399,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('actions', () => {
         return {
             reason: '',
-            selectedTime: 0,
-            timing: Defaults.timing,
+            selectedTime: 5,
             getTiming(time) {
                 let result = ''
                 let hour = time / 60

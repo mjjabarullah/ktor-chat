@@ -52,9 +52,13 @@
                             <tbody>
                             <tr>
                                 <th>Status</th>
-                                <td><span class="font-bold" x-text="user.status" :class="statusColor"></span>
-                                    <i @click="changeStatusDialog"
-                                       class="ml-1 text-black fa-solid fa-pen-to-square cursor-pointer"></i></td>
+                                <td>
+                                    <span class="font-bold" x-text="user.status" :class="user.statusColor"></span>
+                                    <template x-if="user.muted==0 || user.kicked==0 || user.banned==0">
+                                        <i @click="changeStatusDialog"
+                                           class="ml-1 text-black fa-solid fa-pen-to-square cursor-pointer"></i>
+                                    </template>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Gender</th>

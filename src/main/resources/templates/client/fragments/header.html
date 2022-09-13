@@ -13,7 +13,7 @@
         <div class="h-full flex lg:w-80 justify-end items-center gap-4 pr-4">
             <div th:if="${permission.reports}" @click="openReportsModal" class="relative">
                 <i class="fa-solid fa-flag icon-white"></i>
-                <p x-cloak x-show="reportNotifiCount > 0" x-transition class="count" x-text="reportNotifiCount"></p>
+                <p x-cloak x-show="reports.length > 0" x-transition class="count" x-text="reports.length"></p>
             </div>
             <div @click="openMessageModal" class="relative">
                 <i class="fa-solid fa-envelope icon-white"></i>
@@ -21,7 +21,7 @@
             </div>
             <div @click="openNotificationModal" class="relative">
                 <i class="fa-solid fa-bell icon-white"></i>
-                <p x-cloak x-show="notifiCount > 0" x-transition class="count" x-text="notifiCount"></p>
+                <p x-cloak x-show="notifyUnreadCount > 0" x-transition class="count" x-text="notifyUnreadCount"></p>
             </div>
             <i @click="toggleRight" class="fa-solid fa-user-group icon-white md:hidden block"></i>
         </div>

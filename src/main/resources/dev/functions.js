@@ -715,7 +715,7 @@ export function newsModalHtml() {
                                                 <p class="text-[12px]" x-text="post.dislikeCount"></p> 
                                               </div>
                                             </div>
-                                            <div @click="getComments(post.id)" class="reaction">
+                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
@@ -748,7 +748,7 @@ export function newsModalHtml() {
                             </template>
                         </template>
                         <template x-if="news.posts.length==0">
-                            <li class="card-wrap">
+                            <li class="pvt-user-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                     <img class="w-[40px]" src="/images/defaults/announcement.webp" alt="">
                                     <p class="text-[12px] font-bold" > No Announcements</p>
@@ -843,7 +843,7 @@ export function adminshipModalHtml() {
                                                 <p class="text-[12px]" x-text="post.dislikeCount"></p> 
                                               </div>
                                             </div>
-                                            <div @click="getComments(post.id)" class="reaction">
+                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
                                                 <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
@@ -876,7 +876,7 @@ export function adminshipModalHtml() {
                             </template>
                         </template>
                         <template x-if="adminship.posts.length==0">
-                            <li class="card-wrap">
+                            <li class="pvt-user-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                     <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
                                     <p class="text-[12px] font-bold" > No Adminship Posts</p>
@@ -971,7 +971,7 @@ export function globalFeedModalHtml() {
                                                 <p class="text-[12px]" x-text="post.dislikeCount"></p> 
                                               </div>
                                             </div>
-                                            <div @click="getComments(post.id)" class="reaction">
+                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
                                                 <img class="w-4 h-4" alt="" src="/images/defaults/comment.webp"> 
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
@@ -1004,10 +1004,10 @@ export function globalFeedModalHtml() {
                             </template>
                         </template>
                         <template x-if="globalFeed.posts.length==0">
-                            <li class="card-wrap">
+                            <li class="pvt-user-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                     <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
-                                    <p class="text-[12px] font-bold" > No Global Feeds</p>
+                                    <p class="text-[12px] font-bold" >No Global Feeds</p>
                                 </div>
                             </li>
                         </template
@@ -1132,6 +1132,50 @@ export function reportDialogHtml(id, type) {
     `
 }
 
+export function notificationModalHtml() {
+    return `
+        <div class="flex flex-col text-skin-on-primary h-full w-full">
+            <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
+                <p class="text-md font-bold ">Notifications</p>
+                <i @click="closeNotificationModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-[10px] flex-1 relative">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <ul >
+                        <template x-if="notification.notifications.length>0">
+                            <template x-for="notification in notification.notifications" :key="notification.id">
+                               <li class="report-user-wrap">
+                                   <div class="w-full gap-2">
+                                        <div class="flex h-full w-full items-center">
+                                            <img class="avatar flex-none mx-1" src="/images/defaults/bot.webp">
+                                            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center relative">
+                                                <div x-show="!notification.seen" class="bg-red-500 absolute px-1 rounded right-1 top-1">
+                                                    <p class="text-[10px] font-bold text-white">New</p> 
+                                                </div>
+                                                <p class="ellipsis username clip text-black">System</p>
+                                                <p class="date" x-text="notification.createdAt"></p>
+                                                <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="notification.content"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                             </template>
+                        </template>
+                        <template x-if="notification.notifications.length==0">
+                           <li class="pvt-user-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/bell.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No Notifications</p>
+                                </div>
+                           </li>
+                        </template
+                    </ul> 
+                </div>
+            </div> 
+        </div>
+    `
+}
+
 export function blockedModalHtml() {
     return `
         <div class="flex flex-col text-skin-on-primary h-full w-full text-center">
@@ -1227,9 +1271,21 @@ export function muteDialogHtml() {
                 <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
                 <div class="w-full mb-4 h-10"> 
                     <select x-model="selectedTime" class="input-text h-full">
-                        <template x-for="(time, index) in timing" :key="index"> 
-                            <option :value="time" x-text="getTiming(time)"></option>
-                        </template>
+                        <option value="2">2 minutes</option>
+                        <option value="5">5 minutes</option>
+                        <option value="10">10 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="1440">1 day</option>
+                        <option value="2880">2 days</option>
+                        <option value="4320">3 days</option>
+                        <option value="5760">4 days</option>
+                        <option value="7200">5 days</option>
+                        <option value="8640">6 days</option>
+                        <option value="10080">7 days</option>
+                        <option value="20160">14 days</option>
+                        <option value="43200">30 days</option>
                     </select>
                 </div>
                 <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
@@ -1237,7 +1293,7 @@ export function muteDialogHtml() {
                     <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
                 </div>
                 <div class="flex gap-2 justify-center">
-                    <button @click="mute" class="btn-action bg-green-500">Mute</button>          
+                    <button @click="mute(selectedTime, reason)" class="btn-action bg-green-500">Mute</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>
                 </div>
             </div>

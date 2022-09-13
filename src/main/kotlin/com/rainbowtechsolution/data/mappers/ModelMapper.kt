@@ -47,6 +47,8 @@ fun ResultRow.toUserModel(): User {
         id = this[Users.id].value,
         name = this[Users.name].capitalize(),
         avatar = this[Users.avatar],
+        owner = this[Users.owner],
+        bot = this[Users.bot],
         gender = this[Users.gender].name,
         dob = this[Users.dob],
         about = this[Users.about],

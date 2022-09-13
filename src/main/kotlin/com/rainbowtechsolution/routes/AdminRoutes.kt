@@ -34,7 +34,8 @@ import java.time.ZoneId
 fun Route.adminRotes(
     domains: List<String>, domainRepository: DomainRepository, userRepository: UserRepository,
     rankRepository: RankRepository, permissionRepository: PermissionRepository, roomRepository: RoomRepository,
-    messageRepository: MessageRepository, reportRepository: ReportRepository, postRepository: PostRepository
+    messageRepository: MessageRepository, reportRepository: ReportRepository, postRepository: PostRepository,
+    notificationRepository: NotificationRepository
 ) {
 
 
@@ -249,7 +250,10 @@ fun Route.adminRotes(
                         put("/mute") {
                             try {
                                 val params = call.receiveParameters()
-                                val time = params["time"]!!.toInt()
+                                val timeParam = params["time"]!!.toLong()
+                                val time = LocalDateTime.now().plusMinutes(timeParam).atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
                                 val reason = params["reason"]
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val user = userRepository.findUserById(userId)
@@ -259,7 +263,13 @@ fun Route.adminRotes(
                                 val message = Message(user = User(id = userId), content = "", type = MessageType.Mute)
                                 WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                 WsController.broadCastToMember(userId, message.encodeToString())
-                                call.respond(HttpStatusCode.OK)
+                                val notification = Notification(
+                                    receiver = User(userId), content = "You have been muted for ${timeParam.getTime()}"
+                                )
+                                notificationRepository.createNotification(notification)
+                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                WsController.broadCastToMember(userId, nMessage.encodeToString())
+                                call.respond(HttpStatusCode.OK, time)
                             } catch (e: Exception) {
                                 call.respond(HttpStatusCode.BadRequest)
                             }
@@ -268,11 +278,19 @@ fun Route.adminRotes(
                         put("/unmute") {
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
+                                val domainId = call.parameters["domainId"]!!.toInt()
                                 val user = userRepository.findUserById(userId)
                                 val roomId = user?.roomId!!
                                 userRepository.unMute(userId)
                                 val message = Message(user = User(id = userId), content = "", type = MessageType.UnMute)
-                                //WsController.broadcastToRoom(roomId, message.encodeToString())
+                                WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                val notification = Notification(
+                                    receiver = User(userId), content = "You have been unmuted"
+                                )
+                                notificationRepository.createNotification(notification)
+                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                WsController.broadCastToMember(userId, nMessage.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 call.respond(HttpStatusCode.BadRequest)

@@ -56,7 +56,7 @@ interface UserRepository {
 
     suspend fun changePrivate(id: Long, private: Boolean)
 
-    suspend fun mute(id: Long, time: Int, reason: String?)
+    suspend fun mute(id: Long, time: Long, reason: String?)
 
     suspend fun unMute(id: Long)
 

@@ -26,12 +26,14 @@ import org.valiktor.i18n.mapToMessage
 import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
-    permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository
+    permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository,
+    notificationRepository: NotificationRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -164,6 +166,58 @@ fun Route.domainRoutes(
                             val users = userRepository.getBlockedUsers(userId)
                             call.respond(HttpStatusCode.OK, users)
                         } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                        }
+                    }
+
+                    route("/notifications") {
+                        get {
+                            try {
+                                val userId = call.sessions.get<ChatSession>()?.id!!
+                                val notificationRes = notificationRepository.getNotifications(userId)
+                                call.respond(HttpStatusCode.OK, notificationRes)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            }
+                        }
+
+                        put("/read") {
+                            try {
+                                val userId = call.sessions.get<ChatSession>()?.id!!
+                                notificationRepository.read(userId)
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            }
+                        }
+                    }
+
+                    get("/check-mute") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                            val roomId = user.roomId!!
+                            val currentTimeInMillis =
+                                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            val difference = user.muted - currentTimeInMillis
+                            val muted = if (difference <= 0) 0 else user.muted
+                            if (user.muted != 0L && muted == 0L) {
+                                userRepository.unMute(userId)
+                                val message = Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                val notification = Notification(
+                                    receiver = User(userId), content = "You have been unmuted"
+                                )
+                                notificationRepository.createNotification(notification)
+                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                WsController.broadCastToMember(userId, nMessage.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            }
+                            call.respond(HttpStatusCode.OK, muted)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                         }
                     }

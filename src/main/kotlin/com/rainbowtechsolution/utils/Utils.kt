@@ -88,4 +88,17 @@ fun String.toDob(): String {
 
 fun LocalDateTime.format(format: String = "dd/MM  H:mm"): String = format(DateTimeFormatter.ofPattern(format))
 
+fun Long.getTime(): String {
+    val hour = this / 60
+    val day = this / (60 * 24)
+    return when {
+        hour < 1L -> "$this minutes"
+        hour == 1L -> "$hour hour"
+        hour in 2..23 -> "$hour hours"
+        day == 1L -> "$day day"
+        day > 1L -> "$day days"
+        else -> ""
+    }
+}
+
 
