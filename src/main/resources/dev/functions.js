@@ -242,8 +242,8 @@ export function logoutHtml() {
             <div class="px-4 py-2">
                 <p class="text-[14px] mb-2">Are you sure, want to log out?</p>  
                 <div class="flex gap-2 justify-center">
-                    <button @click="logout" class="btn-action bg-green-500">Yes<button>          
-                    <button @click="closeSmallModal" class="btn-action bg-red-500">No<button>          
+                    <button @click="logout" class="btn-action bg-green-500">Yes</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">No</button>          
                 </div>
             </div>
         </div>
@@ -379,7 +379,7 @@ export function changeAboutHtml() {
                 <div class="mb-4">
                     <textarea @keyup="textArea($el, 60)" class="text-area" x-model="user.about" type="text" maxlength="150" name="about" autofocus></textarea>
                 </div>
-                <button @click="changeAbout" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeAbout" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -1049,7 +1049,8 @@ export function renderReportChatMessage(message, id, targetId, roomId, type) {
     <div class="p-4">
         <li class="chat-wrap mb-4" style="border: none">
             <div class="flex py-1 px-2 w-full" >
-                <img @click="getUserProfile(${message.user.id})" class="w-[36px] h-[36px] rounded-full flex-none cursor-pointer" src="${message.user.avatar}">
+                <img @click="getUserProfile(${message.user.id}); closeSmallModal()" 
+                    class="w-[36px] h-[36px] rounded-full flex-none cursor-pointer" src="${message.user.avatar}">
                 <div class="ml-2 flex-1 ">
                     <div class="flex justify-between">
                         <p class="username clip "> ${message.user.name}</p>
@@ -1063,9 +1064,9 @@ export function renderReportChatMessage(message, id, targetId, roomId, type) {
                 </div>
            </div>
         </li> 
-        <button @click="takeAction(${id}, ${targetId},${roomId}, '${type}')" class="btn btn-skin text-center">Take Action<button>
-        <button @click="noAction(${id}, '${type}')" class="btn btn-disabled text-center ml-2">No Action<button>
-    </div></div>`
+        <button @click="takeAction(${id}, ${targetId},${roomId}, '${type}')" class="btn btn-skin text-center">Take Action</button>
+        <button @click="noAction(${id}, '${type}')" class="btn btn-disabled text-center ml-2">No Action</button>
+    </div> </div>`
 }
 
 export function reportModalHtml() {
@@ -1085,8 +1086,8 @@ export function reportModalHtml() {
                                         <img class="avatar flex-none mx-1" :src="report.avatar">
                                         <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
                                             <p class="ellipsis username clip text-black" x-text="report.name">
-                                            <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="'Reason : '+report.reason"></p>
                                             <p class="date" x-text="report.createdAt"></p>
+                                            <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="'Reason : '+report.reason"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -1109,8 +1110,7 @@ export function reportModalHtml() {
 
 export function reportDialogHtml(id, type) {
     return `
-        <div x-data="{ id: ${id}, type: '${type}' }"
-         class="text-gray-700 text-center">
+        <div x-data="{ id: ${id}, type: '${type}' }" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
                 <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
@@ -1211,4 +1211,66 @@ export function removeReaction(post, reactType) {
         post.dislikeCount--
         post.disliked = false
     }
+}
+
+export function muteDialogHtml() {
+    return `
+        <div x-data="actions" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+            <div class="inline-flex items-center"> 
+                <i class="fa-regular fa-hand text-red-500 text-2xl"></i>  
+                <p class="ml-2 text-md font-bold " x-text="'Mute '+u.name"></p>
+            </div>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
+                <div class="w-full mb-4 h-10"> 
+                    <select x-model="selectedTime" class="input-text h-full">
+                        <template x-for="(time, index) in timing" :key="index"> 
+                            <option :value="time" x-text="getTiming(time)"></option>
+                        </template>
+                    </select>
+                </div>
+                <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
+                <div class="mb-4"> 
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
+                </div>
+                <div class="flex gap-2 justify-center">
+                    <button @click="mute" class="btn-action bg-green-500">Mute</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `
+}
+
+export function kickDialogHtml() {
+    return `
+        <div x-data="actions" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+            <div class="inline-flex items-center"> 
+                <i class="fa-regular fa-hand text-red-500 text-2xl"></i>  
+                <p class="ml-2 text-md font-bold " x-text="'Kick '+u.name"></p>
+            </div>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
+                <div class="w-full mb-4 h-10"> 
+                    <select x-model="selectedTime" class="input-text h-full">
+                        <template x-for="(time, index) in timing" :key="index"> 
+                            <option :value="time" x-text="getTiming(time)"></option>
+                        </template>
+                    </select>
+                </div>
+                <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
+                <div class="mb-4"> 
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
+                </div>
+                <button @click="kick" class="btn-action bg-green-500">Kick<button>          
+                <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel<button>     
+            </div>
+        </div>
+    `
 }

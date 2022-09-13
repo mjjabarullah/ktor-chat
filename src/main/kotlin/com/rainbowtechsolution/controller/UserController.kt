@@ -232,10 +232,11 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun mute(id: Long): Unit = dbQuery {
+    override suspend fun mute(id: Long, time: Int, reason: String?): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[muted] = true
+            it[muteMsg] = reason
         }
     }
 

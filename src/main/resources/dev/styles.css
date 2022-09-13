@@ -920,6 +920,10 @@ body {
     @apply bg-gradient-to-r from-skin-primary to-skin-hover
 }
 
+.btn-red {
+    @apply bg-gradient-to-r from-red-500 to-red-700
+}
+
 .btn-disabled {
     @apply bg-gradient-to-r from-slate-500 to-slate-800
 }
@@ -1025,11 +1029,11 @@ body {
 }
 
 .count {
-    @apply absolute -top-[1px] -right-[8px] bg-red-500 rounded-full text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20 font-bold
+    @apply absolute -top-[1px] -right-[8px] bg-red-500 rounded-[5px] text-center my-auto text-[10px] w-4 h-4 shadow-md shadow-black/20 font-bold
 }
 
 .count-md {
-    @apply font-bold text-[13px] text-white shadow-md shadow-black/5 flex bg-red-500 rounded-full items-center justify-center my-auto w-6 h-6 flex-none
+    @apply font-bold text-[13px] text-white shadow-md shadow-black/5 flex bg-red-500 rounded-[5px] items-center justify-center my-auto w-6 h-6 flex-none
 }
 
 .loader-wrap {

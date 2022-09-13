@@ -26,7 +26,9 @@ import io.ktor.server.sessions.*
 import kotlinx.coroutines.async
 import java.io.File
 import java.io.IOException
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 
 fun Route.adminRotes(
@@ -177,7 +179,7 @@ fun Route.adminRotes(
 
                     route("/{userId}") {
 
-                        post("/update-name") {
+                        put("/update-name") {
                             try {
                                 val params = call.receiveParameters()
                                 val userId = call.parameters["userId"]!!.toLong()
@@ -200,7 +202,7 @@ fun Route.adminRotes(
                             }
                         }
 
-                        post("/update-avatar") {
+                        put("/update-avatar") {
                             val parts = call.receiveMultipart()
                             val userId = call.parameters["userId"]!!.toLong()
                             val renderFormat = "webp"
@@ -231,7 +233,7 @@ fun Route.adminRotes(
                             }
                         }
 
-                        post("/update-default-avatar") {
+                        put("/update-default-avatar") {
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val avatar = call.receiveParameters()["avatar"].toString()
@@ -244,21 +246,26 @@ fun Route.adminRotes(
                             }
                         }
 
-                        post("/mute") {
+                        put("/mute") {
                             try {
+                                val params = call.receiveParameters()
+                                val time = params["time"]!!.toInt()
+                                val reason = params["reason"]
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val user = userRepository.findUserById(userId)
+                                val domainId = call.parameters["domainId"]!!.toInt()
                                 val roomId = user?.roomId!!
-                                userRepository.mute(userId)
+                                userRepository.mute(userId, time, reason)
                                 val message = Message(user = User(id = userId), content = "", type = MessageType.Mute)
-                                //WsController.broadcastToRoom(roomId, message.encodeToString())
+                                WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                                WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 call.respond(HttpStatusCode.BadRequest)
                             }
                         }
 
-                        post("/unmute") {
+                        put("/unmute") {
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val user = userRepository.findUserById(userId)

@@ -562,37 +562,12 @@ document.addEventListener('alpine:init', () => {
             /**
              * User blocking
              * */
-            getBlockedUsers() {
-                axios.get(`/${domain.id}/users/blocked-users`).then(res => this.blockedUsers = res.data)
-            },
-            actionBlock() {
-                if (this.u.blocked) {
-                    this.unblock(this.u.id)
-                    this.u.blocked = false
-                } else {
-                    this.block(this.u.id)
-                    this.u.blocked = true
-                }
-            },
-            block(userId) {
-                const formData = new FormData()
-                formData.append('blocked', userId)
-                axios.post(`/${domain.id}/users/block`, formData).then(() => {
-                    this.showAlertMsg(Success.USER_BLOCKED, Css.SUCCESS)
-                    this.getBlockedUsers()
-                }).catch(e => this.showAlertMsg(Errors.BLOCKING_FAILED, Css.ERROR))
-            },
-            unblock(userId) {
-                const formData = new FormData()
-                formData.append('blocked', userId)
-                axios.delete(`/${domain.id}/users/unblock`, {data: formData}).then(() => {
-                    this.showAlertMsg(Success.USER_UNBLOCKED, Css.SUCCESS)
-                    this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
-                }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
-            },
             openBlockedModal() {
                 this.showProfile = false
                 this.showFullModal(fn.blockedModalHtml())
+            },
+            getBlockedUsers() {
+                axios.get(`/${domain.id}/users/blocked-users`).then(res => this.blockedUsers = res.data)
             },
 
             /**
@@ -639,7 +614,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 const formData = new FormData()
                 formData.append('name', this.u.name)
-                axios.post(`/${domain.id}/users/${this.u.id}/update-name`, formData).then(() =>
+                axios.put(`/${domain.id}/users/${this.u.id}/update-name`, formData).then(() =>
                     this.showAlertMsg(Success.NAME_CHANGED, Css.SUCCESS)
                 ).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
                 this.showUserProfile = false
@@ -819,61 +794,54 @@ document.addEventListener('alpine:init', () => {
                         }, 1e3)
                         return
                     }
-                    chatMessages.insertAdjacentHTML('afterbegin', fn.renderJoinMessage(message))
+                    let user = this.blockedUsers.find(user => user.id === message.user.id)
+                    if (user == null) chatMessages.insertAdjacentHTML('afterbegin', fn.renderJoinMessage(message))
                 }
                 if (message.type === MessageType.Chat) {
                     const chatMessages = this.$refs.chatMessages
                     let user = this.blockedUsers.find(user => user.id === message.user.id)
-                    user == null && chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
+                    if (user == null) chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
                 }
                 if (message.type === MessageType.Leave) {
                     const chatMessages = this.$refs.chatMessages
                     this.getRoomUsers()
-                    message.user.id !== userId && chatMessages.insertAdjacentHTML('afterbegin', fn.renderLeaveMessage(message))
+                    if (message.user.id !== userId) chatMessages.insertAdjacentHTML('afterbegin', fn.renderLeaveMessage(message))
                 }
                 if (message.type === MessageType.DelChat) {
                     const li = document.getElementById(`chat-${message.id}`)
-                    li != null && li.remove()
+                    if (li != null) li.remove()
                 }
                 if (message.type === MessageType.News) {
                     this.getNews()
-                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
+                    let makeSound = message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound
+                    if (makeSound) this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.GlobalFeed) {
                     this.getGlobalFeed()
-                    message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound && this.$refs.postSound.play()
+                    let makeSound = message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound
+                    if (makeSound) this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.Adminship) {
                     this.getAdminships()
-                    message.user.id !== userId && permission.adminship && this.user.notifiSound && this.$refs.postSound.play()
+                    let makeSound = message.user.id !== userId && permission.adminship && this.user.notifiSound
+                    if (makeSound) this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.DelNews) this.getNews()
                 if (message.type === MessageType.DelGlobalFeed) this.getGlobalFeed()
                 if (message.type === MessageType.DelAdminship) this.getAdminships()
                 if (message.type === MessageType.Report) {
                     this.getReports()
-                    permission.reports && this.user.notifiSound && this.$refs.postSound.play()
+                    let makeSound = permission.reports && this.user.notifiSound
+                    if (makeSound) this.$refs.postSound.play()
                 }
-                if (message.type === MessageType.ActionTaken) {
-                    permission.reports && this.getReports()
-                }
+                if (message.type === MessageType.ActionTaken) if (permission.reports) this.getReports()
                 if (message.type === MessageType.Mute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
                     if (user) user.muted = true
-                    if (message.user.id === userId) {
-                        this.user.muted = true
-                        this.$refs.mainInput.disabled = this.user.muted
-                        this.showAlertMsg('You have been muted', Css.ERROR)
-                    }
                 }
                 if (message.type === MessageType.UnMute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
                     if (user) user.muted = false
-                    if (message.user.id === userId) {
-                        this.user.muted = false
-                        this.$refs.mainInput.disabled = this.user.muted
-                        this.showAlertMsg('You have been unmuted', Css.SUCCESS)
-                    }
                 }
             },
             deleteChat(id) {
@@ -1051,8 +1019,19 @@ document.addEventListener('alpine:init', () => {
                     }
                     user.messages.unshift(message)
                     this.setPvtNotifiCount()
-                } else if (message.type === MessageType.DataChanges) {
-                    location.reload()
+                }
+                message.type === MessageType.DataChanges && location.reload()
+                if (message.type === MessageType.Mute) {
+                    this.user.muted = true
+                    this.$refs.mainInput.disabled = this.user.muted
+                    this.showAlertMsg(Errors.MUTED, Css.ERROR)
+                }
+                if (message.type === MessageType.UnMute) {
+                    if (message.user.id === userId) {
+                        this.user.muted = false
+                        this.$refs.mainInput.disabled = this.user.muted
+                        this.showAlertMsg(Errors.UNMUTED, Css.SUCCESS)
+                    }
                 }
             },
             reCheckPvtMessages() {
@@ -1186,7 +1165,6 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/reports/${reportId}/no-action`, formData).then(() => this.closeSmallModal())
             },
 
-
             /**
              * Announcement
              * */
@@ -1221,7 +1199,7 @@ document.addEventListener('alpine:init', () => {
             },
 
             /**
-             * AdminShip
+             * Adminship
              * */
             getAdminships() {
                 permission.adminship &&
@@ -1243,7 +1221,6 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.writeAdminshipDialogHtml())
             },
-
             delAdminship(postId) {
                 if (!permission.delAdminship) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
@@ -1278,7 +1255,6 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.writeGlobalFeedDialogHtml())
             },
-
             delGlobalFeed(postId) {
                 if (!permission.delGlobalFeed) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
@@ -1292,13 +1268,52 @@ document.addEventListener('alpine:init', () => {
             /**
              * Actions
              * */
-            actionMute() {
+            actionBlock() {
+                if (this.u.blocked) {
+                    this.unblock(this.u.id)
+                    this.u.blocked = false
+                } else {
+                    this.block(this.u.id)
+                    this.u.blocked = true
+                }
+            },
+            block(userId) {
+                const formData = new FormData()
+                formData.append('blocked', userId)
+                axios.post(`/${domain.id}/users/block`, formData).then(() => {
+                    this.showAlertMsg(Success.USER_BLOCKED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                    this.getBlockedUsers()
+                }).catch(e => this.showAlertMsg(Errors.BLOCKING_FAILED, Css.ERROR))
+            },
+            unblock(userId) {
+                const formData = new FormData()
+                formData.append('blocked', userId)
+                axios.delete(`/${domain.id}/users/unblock`, {data: formData}).then(() => {
+                    this.showAlertMsg(Success.USER_UNBLOCKED, Css.SUCCESS)
+                    this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
+                }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
+            },
+
+            actionMuteDialog() {
                 if (!permission.mute) {
-                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    this.showAlertMsg(Success.USER_UNBLOCKED.replace(/%USER%/g, this.u.name), Css.ERROR)
                     return
                 }
-                this.u.muted ? axios.post(`/user/${this.u.id}/mute`).catch(() => this.u.muted = false)
-                    : axios.post(`/user/${this.u.id}/unmute`).catch(() => this.u.muted = true)
+                if (!this.u.muted) this.showSmallModal(fn.muteDialogHtml(userId, name))
+                else this.unmute()
+            },
+            mute() {
+                axios.put(`/${domain.id}/users/${this.u.id}/mute`).then(() => {
+                    this.u.muted = true
+                    this.showAlertMsg(Success.USER_MUTED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                    this.closeSmallModal()
+                })
+            },
+            unmute() {
+                axios.put(`/${domain.id}/users/${this.u.id}/unmute`).then(() => {
+                    this.u.muted = false
+                    this.showAlertMsg(Success.USER_UNMUTED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                })
             },
             kickUser(id) {
                 if (!permission.kick) {
@@ -1315,6 +1330,23 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/user/${id}/ban`)
             }
         }
+    })
+
+    Alpine.data('actions', () => {
+        return {
+            reason: '',
+            selectedTime: 0,
+            timing: Defaults.timing,
+            getTiming(time) {
+                let result = ''
+                let hour = time / 60
+                let day = time / (60 * 24)
+                hour < 1 ? result = `${time} minutes` : hour === 1 ? result = `${hour} hour` : (hour > 1 && hour < 24) ? result = `${hour} hours` :
+                    day === 1 ? result = `${day} day` : day > 1 ? result = `${day} days` : result
+                return result
+            },
+        }
+
     })
 
     Alpine.data('guestRegister', () => {

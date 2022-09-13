@@ -89,36 +89,36 @@
                                 <table class="table w-full border-separate">
                                     <tbody>
                                     <template x-if="permission.mute">
-                                        <tr>
-                                            <th>Mute</th>
-                                            <td>
-                                                <label class="switch">
-                                                    <input @change="actionMute" type="checkbox" x-model="u.muted">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </td>
+                                        <tr @click="actionMuteDialog">
+                                            <th>
+                                                <div class="inline-flex items-center cursor-pointer">
+                                                    <i class="fa-regular fa-hand text-red-500"></i>
+                                                    <p class="ml-2" x-text="u.muted?'Unmute': 'Mute'"></p>
+                                                </div>
+                                            </th>
+                                            <td></td>
                                         </tr>
                                     </template>
                                     <template x-if="permission.kick">
-                                        <tr>
-                                            <th>Kick</th>
-                                            <td>
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </td>
+                                        <tr @click="actionKickDialog">
+                                            <th>
+                                                <div class="inline-flex items-center cursor-pointer">
+                                                    <i class="fa-solid fa-user-slash text-red-500"></i>
+                                                    <p class="ml-2" x-text="u.kicked?'Unkick': 'Kick'"></p>
+                                                </div>
+                                            </th>
+                                            <td></td>
                                         </tr>
                                     </template>
                                     <template x-if="permission.ban">
-                                        <tr>
-                                            <th>Ban</th>
-                                            <td>
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </td>
+                                        <tr @click="actionBanDialog">
+                                            <th>
+                                                <div class="inline-flex items-center cursor-pointer">
+                                                    <i class="fa-solid fa-ban text-red-500"></i>
+                                                    <p class="ml-2" x-text="u.kicked?'Unban': 'Ban'"></p>
+                                                </div>
+                                            </th>
+                                            <td></td>
                                         </tr>
                                     </template>
                                     </tbody>
