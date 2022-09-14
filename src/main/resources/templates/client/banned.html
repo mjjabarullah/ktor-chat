@@ -1,0 +1,17 @@
+<!DOCTYPE html >
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${'Ktor Chat - ' + room.name}"></title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link rel='stylesheet' href="/css/styles.css">
+</head>
+<body th:classappend="${domain.theme}">
+<div class="main h-screen">
+    <div class="fixed inset-0 flex flex-col items-center justify-center bg-skin-primary text-skin-on-primary text-center">
+        <p class="text-[35px] font-bold">You've been banned from this site</p>
+        <p class="text-[20px]">you cannot enter!</p>
+    </div>
+</div>
+</body>
+</html>

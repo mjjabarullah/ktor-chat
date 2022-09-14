@@ -1,0 +1,30 @@
+<!DOCTYPE html >
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+<head>
+    <title th:text="${'Ktor Chat - ' + room.name}"></title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <link rel='stylesheet' href="/css/styles.css">
+</head>
+<body x-data="actions" th:classappend="${domain.theme}">
+<div class="main h-screen">
+    <div class="fixed inset-0 flex flex-col items-center justify-center bg-skin-primary text-skin-on-primary text-center">
+        <p class="text-[35px] font-bold">You've been kicked out </p>
+        <p class="text-[20px]">you can re-enter chat after</p>
+        <div class="flex justify-center items-center text-[30px] font-extrabold">
+            <p x-cloak x-text="kickTime"></p>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const domain = [[${domain}]]
+    const userId = [[${user.id}]]
+    const kicked = [[${user.kicked}]]
+</script>
+<script src="/js/actions.js"></script>
+</body>
+</html>
