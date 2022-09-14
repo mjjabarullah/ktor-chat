@@ -248,12 +248,22 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun kick(id: Long, roomId: Int) {
-
+    override suspend fun kick(id: Long, time: Long, reason: String?):Unit= dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[kicked] = time
+            it[kickMsg] = reason
+            it[muted] = 0
+            it[muteMsg] = null
+        }
     }
 
-    override suspend fun unKick(id: Long, roomId: Int) {
-
+    override suspend fun unKick(id: Long):Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[kicked] = 0
+            it[kickMsg] = null
+        }
     }
 
     override suspend fun ban(id: Long) {

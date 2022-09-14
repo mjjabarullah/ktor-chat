@@ -55,6 +55,10 @@ fun Route.domainRoutes(
                     val room = roomRepository.findRoomById(roomId!!) ?: throw RoomNotFoundException()
                     val permission = permissionRepository.findPermissionByRank(user.rank?.id!!) ?: throw Exception()
                     val model = mapOf("domain" to domain, "room" to room, "user" to user, "permission" to permission)
+                    if (user.kicked > 0) {
+                        call.respondTemplate("client/kicked", model)
+                        return@get
+                    }
                     call.respondTemplate("client/chat", model)
                 } catch (e: UserNotFoundException) {
                     call.sessions.clear<ChatSession>()
@@ -213,9 +217,24 @@ fun Route.domainRoutes(
                                 notificationRepository.createNotification(notification)
                                 val nMessage = Message(content = "", type = MessageType.Notification)
                                 WsController.broadCastToMember(userId, nMessage.encodeToString())
-                                call.respond(HttpStatusCode.OK)
                             }
                             call.respond(HttpStatusCode.OK, muted)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                        }
+                    }
+
+                    get("/check-kick") {
+                        try {
+                            val userId = call.sessions.get<ChatSession>()?.id!!
+                            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                            val currentTimeInMillis =
+                                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            val difference = user.kicked - currentTimeInMillis
+                            val kicked = if (difference <= 0) 0 else user.kicked
+                            if (user.kicked != 0L && kicked == 0L) userRepository.unKick(userId)
+                            call.respond(HttpStatusCode.OK, kicked)
                         } catch (e: Exception) {
                             e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)

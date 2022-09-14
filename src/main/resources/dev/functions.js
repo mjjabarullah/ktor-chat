@@ -18,7 +18,7 @@ export function renderWelcomeMessage() {
 
 export function renderJoinMessage(message) {
     return `
-         <li class="w-full flex justify-center border-t border-gray-200">
+         <li class="chat-wrap justify-center">
             <div class="p-1" @click="welcomeMessage(\'${message.user.name}\')">
                <p class="rounded-md px-4 py-1 text-white bg-skin-primary text-[12px]"><b class="cursor-pointer">${message.user.name}</b> has joined the room.</p>
             </div>
@@ -28,7 +28,7 @@ export function renderJoinMessage(message) {
 
 export function renderLeaveMessage(message) {
     return `
-         <li class="w-full flex justify-center border-t border-gray-200">
+         <li class="chat-wrap justify-center">
             <div class="p-1">
                <p class="px-4 py-1 text-gray-800 text-[12px]">${message.user.name} has left the room.</p>
             </div>
@@ -666,7 +666,7 @@ export function newsModalHtml() {
             </div>
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
-                    <template x-if="rank.code !== 'guest'">
+                    <template x-if="permission.writeNews">
                         <button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
@@ -794,7 +794,7 @@ export function adminshipModalHtml() {
             </div>
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
-                    <template x-if="rank.code !== 'guest'">
+                    <template x-if="permission.writeAS'">
                         <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
@@ -812,7 +812,7 @@ export function adminshipModalHtml() {
                                                    <p class="date" x-text="post.createdAt"></p>
                                                </div>
                                            </div> 
-                                           <template x-if="permission.delAdminship">
+                                           <template x-if="permission.delAS">
                                               <i @click="delAdminship(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                            </template>                       
                                        </div>
@@ -940,7 +940,7 @@ export function globalFeedModalHtml() {
                                                    <p class="date" x-text="post.createdAt"></p>
                                                </div>
                                            </div> 
-                                           <template x-if="permission.delGlobalFeed">
+                                           <template x-if="permission.delGF">
                                               <i @click="delGlobalFeed(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
                                            </template>                       
                                        </div>
@@ -985,7 +985,7 @@ export function globalFeedModalHtml() {
                                                 <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
                                                     <div class="flex justify-between "> 
                                                        <div class="flex gap-2 text-start">
-                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                          <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
                                                            <div>
                                                                <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
                                                                <p class="date" x-text="comment.createdAt"></p>
@@ -1195,14 +1195,14 @@ export function blockedModalHtml() {
                                                <img class="avatar flex-none cursor-pointer" :src="user.avatar" alt="">
                                                <p class="username clip" :class="user.nameColor, user.nameFont" x-text="user.name"></p>
                                            </div>  
-                                           <i @click="unblock(user.id)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
+                                           <i @click="unblock(user.id, user.name)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
                                        </div> 
                                    </div>
                                </li>
                             </template>
                         </template>
                         <template x-if="blockedUsers.length==0">
-                           <li class="card-wrap">
+                           <li class="pvt-user-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
                                     <img class="w-[40px]" src="/images/defaults/blocked.webp" alt="">
                                     <p class="text-[12px] font-bold" >No Blocked users</p>
@@ -1315,17 +1315,31 @@ export function kickDialogHtml() {
                 <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
                 <div class="w-full mb-4 h-10"> 
                     <select x-model="selectedTime" class="input-text h-full">
-                        <template x-for="(time, index) in timing" :key="index"> 
-                            <option :value="time" x-text="getTiming(time)"></option>
-                        </template>
+                        <option value="2">2 minutes</option>
+                        <option value="5">5 minutes</option>
+                        <option value="10">10 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="1440">1 day</option>
+                        <option value="2880">2 days</option>
+                        <option value="4320">3 days</option>
+                        <option value="5760">4 days</option>
+                        <option value="7200">5 days</option>
+                        <option value="8640">6 days</option>
+                        <option value="10080">7 days</option>
+                        <option value="20160">14 days</option>
+                        <option value="43200">30 days</option>
                     </select>
                 </div>
                 <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
                 <div class="mb-4"> 
                     <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
                 </div>
-                <button @click="kick" class="btn-action bg-green-500">Kick<button>          
-                <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel<button>     
+                <div class="flex gap-2 justify-center">
+                    <button @click="kick(selectedTime, reason)" class="btn-action bg-green-500">Kick</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button> 
+                </div> 
             </div>
         </div>
     `

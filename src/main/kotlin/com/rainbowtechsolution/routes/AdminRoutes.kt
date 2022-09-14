@@ -297,12 +297,31 @@ fun Route.adminRotes(
                             }
                         }
 
-                        post("/kick") {
+                        put("/kick") {
                             try {
-                                val id = call.parameters["userId"]!!.toLong()
-                                userRepository.kick(id, 0)
-                                val message = PvtMessage(content = "", type = MessageType.Kick)
-                                WsController.broadCastToMember(id, message.encodeToString())
+                                val params = call.receiveParameters()
+                                val timeParam = params["time"]!!.toLong()
+                                val time = LocalDateTime.now().plusMinutes(timeParam).atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                                val reason = params["reason"]
+                                val userId = call.parameters["userId"]!!.toLong()
+                                userRepository.kick(userId, time, reason)
+                                val message = Message(content = "", type = MessageType.Kick)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK, time)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        put("/unkick") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                userRepository.unKick(userId)
+                                val message = Message(content = "", type = MessageType.UnKick)
+                                WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
                                 call.respond(HttpStatusCode.BadRequest)

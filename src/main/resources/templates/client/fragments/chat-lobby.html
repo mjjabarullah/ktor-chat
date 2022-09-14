@@ -2,41 +2,7 @@
     <div class="flex flex-col justify-end h-full w-full">
         <div class="h-full relative w-full">
             <div class="z-10 relative h-full">
-                <ul x-cloak x-ref="chatMessages" x-show="showMessages" class="chat-container">
-                    <li th:each="message: ${messages}" th:id="'chat-'+ ${message.id}" class="chat-wrap">
-                        <div class="flex py-1 px-2 w-full" th:object="${message}">
-                            <img th:@click="'getUserProfile('+*{user.id}+')'"
-                                 class="avatar flex-none cursor-pointer" th:src="*{user.avatar}"
-                                 th:classappend="*{(user.gender eq 'Male'? 'male' : 'female')}">
-                            <div class="ml-2 flex-1 ">
-                                <div class="flex justify-between">
-                                    <div class="inline-flex items-center gap-0.5">
-                                        <img class="rank-icon-sm" th:src="*{user.rank.icon}" alt=""
-                                             th:title="*{user.rank.name}">
-                                        <p @click="appendUserName($el)" th:text="*{user.name}"
-                                           th:class="*{'username clip ' + user.nameColor +' ' + user.nameFont}"></p>
-                                    </div>
-                                    <div class="flex items-center gap-2 mr-2">
-                                        <p th:text="*{createdAt}" class="date"></p>
-                                        <i th:@click="'reportChat('+*{id}+')'"
-                                           class="fa-solid fa-font-awesome icon-sm"></i>
-                                        <i th:@click="'deleteChat('+*{id}+')'"
-                                           class="fa-solid fa-trash-can icon-sm"></i>
-                                    </div>
-                                </div>
-                                <div class=" px-1 pr-2">
-                                    <img @click="showImageDialog($el)" th:if="*{image}" th:src="*{image}" alt=""
-                                         class="lobby-image">
-                                    <audio th:if="*{audio}" preload="auto">
-                                        <source th:src="*{audio}">
-                                    </audio>
-                                    <p th:utext="*{content}" class="chat clip"
-                                       th:classappend="*{user.textColor + (user.textBold ? ' font-bold':' font-normal') +' '+ user.textFont  }"></p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                <ul x-cloak x-ref="chatMessages" x-show="showMessages" class="chat-container"></ul>
             </div>
         </div>
         <div class="main-input-wrap flex-none" @click.outside="closeCustomizeText">

@@ -30,7 +30,7 @@
                                        :class="[user.nameColor, user.nameFont]"></p>
                                 </div>
                                 <template x-if="user.muted > 0">
-                                    <img class="gender flex-none" src="/images/actions/muted.webp">
+                                    <i class="mr-2 fa-regular fa-hand text-red-500 text-xl"></i>
                                 </template>
                                 <img class="gender flex-none"
                                      :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
@@ -61,6 +61,9 @@
                                     <p x-text="user.mood" class="mood ellipsis clip"
                                        :class="[user.nameColor, user.nameFont]"></p>
                                 </div>
+                                <template x-if="user.muted > 0">
+                                    <i class="fa-regular fa-hand text-red-500 text-xl"></i>
+                                </template>
                                 <img class="gender flex-none"
                                      :src="user.gender=='Male' ? 'images/gender/male.webp': 'images/gender/female.webp'">
                                 <img class="rank-icon" :src="user.rank.icon" :title="user.rank.name">

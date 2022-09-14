@@ -39,18 +39,10 @@
                         <div class="flex overflow-x-auto scrollbar">
                             <p @click="tab=0"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                               :class="tab===0? 'bg-skin-primary text-skin-on-primary': ' text-skin-hover' ">
-                                Account</p>
-                            <template x-if="user.hasActionPerm">
-                                <p @click="tab=1"
-                                   class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                                   :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                                    Actions</p>
-                            </template>
-                            <p @click="tab=2"
+                               :class="tab===0? 'bg-skin-primary text-skin-on-primary': ' text-skin-hover' ">Account</p>
+                            <p @click="tab=1"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
-                               :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">
-                                Others</p>
+                               :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Actions</p>
                         </div>
                         <div x-show="tab===0" class="mt-1 text-black">
                             <table class="table w-full border-separate">
@@ -73,90 +65,80 @@
                                 </tr>
                                 <tr>
                                     <th>Points</th>
-                                    <td><i class="fa-solid fa-coins text-orange-400 mr-1"></i><span
-                                            x-text="u.points"></span></td>
+                                    <td>
+                                        <i class="fa-solid fa-coins text-orange-400 mr-1"></i>
+                                        <span x-text="u.points"></span>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th>Level</th>
-                                    <td><i class="fa-solid fa-database text-orange-400 mr-1"></i><span
-                                            x-text="u.level"></span></td>
+                                    <td>
+                                        <i class="fa-solid fa-database text-orange-400 mr-1"></i>
+                                        <span x-text="u.level"></span>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <template x-if="user.hasActionPerm">
-                            <div x-show="tab===1" class="mt-1 text-black">
-                                <table class="table w-full border-separate">
-                                    <tbody>
-                                    <template x-if="permission.mute">
-                                        <tr @click="actionMuteDialog">
-                                            <th>
-                                                <div class="inline-flex items-center cursor-pointer">
-                                                    <i class="fa-regular fa-hand text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.muted>0?'Unmute': 'Mute'"></p>
-                                                </div>
-                                            </th>
-                                            <td></td>
-                                        </tr>
-                                    </template>
-                                    <template x-if="permission.kick">
-                                        <tr @click="actionKickDialog">
-                                            <th>
-                                                <div class="inline-flex items-center cursor-pointer">
-                                                    <i class="fa-solid fa-user-slash text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.kicked>0?'Unkick': 'Kick'"></p>
-                                                </div>
-                                            </th>
-                                            <td></td>
-                                        </tr>
-                                    </template>
-                                    <template x-if="permission.ban">
-                                        <tr @click="actionBanDialog">
-                                            <th>
-                                                <div class="inline-flex items-center cursor-pointer">
-                                                    <i class="fa-solid fa-ban text-red-500"></i>
-                                                    <p class="ml-2" x-text="u.banned>0?'Unban': 'Ban'"></p>
-                                                </div>
-                                            </th>
-                                            <td></td>
-                                        </tr>
-                                    </template>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </template>
-                        <div x-show="tab===2" class="mt-1 text-black">
+                        <div x-show="tab===1" class="mt-1 text-black">
                             <table class="table w-full border-separate">
                                 <tbody>
                                 <tr @click="actionBlock">
                                     <th>
                                         <div class="inline-flex items-center cursor-pointer">
                                             <i class="fa-solid fa-ban text-red-500"></i>
-                                            <p class="ml-2" x-text="u.blocked?'Unblock': 'Block'"></p>
+                                            <p class="ml-2" x-text="u.blocked?' Unblock': ' Block'"></p>
                                         </div>
                                     </th>
-                                    <td></td>
                                 </tr>
                                 <tr>
                                     <th>
                                         <div class="inline-flex items-center cursor-pointer">
                                             <i class="fa-solid fa-flag text-red-500"></i>
-                                            <p class="ml-2">Report</p>
+                                            <p class="ml-2"> Report</p>
                                         </div>
                                     </th>
-                                    <td></td>
                                 </tr>
-                                <template x-if="permission.delMsg">
+                                <template x-if="permission.mute">
+                                    <tr @click="actionMuteDialog" class="cursor-pointer">
+                                        <th>
+                                            <div class="inline-flex items-center">
+                                                <i class="fa-regular fa-hand text-red-500"></i>
+                                                <p class="ml-2" x-text="u.muted>0?' Unmute': ' Mute'"></p>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </template>
+                                <template x-if="permission.kick">
+                                    <tr @click="actionKickDialog" class="cursor-pointer">
+                                        <th>
+                                            <div class="inline-flex items-center">
+                                                <i class="fa-solid fa-user-slash text-red-500"></i>
+                                                <p class="ml-2" x-text="u.kicked>0?' Unkick': ' Kick'"></p>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </template>
+                                <template x-if="permission.ban">
+                                    <tr @click="actionBanDialog" class="cursor-pointer">
+                                        <th>
+                                            <div class="inline-flex items-center">
+                                                <i class="fa-solid fa-ban text-red-500"></i>
+                                                <p class="ml-2" x-text="u.banned>0?' Unban': ' Ban'"></p>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </template>
+                                <template x-if="permission.delAccount">
                                     <tr>
                                         <th>
                                             <div class="inline-flex items-center cursor-pointer">
                                                 <i class="fa-solid fa-trash-can text-red-500"></i>
-                                                <p class="ml-2">Delete Account</p>
+                                                <p class="ml-2"> Delete Account</p>
                                             </div>
                                         </th>
-                                        <td></td>
                                     </tr>
-                                </template> <!--TODO change permission-->
+                                </template>
                                 </tbody>
                             </table>
                         </div>

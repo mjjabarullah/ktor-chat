@@ -60,7 +60,6 @@ document.addEventListener('alpine:init', () => {
                 nameSound: nameSound,
                 notifiSound: notifiSound,
                 muted: muted,
-                hasActionPerm: permission.mute || permission.kick || permission.ban,
                 password: ''
             },
             u: null,
@@ -146,12 +145,14 @@ document.addEventListener('alpine:init', () => {
 
                 this.$watch('user', () => {
                     const user = this.onlineUsers.find(user => user.id === userId)
-                    user.name = this.user.name
-                    user.mood = this.user.mood
-                    user.avatar = this.user.avatar
-                    user.nameColor = this.user.nameColor
-                    user.nameFont = this.user.nameFont
-                    user.gender = this.user.gender
+                    if(user){
+                        user.name = this.user.name
+                        user.mood = this.user.mood
+                        user.avatar = this.user.avatar
+                        user.nameColor = this.user.nameColor
+                        user.nameFont = this.user.nameFont
+                        user.gender = this.user.gender
+                    }
                 })
 
                 this.$watch('newsUnreadCount', () => {
@@ -174,16 +175,12 @@ document.addEventListener('alpine:init', () => {
             connectWs() {
                 this.roomSocket = new WebSocket(`wss://${location.host}/chat/${domain.id}/room/${room.id}`)
                 this.userSocket = new WebSocket(`wss://${location.host}/${domain.id}/member/${userId}`)
-                this.roomSocket.addEventListener('message', (e) => {
-                    const message = JSON.parse(e.data)
-                    this.onMessageReceived(message)
-                    message.type === MessageType.Chat && message.user.id !== userId && this.$refs.chatSound.play()
-                })
+                this.roomSocket.addEventListener('message', e => this.onMessageReceived(e))
 
                 this.roomSocket.addEventListener('close', () => {
                 }/*location.reload()*/)
 
-                this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
+                this.userSocket.addEventListener('message', e => this.onPvtMessageReceived(e))
 
                 this.userSocket.addEventListener('close', () => {
                 } /*location.reload()*/)
@@ -364,6 +361,10 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             changeNameDialog() {
+                if(!permission.name){
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
                 this.showSmallModal(fn.changeNameHtml())
             },
             closeNameDialog() {
@@ -371,6 +372,10 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeName() {
+                if(!permission.name){
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
                 if (this.user.name.length < 4 || this.user.name.length > 12) {
                     this.showAlertMsg(Errors.NAME_INVALID, Css.ERROR)
                     return
@@ -387,6 +392,10 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             customizeNameDialog() {
+                if(!permission.nameFont && !permission.nameColor){
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
                 this.showSmallModal(fn.customizeNameHtml())
             },
             closeCustomizeNameDialog() {
@@ -479,7 +488,7 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeStatusDialog() {
-                if (this.user.muted > 0 || this.user.kicked > 0 || this.user.banned > 0) return
+                if (this.user.muted > 0) return
                 this.showSmallModal(fn.changeStatusHtml())
             },
             changeStatus() {
@@ -712,9 +721,12 @@ document.addEventListener('alpine:init', () => {
              * Messages
              * */
             getMessages() {
-                this.$refs.chatMessages.innerHTML = Defaults.EMPTY_STRING
+                const chatMessages = this.$refs.chatMessages
                 axios.get(`${domain.id}/rooms/${room.id}/messages`).then(res =>
-                    res.data.forEach(message => this.onMessageReceived(message))
+                    res.data.forEach(message => {
+                        let user = this.blockedUsers.find(user => user.id === message.user.id)
+                        if (user == null) chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
+                    })
                 )
             },
             addMainEmo(emo) {
@@ -820,14 +832,15 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.UPLOAD_FAILED, Css.ERROR)
                 })
             },
-            onMessageReceived(message) {
+            onMessageReceived(e) {
+                const message = JSON.parse(e.data)
                 if (message.type === MessageType.Join) {
                     this.getRoomUsers()
                     const chatMessages = this.$refs.chatMessages
                     if (message.user.id === userId) {
                         setTimeout(() => {
                             chatMessages.insertAdjacentHTML('afterbegin', fn.renderWelcomeMessage())
-                        }, 1e3)
+                        }, 5e2)
                         return
                     }
                     let user = this.blockedUsers.find(user => user.id === message.user.id)
@@ -836,7 +849,10 @@ document.addEventListener('alpine:init', () => {
                 if (message.type === MessageType.Chat) {
                     const chatMessages = this.$refs.chatMessages
                     let user = this.blockedUsers.find(user => user.id === message.user.id)
-                    if (user == null) chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
+                    if (user == null) {
+                        chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
+                        if (message.user.id !== userId) this.$refs.chatSound.play()
+                    }
                 }
                 if (message.type === MessageType.Leave) {
                     const chatMessages = this.$refs.chatMessages
@@ -1069,10 +1085,11 @@ document.addEventListener('alpine:init', () => {
                     }, 1e4)
                 }
                 if (message.type === MessageType.UnMute) {
-                    this.user.muted = res.data
+                    this.user.muted = 0
                     this.$refs.mainInput.disabled = this.user.muted > 0
                     if (this.muteInterval) clearInterval(this.muteInterval)
                 }
+                if (message.type === MessageType.Kick) location.reload()
                 if (message.type === MessageType.Notification) {
                     this.getNotifications()
                     if (this.user.notifiSound) this.$refs.notifySound.play()
@@ -1258,14 +1275,14 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/adminship/read`).then(() => this.adminshipUnreadCount = this.adminship.unReadCount = 0)
             },
             writeAdminshipDialog() {
-                if (!permission.writeAdminship) {
+                if (!permission.writeAS) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
                 this.showSmallModal(fn.writeAdminshipDialogHtml())
             },
             delAdminship(postId) {
-                if (!permission.delAdminship) {
+                if (!permission.delAS) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1303,7 +1320,7 @@ document.addEventListener('alpine:init', () => {
                 this.showSmallModal(fn.writeGlobalFeedDialogHtml())
             },
             delGlobalFeed(postId) {
-                if (!permission.delGlobalFeed) {
+                if (!permission.delGF) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1317,7 +1334,7 @@ document.addEventListener('alpine:init', () => {
              * */
             actionBlock() {
                 if (this.u.blocked) {
-                    this.unblock(this.u.id)
+                    this.unblock(this.u.id, this.u.name)
                     this.u.blocked = false
                 } else {
                     this.block(this.u.id)
@@ -1332,11 +1349,11 @@ document.addEventListener('alpine:init', () => {
                     this.getBlockedUsers()
                 }).catch(e => this.showAlertMsg(Errors.BLOCKING_FAILED, Css.ERROR))
             },
-            unblock(userId) {
+            unblock(userId, name) {
                 const formData = new FormData()
                 formData.append('blocked', userId)
                 axios.delete(`/${domain.id}/users/unblock`, {data: formData}).then(() => {
-                    this.showAlertMsg(Success.USER_UNBLOCKED, Css.SUCCESS)
+                    this.showAlertMsg(Success.USER_UNBLOCKED.replace(/%USER%/g, name), Css.SUCCESS)
                     this.blockedUsers = this.blockedUsers.filter(user => user.id !== userId)
                 }).catch(e => this.showAlertMsg(Errors.UNBLOCKING_FAILED, Css.ERROR))
             },
@@ -1364,6 +1381,10 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             unmute() {
+                if (!permission.mute) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
                 axios.put(`/${domain.id}/users/${this.u.id}/unmute`).then(() => {
                     this.u.muted = 0
                     this.u.status = this.u.tempStatus
@@ -1379,12 +1400,40 @@ document.addEventListener('alpine:init', () => {
                     this.$refs.mainInput.disabled = this.user.muted > 0
                 })
             },
-            kickUser(id) {
+            actionKickDialog() {
+                if (!permission.mute) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.u.kicked !== 0 ? this.unkick() : this.showSmallModal(fn.kickDialogHtml(userId, name))
+            },
+            kick(time, reason) {
                 if (!permission.kick) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                axios.post(`/user/${id}/kick`)
+                let formData = new FormData()
+                formData.append('time', time)
+                formData.append('reason', reason)
+                axios.put(`/${domain.id}/users/${this.u.id}/kick`, formData).then(res => {
+                    this.u.kicked = res.data
+                    this.u.status = Status.Kicked
+                    this.setUserStatusColor()
+                    this.showAlertMsg(Success.USER_UNKICKED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                    this.closeSmallModal()
+                })
+            },
+            unkick() {
+                if (!permission.kick) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                axios.put(`/${domain.id}/users/${this.u.id}/unkick`).then(() => {
+                    this.u.kicked = 0
+                    this.u.status = this.u.tempStatus
+                    this.setUserStatusColor()
+                    this.showAlertMsg(Success.USER_UNKICKED.replace(/%USER%/g, this.u.name), Css.SUCCESS)
+                })
             },
             banUser(id) {
                 if (!permission.ban) {

@@ -33,6 +33,7 @@ export const MessageType = {
     Mute: 'Mute',
     UnMute: 'UnMute',
     Kick: 'Kick',
+    UnKick: 'UnKick',
     Ban: 'Ban',
     Notification: 'Notification'
 }
@@ -104,7 +105,9 @@ export const Success = {
     USER_BLOCKED: '%USER% blocked',
     USER_UNBLOCKED: '%USER% unblocked',
     USER_MUTED: '%USER% muted',
-    USER_UNMUTED: '%USER% unmuted'
+    USER_UNMUTED: '%USER% unmuted',
+    USER_KICKED: '%USER% kicked',
+    USER_UNKICKED: '%USER% unkicked'
 }
 
 /**

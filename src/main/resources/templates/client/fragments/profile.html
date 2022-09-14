@@ -12,7 +12,9 @@
                         <template x-if="permission.name">
                             <i @click="changeNameDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                         </template>
-                        <i @click="customizeNameDialog" class="ml-1 fa-solid fa-palette cursor-pointer"></i>
+                        <template x-if="permission.nameFont || permission.nameColor">
+                            <i @click="customizeNameDialog" class="ml-1 fa-solid fa-palette cursor-pointer"></i>
+                        </template>
                     </p>
                     <div class="flex text-left whitespace-wrap">
                         <p class="mood" x-text="user.mood ? user.mood : 'Add your mood'"></p>
@@ -54,7 +56,7 @@
                                 <th>Status</th>
                                 <td>
                                     <span class="font-bold" x-text="user.status" :class="user.statusColor"></span>
-                                    <template x-if="user.muted==0 || user.kicked==0 || user.banned==0">
+                                    <template x-if="user.muted==0">
                                         <i @click="changeStatusDialog"
                                            class="ml-1 text-black fa-solid fa-pen-to-square cursor-pointer"></i>
                                     </template>

@@ -6,12 +6,12 @@ import kotlinx.serialization.Serializable
 data class Permission(
     val id: Int? = null,
     val rankId: Int? = null,
+    val avatar: Boolean = false,
     val name: Boolean = false,
     val userName: Boolean = false,
     val nameColor: Boolean = false,
-    val nameFont: Boolean = false,
     val nameGradient: Boolean = false,
-    val avatar: Boolean = false,
+    val nameFont: Boolean = false,
     val textColor: Boolean = false,
     val textGradient: Boolean = false,
     val textBold: Boolean = false,
@@ -24,12 +24,13 @@ data class Permission(
     val status: Boolean = false,
     val delMsg: Boolean = false,
     val reports: Boolean = false,
-    val delGlobalFeed: Boolean = true, /* TODO :Change*/
-    val adminship: Boolean = true, /* TODO :Change*/
-    val writeAdminship: Boolean = true, /* TODO :Change*/
-    val delAdminship: Boolean = true, /* TODO :Change*/
-    val writeNews: Boolean = true, /* TODO :Change*/
-    val delNews: Boolean = true, /* TODO :Change*/
+    val delGF: Boolean = true,
+    val adminship: Boolean = false,
+    val writeAS: Boolean = false,
+    val delAS: Boolean = false,
+    val writeNews: Boolean = false,
+    val delNews: Boolean = false,
+    val delAccount:Boolean =false,
     val mute: Boolean = false,
     val kick: Boolean = false,
     val ban: Boolean = false

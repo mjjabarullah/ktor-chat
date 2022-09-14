@@ -60,9 +60,9 @@ interface UserRepository {
 
     suspend fun unMute(id: Long)
 
-    suspend fun kick(id: Long, roomId: Int)
+    suspend fun kick(id: Long, time: Long, reason: String?)
 
-    suspend fun unKick(id: Long, roomId: Int)
+    suspend fun unKick(id: Long)
 
     suspend fun ban(id: Long)
 

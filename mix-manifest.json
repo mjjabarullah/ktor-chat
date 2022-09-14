@@ -1,5 +1,6 @@
 {
     "/src/main/resources/static/js/chat.js": "/src/main/resources/static/js/chat.js",
     "/src/main/resources/static/js/auth.js": "/src/main/resources/static/js/auth.js",
+    "/src/main/resources/static/js/actions.js": "/src/main/resources/static/js/actions.js",
     "/src/main/resources/static/css/styles.css": "/src/main/resources/static/css/styles.css"
 }
