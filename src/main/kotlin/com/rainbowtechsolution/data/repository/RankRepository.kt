@@ -11,6 +11,8 @@ interface RankRepository {
 
     suspend fun findRankByCode(code: String, domainId: Int): Rank?
 
+    suspend fun findRankById(id: Int, domainId: Int): Rank?
+
     suspend fun getRanksBelowOrder(order: Int, domainId: Int): List<Rank>
 
 }

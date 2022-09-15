@@ -728,6 +728,33 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeUserRankDialog() {
+                if (!permission.changeRank) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showSmallModal(fn.changeUserRankHtml(this.u.ranks))
+            },
+            changeUserRank(){
+                if (!permission.changeRank) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                const rankId = this.u.user.rank.id
+                console.log(rankId)
+                let rankToChange = this.u.ranks.find(rank=>rank.id.toString() === rankId)
+                console.log(rankToChange)
+                console.log(this.u.ranks)
+                if(!rankToChange){
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                const formData = new FormData()
+                formData.append('rankId', rankId)
+                axios.put(`/${domain.id}/users/${this.u.user.id}/update-rank`, formData).then(res => {
+                    this.u.user.rank = res.data
+                    this.showAlertMsg(Success.USER_UNBANNED.replace(/%USER%/g, this.u.user.name), Css.SUCCESS)
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+                this.closeSmallModal()
             },
 
             /**

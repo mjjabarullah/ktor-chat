@@ -37,6 +37,8 @@ interface UserRepository {
 
     suspend fun updateName(id: Long, name: String)
 
+    suspend fun updateRank(id: Long, rankId:Int )
+
     suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?)
 
     suspend fun updatePassword(id: Long, password: String)

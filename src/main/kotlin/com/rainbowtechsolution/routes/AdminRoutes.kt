@@ -247,6 +247,39 @@ fun Route.adminRotes(
                             }
                         }
 
+                        put("/update-rank") {
+                            try {
+                                val currentUserId = call.sessions.get<ChatSession>()?.id!!
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val currentUser =
+                                    userRepository.findUserById(currentUserId) ?: throw UserNotFoundException()
+                                val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                                val permission =
+                                    permissionRepository.findPermissionByRank(currentUser.rank?.id!!)
+                                        ?: throw Exception()
+                                if (!permission.changeRank) throw PermissionDeniedException()
+                                if (currentUser.rank?.order!! > user.rank?.order!!) throw PermissionDeniedException()
+                                val rankId = call.receiveParameters()["rankId"]!!.toInt()
+                                val rank = rankRepository.findRankById(rankId, domainId) ?: throw Exception()
+                                userRepository.updateRank(userId, rankId)
+                                val notification = Notification(
+                                    receiver = User(userId), content = "Your rank changed to ${rank.name}"
+                                )
+                                notificationRepository.createNotification(notification)
+                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                WsController.broadCastToMember(userId, nMessage.encodeToString())
+                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK, rank)
+                            } catch (e: PermissionDeniedException) {
+                                call.respond(HttpStatusCode.Forbidden, e.message.toString())
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            }
+                        }
+
                         put("/mute") {
                             try {
                                 val params = call.receiveParameters()

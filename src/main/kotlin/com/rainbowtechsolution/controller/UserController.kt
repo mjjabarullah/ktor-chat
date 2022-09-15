@@ -168,6 +168,13 @@ class UserController : UserRepository {
         }
     }
 
+    override suspend fun updateRank(id: Long, rankId: Int): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[Users.rankId] = rankId
+        }
+    }
+
     override suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {

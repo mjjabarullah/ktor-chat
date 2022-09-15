@@ -312,7 +312,7 @@ export function customizeNameHtml() {
                 <template x-if="permission.nameFont"> 
                     <div class="w-full h-10 mb-4">
                     <select x-model="user.nameFont" class="input-text">
-                        <option>Select Font</option>
+                        <option value="">Select Font</option>
                         <option value="signika">Signika</option>
                         <option value="grandstander">Grandstander</option>
                         <option value="comic">Comic</option>
@@ -415,7 +415,6 @@ export function changeStatusHtml() {
             <div class="p-4">
                 <div class="w-full h-10 mb-4">
                     <select x-model="user.status" class="input-text">
-                        <option value="" selected>Select Status</option>
                         <option value="Stay">Stay</option>
                         <option value="Online">Online</option>
                         <option value="Away">Away</option>
@@ -604,6 +603,30 @@ export function changeUserAvatarHtml() {
                     <input x-ref='uploadUserAvatar' @change="changeUserAvatar($el)" class="input-image" type="file" accept="image/*">
                     <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload</button>
                 </div>  
+            </div>
+        </div>
+   `
+}
+
+export function changeUserRankHtml(ranks) {
+    let options = ''
+    ranks.forEach(rank => options += `<option value="${rank.id}">${rank.name}</option>`)
+    return `
+        <div class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold ">Change User Rank</p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <div class="w-full mb-4 h-10"> 
+                    <select x-model="u.user.rank.id" class="input-text h-full">
+                        ${options}
+                    </select>
+                </div>
+                <div class="flex gap-2 justify-center">
+                    <button @click="changeUserRank" class="btn-action bg-green-500">change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button> 
+                </div> 
             </div>
         </div>
    `

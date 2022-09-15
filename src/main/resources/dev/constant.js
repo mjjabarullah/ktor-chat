@@ -88,6 +88,7 @@ export const ReactType = {
 export const Success = {
     AVATAR_CHANGED: 'Avatar has been changed',
     NAME_CHANGED: 'Name has been changed',
+    RANK_CHANGED: '%USER% Rank changed',
     NAME_CUSTOMIZED: 'Name text customized.',
     MOOD_CHANGED: 'Mood has been changed',
     ABOUT_CHANGED: 'About me has been changed',
