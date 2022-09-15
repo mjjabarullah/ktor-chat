@@ -166,7 +166,7 @@ export const Defaults = {
  * */
 export const RankCode = {
     OWNER: 'owner',
-    S_ADMIN: 's_admin',
+    S_ADMIN: 'super admin',
     ADMIN: 'admin',
     MODERATOR: 'moderator',
     VIP: 'vip',

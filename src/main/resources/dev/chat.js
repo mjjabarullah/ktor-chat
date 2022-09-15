@@ -728,23 +728,20 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeUserRankDialog() {
-                if (!permission.changeRank) {
+                if (permission.changeRank && this.u.user.rank.code !== 'guest') {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
                 this.showSmallModal(fn.changeUserRankHtml(this.u.ranks))
             },
-            changeUserRank(){
-                if (!permission.changeRank) {
+            changeUserRank() {
+                if (permission.changeRank && this.u.user.rank.code !== 'guest') {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
                 const rankId = this.u.user.rank.id
-                console.log(rankId)
-                let rankToChange = this.u.ranks.find(rank=>rank.id.toString() === rankId)
-                console.log(rankToChange)
-                console.log(this.u.ranks)
-                if(!rankToChange){
+                let rankToChange = this.u.ranks.find(rank => rank.id.toString() === rankId)
+                if (!rankToChange) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }

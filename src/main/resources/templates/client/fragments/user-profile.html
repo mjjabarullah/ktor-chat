@@ -34,7 +34,7 @@
                     <div class="flex py-1 items-center">
                         <img class="rank-icon" :src="u.user.rank.icon" alt="" src="">
                         <p class="font-bold text-[16px] ml-4" x-text="u.user.rank.name"></p>
-                        <template x-if="permission.changeRank">
+                        <template x-if="permission.changeRank && u.user.rank.code!=='guest'">
                             <i @click="changeUserRankDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                         </template>
                     </div>

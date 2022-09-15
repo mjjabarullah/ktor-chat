@@ -4,6 +4,7 @@ package com.rainbowtechsolution.routes
 import com.rainbowtechsolution.common.Auth
 import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.common.Errors
+import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.entity.PostType
@@ -255,6 +256,7 @@ fun Route.adminRotes(
                                 val currentUser =
                                     userRepository.findUserById(currentUserId) ?: throw UserNotFoundException()
                                 val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                                if (user.rank?.code === RankNames.GUEST) throw PermissionDeniedException()
                                 val permission =
                                     permissionRepository.findPermissionByRank(currentUser.rank?.id!!)
                                         ?: throw Exception()
