@@ -9,7 +9,7 @@ window.Alpine = Alpine
 Object.freeze(domain)
 document.addEventListener('alpine:init', () => {
 
-    Alpine.data('actions', () => {
+    Alpine.data('kickActions', () => {
         return {
             kicked: kicked,
             kickInterval: null,
@@ -26,7 +26,7 @@ document.addEventListener('alpine:init', () => {
             },
             onPvtMessageReceived(e) {
                 const message = JSON.parse(e.data)
-                if (message.type === MessageType.UnKick) location.reload()
+                if (message.type === MessageType.UnKick || message.type === MessageType.Ban) location.reload()
             },
             checkKick() {
                 this.kickInterval = setInterval(() => this.timeBetweenDates(), 1e3)
@@ -54,6 +54,23 @@ document.addEventListener('alpine:init', () => {
                     this.kickTime = `${this.days}${this.hours}${this.minutes}${this.seconds}`
                 }
             }
+        }
+    })
+
+    Alpine.data('banActions', () => {
+        return {
+            init() {
+                this.connectWs()
+            },
+            connectWs() {
+                this.userSocket = new WebSocket(`wss://${location.host}/${domain.id}/member/${userId}`)
+                this.userSocket.addEventListener('message', (e) => this.onPvtMessageReceived(e))
+                this.userSocket.addEventListener('close', () => this.connectWs())
+            },
+            onPvtMessageReceived(e) {
+                const message = JSON.parse(e.data)
+                if (message.type === MessageType.UnBan) location.reload()
+            },
         }
     })
 })

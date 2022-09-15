@@ -67,7 +67,7 @@ interface UserRepository {
 
     suspend fun unKick(id: Long)
 
-    suspend fun ban(id: Long)
+    suspend fun ban(id: Long, time: Long, reason: String?)
 
     suspend fun unBan(id: Long)
 

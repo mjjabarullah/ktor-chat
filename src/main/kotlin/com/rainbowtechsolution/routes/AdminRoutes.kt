@@ -328,14 +328,31 @@ fun Route.adminRotes(
                             }
                         }
 
-                        post("/ban") {
+                        put("/ban") {
                             try {
-                                val id = call.parameters["userId"]!!.toLong()
-                                userRepository.ban(id)
-                                val message = PvtMessage(content = "", type = MessageType.Ban)
-                                WsController.broadCastToMember(id, message.encodeToString())
+                                val params = call.receiveParameters()
+                                val time = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                                val reason = params["reason"]
+                                val userId = call.parameters["userId"]!!.toLong()
+                                userRepository.ban(userId, time, reason)
+                                val message = Message(content = "", type = MessageType.Ban)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK, time)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        put("/unban") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                userRepository.unBan(userId)
+                                val message = Message(content = "", type = MessageType.UnBan)
+                                WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
+                                e.printStackTrace()
                                 call.respond(HttpStatusCode.BadRequest)
                             }
                         }

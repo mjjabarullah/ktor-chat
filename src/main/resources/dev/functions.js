@@ -38,7 +38,7 @@ export function renderLeaveMessage(message) {
 
 export function renderChatMessage(message) {
     const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
-    const audio = message.audio ? `<audio  controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
+    const audio = message.audio ? `<audio  preload="auto"controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
     const bold = message.user.textBold ? ' font-bold' : ' font-normal'
     const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Defaults.EMPTY_STRING
@@ -270,7 +270,7 @@ export function changeAvatarHtml() {
                 <div class="mt-1">
                     <input x-ref='uploadAvatar' @change="changeAvatar($el)" class="input-image" type="file"
                                accept="image/*">
-                    <button @click="$refs.uploadAvatar.click()" class="w-36 btn btn-skin text-center">Upload<button>
+                    <button @click="$refs.uploadAvatar.click()" class="w-36 btn btn-skin text-center">Upload</button>
                 </div>  
             </div>
         </div>
@@ -292,7 +292,7 @@ export function changeNameHtml() {
                                autocomplete="off" required minlength="4" maxlength="12" autofocus>
                     </label> 
                 </div>    
-                <button @click="changeName" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeName" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `;
@@ -341,7 +341,7 @@ export function customizeNameHtml() {
                       </template>
                     </div>   
                 </template>
-                <button @click="customizeName" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="customizeName" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -362,7 +362,7 @@ export function changeMoodHtml() {
                                autocomplete="off" required maxlength="40" autofocus>
                     </label>
                 </div> 
-                <button @click="changeMood" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeMood" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -399,7 +399,7 @@ export function changePasswordHtml() {
                         placeholder="New password" autocomplete="off" autofocus>
                     </label>
                 </div> 
-                <button @click="changePassword" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changePassword" class="w-36 btn btn-skin text-center">Change</button>
             </div>   
         </div>
     `
@@ -426,7 +426,7 @@ export function changeStatusHtml() {
                         <option value="Listening">Listening</option>
                     </select>
                 </div>
-                <button @click="changeStatus" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeStatus" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
    `
@@ -447,7 +447,7 @@ export function changeGenderHtml() {
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <button @click="changeGender" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeGender" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
    `
@@ -464,7 +464,7 @@ export function changeDobHtml() {
                 <div class="w-full h-10 mb-4">
                     <input x-model="user.dob" class="input-text"  name="dob" max="2010-12-31" min="1970-12-31" type="date">
                 </div>
-                <button @click="changeDob" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeDob" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -517,7 +517,7 @@ export function customizeTextHtml() {
                     </div>
                   </template>
                 </div>
-                <button @click="customizeText" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="customizeText" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -577,7 +577,7 @@ export function changeUserNameHtml() {
                                autocomplete="off" required minlength="4" maxlength="12" autofocus>
                     </label> 
                 </div>    
-                <button @click="changeUserName" class="w-36 btn btn-skin text-center">Change<button>
+                <button @click="changeUserName" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
     `
@@ -602,7 +602,7 @@ export function changeUserAvatarHtml() {
                 Or 
                 <div class="mt-1">
                     <input x-ref='uploadUserAvatar' @change="changeUserAvatar($el)" class="input-image" type="file" accept="image/*">
-                    <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload<button>
+                    <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload</button>
                 </div>  
             </div>
         </div>
@@ -778,7 +778,7 @@ export function writeNewsDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeNews" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
+                 <button @click.once="writeNews" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post</button>
                 </div>
             </div>
         </div>
@@ -794,7 +794,7 @@ export function adminshipModalHtml() {
             </div>
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
-                    <template x-if="permission.writeAS'">
+                    <template x-if="user.asPermission">
                         <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
@@ -906,7 +906,7 @@ export function writeAdminshipDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeAdminship" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
+                 <button @click.once="writeAdminship" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post</button>
                 </div>
             </div>
         </div>
@@ -1034,7 +1034,7 @@ export function writeGlobalFeedDialogHtml() {
                 </div>
                 <div class="flex justify-end gap-2 items-center"> 
                  <img @click="$refs.input.click()" src="/images/defaults/picture.webp" class="w-6 h-6" alt=""> 
-                 <button @click.once="writeGlobalFeed" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post<button>
+                 <button @click.once="writeGlobalFeed" class="btn btn-skin text-center"><i class="fa-solid fa-paper-plane mr-2"></i>Post</button>
                 </div>
             </div>
         </div>
@@ -1263,7 +1263,7 @@ export function muteDialogHtml() {
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
                 <i class="fa-regular fa-hand text-red-500 text-2xl"></i>  
-                <p class="ml-2 text-md font-bold " x-text="'Mute '+u.name"></p>
+                <p class="ml-2 text-md font-bold " x-text="'Mute '+u.user.name"></p>
             </div>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
@@ -1306,8 +1306,8 @@ export function kickDialogHtml() {
         <div x-data="actions" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
-                <i class="fa-regular fa-hand text-red-500 text-2xl"></i>  
-                <p class="ml-2 text-md font-bold " x-text="'Kick '+u.name"></p>
+                <i class="fa-solid fa-user-slash text-red-500 text-2xl"></i>  
+                <p class="ml-2 text-md font-bold " x-text="'Kick '+u.user.name"></p>
             </div>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
@@ -1338,6 +1338,30 @@ export function kickDialogHtml() {
                 </div>
                 <div class="flex gap-2 justify-center">
                     <button @click="kick(selectedTime, reason)" class="btn-action bg-green-500">Kick</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button> 
+                </div> 
+            </div>
+        </div>
+    `
+}
+
+export function banDialogHtml() {
+    return `
+        <div x-data="actions" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+            <div class="inline-flex items-center"> 
+                <i class="fa-solid fa-ban text-red-500 text-2xl"></i>  
+                <p class="ml-2 text-md font-bold " x-text="'Ban '+u.user.name"></p>
+            </div>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
+                <div class="mb-4"> 
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
+                </div>
+                <div class="flex gap-2 justify-center">
+                    <button @click="ban(reason)" class="btn-action bg-green-500">Ban</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button> 
                 </div> 
             </div>

@@ -280,12 +280,25 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun ban(id: Long) {
-
+    override suspend fun ban(id: Long, time: Long, reason: String?) {
+        dbQuery {
+            userCache.invalidate(id)
+            Users.update({ Users.id eq id }) {
+                it[banned] = time
+                it[banMsg] = reason
+                it[muted] = 0
+                it[muteMsg] = null
+            }
+        }
+        unKick(id)
     }
 
-    override suspend fun unBan(id: Long) {
-
+    override suspend fun unBan(id: Long): Unit = dbQuery {
+        userCache.invalidate(id)
+        Users.update({ Users.id eq id }) {
+            it[banned] = 0
+            it[banMsg] = null
+        }
     }
 
     override suspend fun delete(id: Long): Int = dbQuery {

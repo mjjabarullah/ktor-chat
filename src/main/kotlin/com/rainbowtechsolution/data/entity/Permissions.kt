@@ -5,8 +5,8 @@ import org.jetbrains.exposed.sql.ReferenceOption
 
 object Permissions : IntIdTable("permissions") {
     val rankId = reference("rank_id", Ranks.id, onDelete = ReferenceOption.CASCADE)
-    val avatar = bool("avatar").default(false)
     val name = bool("name").default(false)
+    val avatar = bool("avatar").default(false)
     val userName = bool("user_name").default(false)
     val nameColor = bool("name_color").default(false)
     val nameGradient = bool("name_gradient").default(false)
@@ -22,18 +22,15 @@ object Permissions : IntIdTable("permissions") {
     val splEmo = bool("spl_emo").default(false)
     val status = bool("status").default(false)
     val delMsg = bool("del_msg").default(false)
-    val reports = bool("see_reports").default(false)
+    val reports = bool("reports").default(false)
     val delGF = bool("del_gf").default(false)
-    val adminship = bool("adminship").default(false)
-    val changeRank = bool("change_rank").default(false)
-    val writeAS = bool("write_as").default(false)
     val delAS = bool("del_as").default(false)
     val writeNews = bool("write_news").default(false)
     val delNews = bool("del_news").default(false)
+    val changeRank = bool("change_rank").default(false)
     val delAccount = bool("del_account").default(false)
     val mute = bool("mute").default(false)
     val kick = bool("kick").default(false)
     val ban = bool("ban").default(false)
-
 }
 

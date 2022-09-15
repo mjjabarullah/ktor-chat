@@ -35,6 +35,7 @@ export const MessageType = {
     Kick: 'Kick',
     UnKick: 'UnKick',
     Ban: 'Ban',
+    UnBan: 'UnBan',
     Notification: 'Notification'
 }
 
@@ -107,7 +108,9 @@ export const Success = {
     USER_MUTED: '%USER% muted',
     USER_UNMUTED: '%USER% unmuted',
     USER_KICKED: '%USER% kicked',
-    USER_UNKICKED: '%USER% unkicked'
+    USER_UNKICKED: '%USER% unkicked',
+    USER_BANNED: '%USER% banned',
+    USER_UNBANNED: '%USER% unbanned'
 }
 
 /**
@@ -157,3 +160,15 @@ export const Defaults = {
     MIN_RECORDING_TIME: 10
 }
 
+/**
+ * Rank code
+ * */
+export const RankCode = {
+    OWNER: 'owner',
+    S_ADMIN: 's_admin',
+    ADMIN: 'admin',
+    MODERATOR: 'moderator',
+    VIP: 'vip',
+    USER: 'user',
+    GUEST: 'guest',
+}

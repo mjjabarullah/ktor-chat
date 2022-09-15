@@ -1,6 +1,6 @@
 <div x-cloak x-show="showUserProfile" class="profile-wrap">
     <div x-data="{tab:0}" x-transition x-show="showUserProfile" class="user-profile">
-        <template x-if="u">
+        <template x-if="u.user">
             <div class="profile">
                 <div class="flex rounded px-4 py-2 bg-skin-hover text-white items-center relative">
                     <template x-if="permission.avatar">
@@ -8,32 +8,35 @@
                             <i @click="changeUserAvatarDialog" class="fa-solid fa-camera upload-icon"></i>
                         </div>
                     </template>
-                    <img :src="u.avatar" src="" class="avatar" alt="">
+                    <img :src="u.user.avatar" src="" class="avatar" alt="">
                     <div class="flex ml-4 flex-col flex-1 mt-auto">
                         <p class="text-left">
-                            <span class="username" x-text="u.name"></span>
+                            <span class="username" x-text="u.user.name"></span>
                             <template x-if="permission.userName">
                                 <i @click="changeUserNameDialog"
                                    class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                             </template>
                         </p>
                         <div class="flex text-left whitespace-wrap">
-                            <p class="mood" x-text="u.mood"></p>
+                            <p class="mood" x-text="u.user.mood"></p>
                         </div>
                     </div>
                     <div class="actions">
-                        <template x-if="u.private && permission.private">
-                            <i @click="openPvtDialog(u.id)" class="fa-solid fa-envelope icon-white"></i>
+                        <template x-if="u.user.private && permission.private">
+                            <i @click="openPvtDialog(u.user.id)" class="fa-solid fa-envelope icon-white"></i>
                         </template>
                         <i @click="closeUserProfile(); tab = 0" class="fas fa-times-circle icon-white"></i>
                     </div>
                 </div>
                 <div class="p-4 text-gray-900 text-left text-[14px]">
                     <p class="font-bold"> About Me</p>
-                    <p class="font-normal" x-text="u.about ? u.about : ''"></p>
+                    <p class="font-normal" x-text="u.user.about ? u.user.about : ''"></p>
                     <div class="flex py-1 items-center">
-                        <img class="rank-icon" :src="u.rank.icon" alt="" src="">
-                        <p class="font-bold text-[16px] ml-4" x-text="u.rank.name"></p>
+                        <img class="rank-icon" :src="u.user.rank.icon" alt="" src="">
+                        <p class="font-bold text-[16px] ml-4" x-text="u.user.rank.name"></p>
+                        <template x-if="permission.changeRank">
+                            <i @click="changeUserRankDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
+                        </template>
                     </div>
                     <div class="flex flex-col mt-2">
                         <div class="flex overflow-x-auto scrollbar">
@@ -43,17 +46,22 @@
                             <p @click="tab=1"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
                                :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Actions</p>
+                            <template x-if="user.sensPermission">
+                                <p @click="tab=2"
+                                   class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
+                                   :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Info</p>
+                            </template>
                         </div>
                         <div x-show="tab===0" class="mt-1 text-black">
                             <table class="table w-full border-separate">
                                 <tbody>
                                 <tr>
                                     <th>Status</th>
-                                    <td class="font-bold" x-text="u.status" :class="u.statusColor"></td>
+                                    <td class="font-bold" x-text="u.user.status" :class="u.user.statusColor"></td>
                                 </tr>
                                 <tr>
                                     <th>Gender</th>
-                                    <td x-text="u.gender">
+                                    <td x-text="u.user.gender">
                                 </tr>
                                 <tr>
                                     <th>Joined</th>
@@ -61,20 +69,20 @@
                                 </tr>
                                 <tr>
                                     <th>DOB</th>
-                                    <td x-text="u.dob ? u.dob : 'Not set'"></td>
+                                    <td x-text="u.user.dob ? u.user.dob : 'Not set'"></td>
                                 </tr>
                                 <tr>
                                     <th>Points</th>
                                     <td>
                                         <i class="fa-solid fa-coins text-orange-400 mr-1"></i>
-                                        <span x-text="u.points"></span>
+                                        <span x-text="u.user.points"></span>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>Level</th>
                                     <td>
                                         <i class="fa-solid fa-database text-orange-400 mr-1"></i>
-                                        <span x-text="u.level"></span>
+                                        <span x-text="u.user.level"></span>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -87,7 +95,7 @@
                                     <th>
                                         <div class="inline-flex items-center cursor-pointer">
                                             <i class="fa-solid fa-ban text-red-500"></i>
-                                            <p class="ml-2" x-text="u.blocked?' Unblock': ' Block'"></p>
+                                            <p class="ml-2" x-text="u.user.blocked?' Unblock': ' Block'"></p>
                                         </div>
                                     </th>
                                 </tr>
@@ -104,7 +112,7 @@
                                         <th>
                                             <div class="inline-flex items-center">
                                                 <i class="fa-regular fa-hand text-red-500"></i>
-                                                <p class="ml-2" x-text="u.muted>0?' Unmute': ' Mute'"></p>
+                                                <p class="ml-2" x-text="u.user.muted>0?' Unmute': ' Mute'"></p>
                                             </div>
                                         </th>
                                     </tr>
@@ -114,7 +122,7 @@
                                         <th>
                                             <div class="inline-flex items-center">
                                                 <i class="fa-solid fa-user-slash text-red-500"></i>
-                                                <p class="ml-2" x-text="u.kicked>0?' Unkick': ' Kick'"></p>
+                                                <p class="ml-2" x-text="u.user.kicked>0?' Unkick': ' Kick'"></p>
                                             </div>
                                         </th>
                                     </tr>
@@ -124,7 +132,7 @@
                                         <th>
                                             <div class="inline-flex items-center">
                                                 <i class="fa-solid fa-ban text-red-500"></i>
-                                                <p class="ml-2" x-text="u.banned>0?' Unban': ' Ban'"></p>
+                                                <p class="ml-2" x-text="u.user.banned>0?' Unban': ' Ban'"></p>
                                             </div>
                                         </th>
                                     </tr>
@@ -142,6 +150,56 @@
                                 </tbody>
                             </table>
                         </div>
+                        <template x-if="user.sensPermission">
+                            <div x-show="tab===2" class="mt-1 text-black">
+                                <table class="table w-full border-separate">
+                                    <tbody>
+                                    <tr>
+                                        <th>Email</th>
+                                        <td x-text="u.user.email"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>IP</th>
+                                        <td x-text="u.user.ip">
+                                    </tr>
+                                    <tr>
+                                        <th>Device</th>
+                                        <td x-text="u.user.deviceId"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Country</th>
+                                        <td x-text="u.user.country"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Zone</th>
+                                        <td x-text="u.user.timezone"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Same Ips</th>
+                                        <td>
+                                            <div>
+                                                <template x-for="name in u.sameIps">
+                                                    <span x-text="name"
+                                                          class="bg-skin-primary rounded px-2 text-skin-on-primary"></span>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Same Devices</th>
+                                        <td>
+                                            <div>
+                                                <template x-for="name in u.sameDevices">
+                                                    <span x-text="name"
+                                                          class="bg-skin-primary rounded px-2 text-skin-on-primary"></span>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
