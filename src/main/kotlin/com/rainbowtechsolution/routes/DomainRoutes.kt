@@ -154,12 +154,33 @@ fun Route.domainRoutes(
 
                     get("/{userId}") {
                         try {
+                            val currentUserId = call.sessions.get<ChatSession>()?.id!!
                             val userId = call.parameters["userId"]!!.toLong()
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val currentUser =
+                                userRepository.findUserById(currentUserId) ?: throw UserNotFoundException()
+                            val permission =
+                                permissionRepository.findPermissionByRank(currentUser.rank?.id!!) ?: throw Exception()
                             val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: UserNotFoundException) {
-                            call.respond(HttpStatusCode.NotFound)
+                            val rankCode = currentUser.rank?.code
+                            val canSeeSensitiveData =
+                                rankCode == RankNames.OWNER || rankCode == RankNames.ADMIN || rankCode == RankNames.S_ADMIN
+                            val trimmedUser = user.copy(deviceId = "", ip = "", country = "", email = "", timezone = "")
+                            var userRes = UserRes(user = if (canSeeSensitiveData) user else trimmedUser)
+                            if (permission.changeRank) {
+                                val ranks = rankRepository.getRanksBelowOrder(currentUser.rank?.order!!, domainId)
+                                userRes = userRes.copy(ranks = ranks)
+                            }
+                            if (canSeeSensitiveData) {
+                                if (user.ip != null && user.deviceId != null) {
+                                    val sameUser = userRepository.sameUser(domainId, user.ip!!, user.deviceId!!)
+                                    userRes =
+                                        userRes.copy(sameIps = sameUser.sameIps, sameDevices = sameUser.sameDevices)
+                                }
+                            }
+                            call.respond(HttpStatusCode.OK, userRes)
                         } catch (e: Exception) {
+                            e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                         }
                     }

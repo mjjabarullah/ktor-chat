@@ -25,6 +25,7 @@ object Permissions : IntIdTable("permissions") {
     val reports = bool("see_reports").default(false)
     val delGF = bool("del_gf").default(false)
     val adminship = bool("adminship").default(false)
+    val changeRank = bool("change_rank").default(false)
     val writeAS = bool("write_as").default(false)
     val delAS = bool("del_as").default(false)
     val writeNews = bool("write_news").default(false)

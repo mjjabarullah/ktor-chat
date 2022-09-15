@@ -9,6 +9,8 @@ import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.mappers.toUserModel
 import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.data.model.UserRes
+import com.rainbowtechsolution.exceptions.UserNotFoundException
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.checkPassword
 import com.rainbowtechsolution.utils.dbQuery
@@ -89,6 +91,18 @@ class UserController : UserRepository {
             if (user != null) userCache.put(id, user)
             user
         }
+    }
+
+    override suspend fun sameUser(domainId: Int, ip: String, deviceId: String): UserRes = dbQuery {
+        val sameIps = Users
+            .slice(Users.name, Users.domainId, Users.ip)
+            .select { (Users.domainId eq domainId) and (Users.ip eq ip) }
+            .map { it[Users.name] }
+        val sameDevices = Users
+            .slice(Users.name, Users.domainId, Users.ip)
+            .select { (Users.domainId eq domainId) and (Users.deviceId eq deviceId) }
+            .map { it[Users.name] }
+        UserRes(sameIps = sameIps, sameDevices = sameDevices)
     }
 
     override suspend fun setSessions(id: Long, mode: Boolean): Unit = dbQuery {
@@ -248,7 +262,7 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun kick(id: Long, time: Long, reason: String?):Unit= dbQuery {
+    override suspend fun kick(id: Long, time: Long, reason: String?): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[kicked] = time
@@ -258,7 +272,7 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun unKick(id: Long):Unit = dbQuery {
+    override suspend fun unKick(id: Long): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[kicked] = 0

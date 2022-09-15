@@ -38,7 +38,7 @@ export function renderLeaveMessage(message) {
 
 export function renderChatMessage(message) {
     const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
-    const audio = message.audio ? `<audio preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
+    const audio = message.audio ? `<audio  controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
     const bold = message.user.textBold ? ' font-bold' : ' font-normal'
     const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Defaults.EMPTY_STRING

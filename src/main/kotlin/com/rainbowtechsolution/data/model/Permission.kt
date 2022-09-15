@@ -26,6 +26,7 @@ data class Permission(
     val reports: Boolean = false,
     val delGF: Boolean = true,
     val adminship: Boolean = false,
+    val changeRank: Boolean = false,
     val writeAS: Boolean = false,
     val delAS: Boolean = false,
     val writeNews: Boolean = false,

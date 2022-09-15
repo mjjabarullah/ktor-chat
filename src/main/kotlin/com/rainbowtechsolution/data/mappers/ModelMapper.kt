@@ -46,6 +46,7 @@ fun ResultRow.toUserModel(): User {
     return User(
         id = this[Users.id].value,
         name = this[Users.name].capitalize(),
+        email = this[Users.email],
         avatar = this[Users.avatar],
         owner = this[Users.owner],
         bot = this[Users.bot],
@@ -153,6 +154,7 @@ fun ResultRow.toPermissionModel(): Permission {
         reports = this[Permissions.reports],
         delGF = this[Permissions.delGF],
         adminship = this[Permissions.adminship],
+        changeRank = this[Permissions.changeRank],
         writeAS = this[Permissions.writeAS],
         delAS = this[Permissions.delAS],
         writeNews = this[Permissions.writeNews],

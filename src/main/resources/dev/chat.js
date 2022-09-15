@@ -620,7 +620,8 @@ document.addEventListener('alpine:init', () => {
                     return
                 }
                 axios.get(`/${domain.id}/users/${uId}`).then(res => {
-                    this.u = res.data
+                    console.log(res.data)
+                    /*this.u = res.data
                     const user = this.blockedUsers.find(user => user.id === this.u.id)
                     this.u.blocked = user != null
                     this.u.tempStatus = this.u.status
@@ -629,7 +630,7 @@ document.addEventListener('alpine:init', () => {
                         this.u.kicked > 0 ? this.u.status = Status.Kicked :
                             this.u.banned > 0 ? this.u.status = Status.Banned : this.u.status
                     this.setUserStatusColor()
-                    this.showUserProfile = true
+                    this.showUserProfile = true*/
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
             closeUserProfile() {

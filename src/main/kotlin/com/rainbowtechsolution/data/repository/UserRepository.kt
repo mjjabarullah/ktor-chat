@@ -3,6 +3,7 @@ package com.rainbowtechsolution.data.repository
 import com.rainbowtechsolution.data.entity.Gender
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.data.model.UserRes
 
 interface UserRepository {
 
@@ -21,6 +22,8 @@ interface UserRepository {
     suspend fun update(user: User)
 
     suspend fun findUserById(id: Long): User?
+
+    suspend fun sameUser(domainId: Int, ip: String, deviceId: String): UserRes
 
     suspend fun setSessions(id: Long, mode: Boolean)
 

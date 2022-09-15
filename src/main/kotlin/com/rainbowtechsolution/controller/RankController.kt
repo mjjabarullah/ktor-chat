@@ -1,14 +1,11 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.common.RankIcons
-import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.data.entity.Ranks
-import com.rainbowtechsolution.data.repository.RankRepository
 import com.rainbowtechsolution.data.mappers.toRankModel
 import com.rainbowtechsolution.data.model.Rank
-import com.rainbowtechsolution.utils.capitalize
+import com.rainbowtechsolution.data.repository.RankRepository
 import com.rainbowtechsolution.utils.dbQuery
-import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 
@@ -30,5 +27,11 @@ class RankController : RankRepository {
 
     override suspend fun findRankByCode(code: String, domainId: Int): Rank? =
         dbQuery { Ranks.select { Ranks.code eq code }.firstOrNull()?.toRankModel() }
+
+    override suspend fun getRanksBelowOrder(order: Int, domainId: Int): List<Rank> = dbQuery {
+        Ranks
+            .select { (Ranks.domainId eq domainId) and (Ranks.order greater order) }
+            .map { it.toRankModel() }
+    }
 
 }
