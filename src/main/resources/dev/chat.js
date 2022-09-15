@@ -142,7 +142,7 @@ document.addEventListener('alpine:init', () => {
 
                     this.showMessages = true
                     this.showLoader = false
-                    if (rank.code === Defaults.GUEST) {
+                    if (rank.code === RankCode.GUEST) {
                         this.showSmallModal(fn.guestDialogHtml())
                     } else {
                         this.$refs.mainInput.focus()
@@ -286,7 +286,7 @@ document.addEventListener('alpine:init', () => {
                 this.showMessages = true
                 this.$refs.mainInput.focus()
                 localStorage.setItem("isUGCShowed", "true")
-                if (rank.code === Defaults.GUEST) {
+                if (rank.code === RankCode.GUEST) {
                     this.showSmallModal(fn.guestDialogHtml())
                 }
             },
@@ -477,7 +477,7 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             changePasswordDialog() {
-                if (rank.code === Defaults.GUEST) {
+                if (rank.code === RankCode.GUEST) {
                     this.showAlertMsg(Errors.GUEST_DOESNT_HAVE_PASSWORD, Css.ERROR)
                     return
                 }
@@ -603,7 +603,7 @@ document.addEventListener('alpine:init', () => {
                 })
             },
             showGuestRegisterDialog() {
-                if (rank.code !== Defaults.GUEST) return
+                if (rank.code !== RankCode.GUEST) return
                 this.showSmallModal(fn.guestRegisterHtml())
             },
 
@@ -728,14 +728,14 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changeUserRankDialog() {
-                if (permission.changeRank && this.u.user.rank.code === 'guest') {
+                if (permission.changeRank && this.u.user.rank.code === RankCode.GUEST) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
                 this.showSmallModal(fn.changeUserRankHtml(this.u.ranks))
             },
             changeUserRank() {
-                if (permission.changeRank && this.u.user.rank.code === 'guest') {
+                if (permission.changeRank && this.u.user.rank.code === RankCode.GUEST) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -902,12 +902,12 @@ document.addEventListener('alpine:init', () => {
                 }
                 if (message.type === MessageType.News) {
                     this.getNews()
-                    let makeSound = message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound
+                    let makeSound = message.user.id !== userId && rank.code !== RankCode.GUEST && this.user.notifiSound
                     if (makeSound) this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.GlobalFeed) {
                     this.getGlobalFeed()
-                    let makeSound = message.user.id !== userId && rank.code !== Defaults.GUEST && this.user.notifiSound
+                    let makeSound = message.user.id !== userId && rank.code !== RankCode.GUEST && this.user.notifiSound
                     if (makeSound) this.$refs.postSound.play()
                 }
                 if (message.type === MessageType.Adminship) {
@@ -1268,7 +1268,7 @@ document.addEventListener('alpine:init', () => {
              * Announcement
              * */
             getNews() {
-                rank.code !== Defaults.GUEST &&
+                rank.code !== RankCode.GUEST &&
                 axios.get(`/${domain.id}/news`).then(res => {
                     this.news = res.data
                     this.newsUnreadCount = this.news.unReadCount
@@ -1335,7 +1335,7 @@ document.addEventListener('alpine:init', () => {
             * Global Feed
             * */
             getGlobalFeed() {
-                rank.code !== Defaults.GUEST &&
+                rank.code !== RankCode.GUEST &&
                 axios.get(`/${domain.id}/global-feed`).then(res => {
                     this.globalFeed = res.data
                     this.globalFeedUnreadCount = this.globalFeed.unReadCount
@@ -1352,7 +1352,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
                     return
                 }
-                if (rank.code === Defaults.GUEST) {
+                if (rank.code === RankCode.GUEST) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1628,7 +1628,7 @@ document.addEventListener('alpine:init', () => {
             },
             writeGlobalFeed() {
                 const input = this.$refs.input
-                if (rank.code === Defaults.GUEST) {
+                if (rank.code === RankCode.GUEST) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
