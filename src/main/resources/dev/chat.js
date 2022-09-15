@@ -735,7 +735,7 @@ document.addEventListener('alpine:init', () => {
                 this.showSmallModal(fn.changeUserRankHtml(this.u.ranks))
             },
             changeUserRank() {
-                if (permission.changeRank && this.u.user.rank.code !== 'guest') {
+                if (permission.changeRank && this.u.user.rank.code === 'guest') {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
