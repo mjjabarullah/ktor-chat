@@ -446,7 +446,7 @@ export function changeStatusHtml() {
                  <div class="flex gap-2 justify-center">
                     <button @click="changeStatus(status)" class="btn-action bg-green-500">Change</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
-                </div>
+                 </div>
             </div>
         </div>
    `
@@ -466,7 +466,10 @@ export function changeGenderHtml() {
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <button @click="changeGender(gender)" class="w-36 btn btn-skin text-center">Change</button>
+                <div class="flex gap-2 justify-center">
+                    <button @click="changeGender(gender)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                 </div>
             </div>
         </div>
    `
