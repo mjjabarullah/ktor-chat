@@ -22,7 +22,6 @@ window.desktop = window.matchMedia('(min-width: 1024px)')
 document.addEventListener('alpine:init', () => {
 
 
-
     Alpine.data('chat', () => {
         return {
             showLeft: true,
@@ -577,7 +576,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.changeUserNameHtml())
             },
-            changeUserName() {
+            changeUserName(name) {
                 if (!this.user.canChangeName) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
@@ -587,11 +586,11 @@ document.addEventListener('alpine:init', () => {
                     return
                 }
                 const formData = new FormData()
-                formData.append('name', this.u.name)
-                axios.put(`/${domain.id}/users/${this.u.user.id}/update-name`, formData).then(() =>
+                formData.append('name', name)
+                axios.put(`/${domain.id}/users/${this.u.user.id}/update-name`, formData).then(() => {
+                    this.u.user.name = name
                     this.showAlertMsg(Success.NAME_CHANGED, Css.SUCCESS)
-                ).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
-                this.showUserProfile = false
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
                 this.closeSmallModal()
             },
             changeUserAvatarDialog() {
@@ -606,17 +605,12 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                this.showLoader = true
                 const data = new FormData()
                 data.append('avatar', avatars[index])
-                axios.put(`/${domain.id}/users/${this.u.user.id}/update-default-avatar`, data).then(res => {
-                    this.showLoader = false
+                axios.put(`/${domain.id}/users/${this.u.user.id}/update-default-avatar`, data).then(() => {
+                    this.u.user.avatar = avatars[index]
                     this.showAlertMsg(Success.AVATAR_CHANGED, Css.SUCCESS)
-                }).catch(e => {
-                    this.showLoader = false
-                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
-                })
-                this.showUserProfile = false
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
                 this.closeSmallModal()
             },
             changeUserAvatar(el) {
@@ -653,7 +647,7 @@ document.addEventListener('alpine:init', () => {
                 this.showSmallModal(fn.changeUserRankHtml(this.u.ranks))
             },
             changeUserRank() {
-                if (this.user.canChangeRank) {
+                if (!this.user.canChangeRank) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }

@@ -486,7 +486,7 @@ export function changeDobHtml() {
                 <div class="w-full h-10 mb-4">
                     <input x-model="dob" class="input-text"  name="dob" max="2010-12-31" min="1970-12-31" type="date">
                 </div>
-                 <div class="flex gap-2 justify-center">
+                <div class="flex gap-2 justify-center">
                     <button @click="changeDob(dob)" class="btn-action bg-green-500">Change</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
                 </div>
@@ -592,7 +592,7 @@ export function messageModalHtml() {
 
 export function changeUserNameHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{name:u.user.name}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Username</p>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
@@ -600,12 +600,15 @@ export function changeUserNameHtml() {
             <div class="p-4">
                 <div class="h-10 mb-4">
                     <label class="h-full">
-                        <input x-model="u.name" name="name" onkeypress="return /^[a-zA-Z\\d_-]*$/i.test(event.key)"
+                        <input x-model="name" name="name" onkeypress="return /^[a-zA-Z\\d_-]*$/i.test(event.key)"
                                class="input-text" type="text" placeholder="Username"
                                autocomplete="off" required minlength="4" maxlength="12" autofocus>
                     </label> 
                 </div>    
-                <button @click="changeUserName" class="w-36 btn btn-skin text-center">Change</button>
+                <div class="flex gap-2 justify-center">
+                    <button @click="changeUserName(name)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -630,7 +633,10 @@ export function changeUserAvatarHtml() {
                 Or 
                 <div class="mt-1">
                     <input x-ref='uploadUserAvatar' @change="changeUserAvatar($el)" class="input-image" type="file" accept="image/*">
-                    <button @click="$refs.uploadUserAvatar.click()" class="w-36 btn btn-skin text-center">Upload</button>
+                    <div class="flex gap-2 justify-center">
+                        <button @click="$refs.uploadUserAvatar.click()" class="btn-action bg-green-500">Upload</button>          
+                        <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                    </div> 
                 </div>  
             </div>
         </div>
