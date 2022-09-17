@@ -5,9 +5,9 @@ import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.javatime.datetime
 
 object Users : LongIdTable("users") {
-    val name = varchar("name", 15)
+    val name = varchar("name", 20)
     val email = varchar("email", 50)
-    val password = varchar("password", 80)
+    val password = varchar("password", 255)
     val owner = bool("owner").default(false)
     val bot = bool("bot").default(false)
     val avatar = varchar("avatar", 255)
@@ -33,10 +33,7 @@ object Users : LongIdTable("users") {
     val deviceId = varchar("device_id", 100).nullable()
     val country = varchar("country", 100).nullable()
     val private = bool("private").default(true)
-    val chatSound = bool("chat_sound").default(true)
-    val pvtSound = bool("pvt_sound").default(true)
-    val notifiSound = bool("notifi_sound").default(true)
-    val nameSound = bool("name_sound").default(true)
+    val sounds = varchar("sounds", 4).default("1111")
     val muted = long("muted").default(0)
     val kicked = long("kicked").default(0)
     val banned = long("banned").default(0)

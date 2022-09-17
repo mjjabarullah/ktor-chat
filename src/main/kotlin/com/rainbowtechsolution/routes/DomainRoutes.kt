@@ -55,10 +55,11 @@ fun Route.domainRoutes(
                         return@get
                     }
                     val room = roomRepository.findRoomById(roomId!!) ?: throw RoomNotFoundException()
-                    val permission = permissionRepository.findPermissionByRank(user.rank?.id!!) ?: throw Exception()
-                    val asPermission = rank.code == RankNames.OWNER || rank.code == RankNames.S_ADMIN || rank.code == RankNames.ADMIN || rank.code == RankNames.MODERATOR
+                    val permission = permissionRepository.findPermissionByRank(rank.id!!) ?: throw Exception()
+                    val asPermission =
+                        rank.code == RankNames.OWNER || rank.code == RankNames.S_ADMIN || rank.code == RankNames.ADMIN || rank.code == RankNames.MODERATOR
                     val model = mapOf(
-                        "domain" to domain, "room" to room, "rank" to rank ,"user" to user, "permission" to permission,
+                        "domain" to domain, "room" to room, "rank" to rank, "user" to user, "permission" to permission,
                         "asPermission" to asPermission
                     )
                     if (user.kicked > 0) {
@@ -479,15 +480,12 @@ fun Route.domainRoutes(
                         }
                     }
 
-                    put("/change-sound-settings") {
+                    put("/change-sounds") {
                         try {
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val params = call.receiveParameters()
-                            val chatSound = params["chatSound"].toBoolean()
-                            val pvtSound = params["pvtSound"].toBoolean()
-                            val nameSound = params["nameSound"].toBoolean()
-                            val notifiSound = params["notifiSound"].toBoolean()
-                            userRepository.changeSoundSettings(userId, chatSound, pvtSound, nameSound, notifiSound)
+                            val sounds = params["sounds"].toString()
+                            userRepository.changeSounds(userId, sounds)
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
                             e.printStackTrace()

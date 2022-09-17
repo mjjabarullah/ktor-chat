@@ -37,7 +37,7 @@ interface UserRepository {
 
     suspend fun updateName(id: Long, name: String)
 
-    suspend fun updateRank(id: Long, rankId:Int )
+    suspend fun updateRank(id: Long, rankId: Int)
 
     suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?)
 
@@ -55,9 +55,7 @@ interface UserRepository {
 
     suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?)
 
-    suspend fun changeSoundSettings(
-        id: Long, chatSound: Boolean, pvtSound: Boolean, nameSound: Boolean, notifiSound: Boolean
-    )
+    suspend fun changeSounds(id: Long, sounds: String)
 
     suspend fun changePrivate(id: Long, private: Boolean)
 

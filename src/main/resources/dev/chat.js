@@ -18,6 +18,7 @@ import {
     Success,
     textColors
 } from "./constant"
+import {soundManager} from 'soundmanager2/script/soundmanager2-nodebug'
 
 Object.freeze(domain)
 Object.freeze(room)
@@ -33,6 +34,7 @@ window.MicRecorder = require('mic-recorder-to-mp3')
 window.mobile = window.matchMedia('(max-width: 640px)')
 window.tablet = window.matchMedia('(min-width: 768px)')
 window.desktop = window.matchMedia('(min-width: 1024px)')
+
 
 document.addEventListener('alpine:init', () => {
 
@@ -73,17 +75,9 @@ document.addEventListener('alpine:init', () => {
             remainingTime: Defaults.MAX_RECORDING_TIME,
             muteInterval: null,
             init() {
+                this.initSM2()
 
-                this.user = JSON.parse(JSON.stringify(user))
-                this.user.statusColor = ''
-                this.user.password = ''
-                this.user.textBold = `${this.user.textBold}`
-
-                this.user.asPermission = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN
-                    || rank.code === RankCode.ADMIN || rank.code === RankCode.MODERATOR
-
-                this.user.sensPermission = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN
-                    || rank.code === RankCode.ADMIN
+                this.setUser()
 
                 this.muteInterval = setInterval(() => this.checkMute(), 1e4)
 
@@ -160,7 +154,34 @@ document.addEventListener('alpine:init', () => {
                 this.$watch('globalFeed.unReadCount', value => this.totalCount = this.news.unReadCount + this.adminship.unReadCount + value)
 
             },
-
+            setUser() {
+                this.user = JSON.parse(JSON.stringify(user))
+                this.user.statusColor = this.user.password = Defaults.EMPTY_STRING
+                this.user.textBold = `${this.user.textBold}`
+                this.user.asPermission = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN
+                    || rank.code === RankCode.ADMIN || rank.code === RankCode.MODERATOR
+                this.user.sensPermission = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN
+                    || rank.code === RankCode.ADMIN
+                this.setSounds()
+            },
+            setSounds() {
+                let sounds = this.user.sounds.split('')
+                this.user.chatSound = sounds[0] === '1'
+                this.user.pvtSound = sounds[1] === '1'
+                this.user.nameSound = sounds[2] === '1'
+                this.user.notifySound = sounds[3] === '1'
+            },
+            initSM2() {
+                soundManager.setup({
+                    onready: () => {
+                        soundManager.createSound({id: 'chat', url: '/sounds/chat.mp3'})
+                        soundManager.createSound({id: 'private', url: '/sounds/private.mp3'})
+                        soundManager.createSound({id: 'name', url: '/sounds/name.mp3'})
+                        soundManager.createSound({id: 'notify', url: '/sounds/notify.mp3'})
+                        soundManager.createSound({id: 'post', url: '/sounds/post.mp3'})
+                    },
+                })
+            },
             /**
              * Websocket
              * */
@@ -271,7 +292,6 @@ document.addEventListener('alpine:init', () => {
                     this.showSmallModal(fn.guestDialogHtml())
                 }
             },
-
 
             /**
              *
@@ -472,17 +492,16 @@ document.addEventListener('alpine:init', () => {
                 this.showEmo = false
                 this.showOption = false
             },
-            changeSoundSettings() {
+            changeSounds() {
                 const formData = new FormData()
-                formData.append('chatSound', this.user.chatSound)
-                formData.append('pvtSound', this.user.pvtSound)
-                formData.append('nameSound', this.user.nameSound)
-                formData.append('notifiSound', this.user.notifiSound)
-                axios.put(`/${domain.id}/users/change-sound-settings`, formData).catch(e => {
-                    this.user.chatSound = chatSound
-                    this.user.pvtSound = pvtSound
-                    this.user.notifiSound = notifiSound
-                    this.user.nameSound = nameSound
+                let sounds = this.user.chatSound ? '1' : '0'
+                sounds += this.user.pvtSound ? '1' : '0'
+                sounds += this.user.nameSound ? '1' : '0'
+                sounds += this.user.notifySound ? '1' : '0'
+                formData.append('sounds', sounds)
+                axios.put(`/${domain.id}/users/change-sounds`, formData).catch(e => {
+                    this.user.sounds = user.sounds
+                    this.setSounds()
                     this.showAlertMsg(Errors.SOMETHING_WENT_WRONG, Css.ERROR)
                 })
             },
@@ -490,7 +509,7 @@ document.addEventListener('alpine:init', () => {
                 const formData = new FormData()
                 formData.append('private', this.user.private)
                 axios.put(`/${domain.id}/users/change-private`, formData).catch(e => {
-                    this.user.private = pvt
+                    this.user.private = user.private
                     this.showAlertMsg(Errors.SOMETHING_WENT_WRONG, Css.ERROR)
                 })
             },
@@ -785,7 +804,7 @@ document.addEventListener('alpine:init', () => {
                     let user = this.blockedUsers.find(user => user.id === message.user.id)
                     if (user == null) {
                         chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
-                        if (message.user.id !== userId) this.$refs.chatSound.play()
+                        if (message.user.id !== userId) soundManager.play('chat')
                     }
                 }
                 if (message.type === MessageType.Leave) {
@@ -800,27 +819,26 @@ document.addEventListener('alpine:init', () => {
                 if (message.type === MessageType.News) {
                     this.getNews()
                     let makeSound = message.user.id !== userId && rank.code !== RankCode.GUEST && this.user.notifiSound
-                    if (makeSound) this.$refs.postSound.play()
+                    if (makeSound) soundManager.play('post')
                 }
                 if (message.type === MessageType.GlobalFeed) {
                     this.getGlobalFeed()
                     let makeSound = message.user.id !== userId && rank.code !== RankCode.GUEST && this.user.notifiSound
-                    if (makeSound) this.$refs.postSound.play()
+                    if (makeSound) soundManager.play('post')
                 }
                 if (message.type === MessageType.Adminship) {
                     this.getAdminships()
                     let makeSound = message.user.id !== userId && permission.adminship && this.user.notifiSound
-                    if (makeSound) this.$refs.postSound.play()
+                    if (makeSound) soundManager.play('post')
                 }
                 if (message.type === MessageType.Report) {
                     this.getReports()
                     let makeSound = permission.reports && this.user.notifiSound
-                    if (makeSound) this.$refs.postSound.play()
+                    if (makeSound) soundManager.play('notify')
                 }
                 if (message.type === MessageType.DelNews) this.getNews()
                 if (message.type === MessageType.DelGlobalFeed) this.getGlobalFeed()
                 if (message.type === MessageType.DelAdminship) this.getAdminships()
-
                 if (message.type === MessageType.ActionTaken) if (permission.reports) this.getReports()
                 if (message.type === MessageType.Mute) {
                     const user = this.roomUsers.find(user => user.id === message.user.id)
@@ -1005,14 +1023,14 @@ document.addEventListener('alpine:init', () => {
                             message.seen = true
                             this.setPvtMessageSeen(message.id)
                         }
-                    } else this.$refs.pvtSound.play()
+                    } else soundManager.play('private')
                     user.messages.unshift(message)
                     this.setPvtNotifiCount()
                 }
                 if (message.type === MessageType.DataChanges) location.reload()
                 if (message.type === MessageType.Notification) {
                     this.getNotifications()
-                    if (this.user.notifiSound) this.$refs.notifySound.play()
+                    if (this.user.notifiSound) soundManager.play('notify')
                 }
                 if (message.type === MessageType.Mute) {
                     this.muteInterval = setInterval(() => this.checkMute(), 1e4)

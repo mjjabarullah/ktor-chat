@@ -4,13 +4,11 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.data.entity.*
-import com.rainbowtechsolution.data.mappers.toPvtMessageModel
-import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.mappers.toUserModel
 import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.model.UserRes
-import com.rainbowtechsolution.exceptions.UserNotFoundException
+import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.checkPassword
 import com.rainbowtechsolution.utils.dbQuery
@@ -234,15 +232,10 @@ class UserController : UserRepository {
             }
         }
 
-    override suspend fun changeSoundSettings(
-        id: Long, chatSound: Boolean, pvtSound: Boolean, nameSound: Boolean, notifiSound: Boolean
-    ): Unit = dbQuery {
+    override suspend fun changeSounds(id: Long, sounds: String): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
-            it[Users.chatSound] = chatSound
-            it[Users.pvtSound] = pvtSound
-            it[Users.nameSound] = nameSound
-            it[Users.notifiSound] = notifiSound
+            it[Users.sounds] = sounds
         }
     }
 
@@ -317,7 +310,7 @@ class UserController : UserRepository {
         Blocks.insert {
             it[Blocks.blocker] = blocker
             it[Blocks.blocked] = blocked
-            it[Blocks.createdAt] = LocalDateTime.now()
+            it[createdAt] = LocalDateTime.now()
         }
     }
 

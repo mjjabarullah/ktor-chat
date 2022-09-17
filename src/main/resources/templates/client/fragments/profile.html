@@ -98,7 +98,7 @@
                                 <th>Chat Sound</th>
                                 <td>
                                     <label class="switch">
-                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.chatSound">
+                                        <input @change="changeSounds" type="checkbox" x-model="user.chatSound">
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
@@ -107,7 +107,7 @@
                                 <th>Private Sound</th>
                                 <td>
                                     <label class="switch">
-                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.pvtSound">
+                                        <input @change="changeSounds" type="checkbox" x-model="user.pvtSound">
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
@@ -116,7 +116,7 @@
                                 <th>Username Sound</th>
                                 <td>
                                     <label class="switch">
-                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.nameSound">
+                                        <input @change="changeSounds" type="checkbox" x-model="user.nameSound">
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
@@ -125,7 +125,7 @@
                                 <th>Notification Sound</th>
                                 <td>
                                     <label class="switch">
-                                        <input @change="changeSoundSettings" type="checkbox" x-model="user.notifiSound">
+                                        <input @change="changeSounds" type="checkbox" x-model="user.notifySound">
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
