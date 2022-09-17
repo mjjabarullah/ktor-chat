@@ -53,6 +53,14 @@ export const Status = {
 }
 
 /**
+ * Status Type
+ * */
+export const Gender = {
+    Male: 'Male',
+    Female: 'Female'
+}
+
+/**
  * Report Type
  * */
 export const ReportType = {
@@ -64,10 +72,10 @@ export const ReportType = {
 /**
  * Post Type
  * */
-export const PostType = {
-    Announcement: 'Announcement',
-    GlobalFeed: 'GlobalFeed',
-    Adminship: 'Adminship'
+export const PostLink = {
+    Announcement: 'news',
+    GlobalFeed: 'global-feed',
+    Adminship: 'adminship'
 }
 
 
@@ -146,7 +154,9 @@ export const Css = {
     ERROR: 'error',
     GREEN: 'green',
     YELLOW: 'yellow',
-    RED: 'red'
+    RED: 'red',
+    Blue: 'blue',
+    Pink: 'pink'
 }
 
 /**
@@ -158,7 +168,8 @@ export const Defaults = {
     FUNC_TYPE: 'function',
     GUEST: 'guest',
     MAX_RECORDING_TIME: 180,
-    MIN_RECORDING_TIME: 10
+    MIN_RECORDING_TIME: 10,
+    MIN_PASS_LENGTH: 8
 }
 
 /**

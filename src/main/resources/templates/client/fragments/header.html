@@ -21,7 +21,7 @@
             </div>
             <div @click="openNotificationModal" class="relative">
                 <i class="fa-solid fa-bell icon-white"></i>
-                <p x-cloak x-show="notifyUnreadCount > 0" x-transition class="count" x-text="notifyUnreadCount"></p>
+                <p x-cloak x-show="notification.unReadCount > 0" x-transition class="count" x-text="notification.unReadCount"></p>
             </div>
             <i @click="toggleRight" class="fa-solid fa-user-group icon-white md:hidden block"></i>
         </div>

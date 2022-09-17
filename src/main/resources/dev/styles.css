@@ -841,7 +841,7 @@ body {
 }
 
 .icon-sm {
-    @apply text-[10px] text-gray-400 cursor-pointer
+    @apply text-[10px] text-gray-300 cursor-pointer
 }
 
 .icon-white {

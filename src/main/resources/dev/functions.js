@@ -8,7 +8,7 @@ export function renderWelcomeMessage() {
         <li id="topic" class="topic">
             <i @click="removeTopic" class="fa-solid fa-circle-xmark "></i>
             <div class="segment">
-                <p class="ribbon label bg-gradient-to-r from-skin-primary to-skin-hover">Welcome ${name}</p>      
+                <p class="ribbon label bg-gradient-to-r from-skin-primary to-skin-hover">Welcome ${user.name}</p>      
                 <img  alt="" src="/images/defaults/welcome.svg">
                 <p>${topic}</p>        
              </div>    
@@ -38,12 +38,12 @@ export function renderLeaveMessage(message) {
 
 export function renderChatMessage(message) {
     const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
-    const audio = message.audio ? `<audio  preload="auto"controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
+    const audio = message.audio ? `<audio  preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
     const bold = message.user.textBold ? ' font-bold' : ' font-normal'
     const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Defaults.EMPTY_STRING
     message.content = appendEmojis(message.content)
-    message.content = message.content.replace(RegExp(`${name}`, 'gi'), `<span class="tag">${name}</span>`)
+    message.content = message.content.replace(RegExp(`${user.name}`, 'gi'), `<span class="tag">${user.name}</span>`)
     return `
          <li id="chat-${message.id}" class="chat-wrap">
            <div class="flex py-1 px-2 w-full" >
@@ -187,9 +187,9 @@ export function guestDialogHtml() {
                <img class="w-20 h-20 mx-auto" src="/images/defaults/happy.webp" alt=""> 
                 <p class="mt-2 text-2xl font-bold">Welcome ${name}</p>
                 <p class="mt-2 text-[13px] leading-[15px]">You are currently logged in as guest. Click here to register your account in order to access more features.</p>
-                <div class="text-center flex gap-2 justify-center mt-2"> 
-                    <button @click="closeSmallModal; $refs.mainInput.focus()" class="px-2 btn btn-disabled text-center">Close</button>
-                    <button @click="showGuestRegisterDialog" class="px-2 btn btn-skin text-center">Register</button>
+                <div class="text-center flex gap-2 justify-center mt-2">
+                    <button @click="closeSmallModal; $nextTick(()=>$refs.mainInput.focus())" class="px-2 btn bg-red-500">Close</button>
+                    <button @click="showGuestRegisterDialog" class="px-2 btn bg-green-500">Register</button>          
                 </div> 
             </div>
         </div>
@@ -262,15 +262,17 @@ export function changeAvatarHtml() {
                 <div class="w-full mt-1 mb-2 grid grid-cols-5 space-y-2 max-h-[150px] overflow-y-auto scrollbar">
                   <template x-for="(avatar, index) in avatars " :key="index">
                       <div class="w-[50px] h-[50px] relative">
-                        <img @click="setAvatar(index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar" alt="" src=""> 
+                        <img @click="setAvatar(index)" class="w-full h-full rounded-full cursor-pointer" :src="avatar"> 
                       </div>
                   </template>
                 </div> 
                 Or 
                 <div class="mt-1">
-                    <input x-ref='uploadAvatar' @change="changeAvatar($el)" class="input-image" type="file"
-                               accept="image/*">
-                    <button @click="$refs.uploadAvatar.click()" class="w-36 btn btn-skin text-center">Upload</button>
+                    <input x-ref='uploadAvatar' @change="changeAvatar($el)" class="input-image" type="file" accept="image/*">
+                    <div class="flex gap-2 justify-center">
+                        <button @click="$refs.uploadAvatar.click()" class="btn-action bg-green-500">Upload</button>          
+                        <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                    </div>
                 </div>  
             </div>
         </div>
@@ -279,20 +281,23 @@ export function changeAvatarHtml() {
 
 export function changeNameHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{name:user.name}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Username</p>
-                <i @click="closeNameDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4">
                 <div class="h-10 mb-4">
                     <label class="h-full">
-                        <input x-model="user.name" name="name" onkeypress="return /^[a-zA-Z\\d_-]*$/i.test(event.key)"
+                        <input x-model="name" name="name" onkeypress="return /^[a-zA-Z\\d_-]*$/i.test(event.key)"
                                class="input-text" type="text" placeholder="Username"
                                autocomplete="off" required minlength="4" maxlength="12" autofocus>
                     </label> 
                 </div>    
-                <button @click="changeName" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changeName(name)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `;
@@ -300,18 +305,18 @@ export function changeNameHtml() {
 
 export function customizeNameHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="customize" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Customize Username</p>
-                <i @click="closeCustomizeNameDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
-            </div> 
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div>
             <div class="p-4">
                 <template x-if="user.nameFont"> 
-                    <p class="w-full font-bold clip" :class="[user.nameFont, user.nameColor]" x-text="user.name"></p>
+                    <p class="w-full font-bold clip" :class="[nameFont, nameColor]" x-text="user.name"></p>
                 </template>
                 <template x-if="permission.nameFont"> 
                     <div class="w-full h-10 mb-4">
-                    <select x-model="user.nameFont" class="input-text">
+                    <select x-model="nameFont" class="input-text">
                         <option value="">Select Font</option>
                         <option value="signika">Signika</option>
                         <option value="grandstander">Grandstander</option>
@@ -341,7 +346,10 @@ export function customizeNameHtml() {
                       </template>
                     </div>   
                 </template>
-                <button @click="customizeName" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="customizeName" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -349,20 +357,23 @@ export function customizeNameHtml() {
 
 export function changeMoodHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{mood:user.mood}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Your Mood</p>
-                <i @click="closeMoodDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4">
                 <div class="h-10 mb-4">
                     <label class="h-full">
-                        <input x-model="user.mood" name="mood" onkeypress="return /^[a-zA-Z\\d_-\\s]*$/i.test(event.key)"
+                        <input x-model="mood" name="mood" onkeypress="return /^[a-zA-Z\\d_-\\s]*$/i.test(event.key)"
                                class="input-text" type="text" placeholder="Type mood here"
                                autocomplete="off" required maxlength="40" autofocus>
                     </label>
                 </div> 
-                <button @click="changeMood" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changeMood(mood)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -370,16 +381,20 @@ export function changeMoodHtml() {
 
 export function changeAboutHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{about:user.about}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change About Me</p>
                 <i @click="closeAboutDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4">
                 <div class="mb-4">
-                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="user.about" type="text" maxlength="150" name="about" autofocus></textarea>
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="about" 
+                        type="text" maxlength="150" name="about" autofocus></textarea>
                 </div>
-                <button @click="changeAbout" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changeAbout(about)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -387,7 +402,7 @@ export function changeAboutHtml() {
 
 export function changePasswordHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{password:''}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Password</p>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
@@ -395,11 +410,14 @@ export function changePasswordHtml() {
             <div class="p-4">
                 <div class="h-10 mb-4">
                     <label class="h-full">
-                        <input x-model="user.password" name="password" class="input-text" type="text" 
+                        <input x-model="password" name="password" class="input-text" type="text" 
                         placeholder="New password" autocomplete="off" autofocus>
                     </label>
                 </div> 
-                <button @click="changePassword" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changePassword(password)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>   
         </div>
     `
@@ -407,14 +425,14 @@ export function changePasswordHtml() {
 
 export function changeStatusHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{status:user.status}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Status</p>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4">
                 <div class="w-full h-10 mb-4">
-                    <select x-model="user.status" class="input-text">
+                    <select x-model="status" class="input-text">
                         <option value="Stay">Stay</option>
                         <option value="Online">Online</option>
                         <option value="Away">Away</option>
@@ -425,7 +443,10 @@ export function changeStatusHtml() {
                         <option value="Listening">Listening</option>
                     </select>
                 </div>
-                <button @click="changeStatus" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changeStatus(status)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
    `
@@ -433,20 +454,19 @@ export function changeStatusHtml() {
 
 export function changeGenderHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{gender:user.gender}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Gender</p>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
                 <div class="w-full h-10 mb-4">
-                    <select x-model="user.gender" class="input-text">
-                        <option value="" selected="">Select Gender</option>
+                    <select x-model="gender" class="input-text">
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
                 </div>
-                <button @click="changeGender" class="w-36 btn btn-skin text-center">Change</button>
+                <button @click="changeGender(gender)" class="w-36 btn btn-skin text-center">Change</button>
             </div>
         </div>
    `
@@ -454,16 +474,19 @@ export function changeGenderHtml() {
 
 export function changeDobHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="{dob:user.dob}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Date of Birth</p>
                 <i @click="closeDobDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
                 <div class="w-full h-10 mb-4">
-                    <input x-model="user.dob" class="input-text"  name="dob" max="2010-12-31" min="1970-12-31" type="date">
+                    <input x-model="dob" class="input-text"  name="dob" max="2010-12-31" min="1970-12-31" type="date">
                 </div>
-                <button @click="changeDob" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="changeDob(dob)" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -471,17 +494,17 @@ export function changeDobHtml() {
 
 export function customizeTextHtml() {
     return `
-        <div class="text-gray-700 text-center">
+        <div x-data="customize" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change Chat Option</p>
-                <i @click="closeCustomizeTextDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
                 <template x-if="user.textFont"> 
                     <p class="w-full clip" :class="[user.textFont, user.textColor, user.textBold=='true' ? 'font-bold' : 'font-normal' ]">Sample Text</p>
                 </template>    
                 <div class="w-full h-10 mb-4">
-                    <select @change="console.log($el.value)" x-model="user.textFont" class="input-text">
+                    <select x-model="user.textFont" class="input-text">
                         <option>Select Font</option>
                         <option value="signika">Signika</option>
                         <option value="grandstander">Grandstander</option>
@@ -516,7 +539,10 @@ export function customizeTextHtml() {
                     </div>
                   </template>
                 </div>
-                <button @click="customizeText" class="w-36 btn btn-skin text-center">Change</button>
+                 <div class="flex gap-2 justify-center">
+                    <button @click="customizeText" class="btn-action bg-green-500">Change</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -1391,3 +1417,5 @@ export function banDialogHtml() {
         </div>
     `
 }
+
+

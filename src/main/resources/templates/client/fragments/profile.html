@@ -64,13 +64,13 @@
                             </tr>
                             <tr>
                                 <th>Gender</th>
-                                <td><span x-text="user.gender"></span>
+                                <td><span x-text="user.gender" class="font-bold" :class="user.genderColor"></span>
                                     <i @click="changeGenderDialog"
                                        class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i></td>
                             </tr>
                             <tr>
                                 <th>Joined</th>
-                                <td x-text="joined"></td>
+                                <td x-text="user.createdAt"></td>
                             </tr>
                             <tr>
                                 <th>DOB</th>

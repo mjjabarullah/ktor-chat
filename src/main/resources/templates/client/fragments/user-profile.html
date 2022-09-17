@@ -61,11 +61,11 @@
                                 </tr>
                                 <tr>
                                     <th>Gender</th>
-                                    <td x-text="u.user.gender">
+                                    <td x-text="u.user.gender" class="font-bold" :class="u.user.genderColor">
                                 </tr>
                                 <tr>
                                     <th>Joined</th>
-                                    <td x-text="joined"></td>
+                                    <td x-text="u.user.createdAt"></td>
                                 </tr>
                                 <tr>
                                     <th>DOB</th>

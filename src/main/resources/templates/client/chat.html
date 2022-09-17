@@ -49,30 +49,10 @@
 <script th:inline="javascript">
     const domain = [[${domain}]]
     const room = [[${room}]]
-    const rank = [[${user.rank}]]
+    const rank = [[${rank}]]
     const permission = [[${permission}]]
-    let name = [[${user.name}]]
-    let nameColor = [[${user.nameColor}]]
-    let nameFont = [[${user.nameFont}]]
-    let mood = [[${user.mood}]]
-    let about = [[${user.about}]]
-    let textBold = [[${user.textBold}]]
-    let textColor = [[${user.textColor}]]
-    let textFont = [[${user.textFont}]]
-    const gender = [[${user.gender}]]
-    const avatar = [[${user.avatar}]]
-    const level = [[${user.level}]]
-    const userId = [[${user.id}]]
-    const status = [[${user.status}]]
-    const joined = [[${user.createdAt}]]
-    const dob = [[${user.dob}]]
-    const points = [[${user.points}]]
-    const pvt = [[${user.private}]]
-    const chatSound = [[${user.chatSound}]]
-    const pvtSound = [[${user.pvtSound}]]
-    const nameSound = [[${user.nameSound}]]
-    const notifiSound = [[${user.notifiSound}]]
-    const muted = [[${user.muted}]]
+    const user = [[${user}]]
+    const userId = user.id
 </script>
 <script src="/js/chat.js"></script>
 <audio class="hidden" preload="auto" crossorigin="anonymous" x-ref="pvtSound" src="/sounds/private.mp3"></audio>

@@ -45,7 +45,9 @@ fun Route.domainRoutes(
                     val chatSession = call.sessions.get<ChatSession>()
                     val slug = call.request.host().getDomainSlug()
                     val userId = chatSession?.id!!
-                    val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                    var user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+                    val rank = user.rank!!
+                    user = user.copy(rank = null)
                     val domain = domainRepository.findDomainBySlug(slug) ?: throw DomainNotFoundException()
                     val roomId = user.roomId
                     user.roomId ?: run {
@@ -54,10 +56,9 @@ fun Route.domainRoutes(
                     }
                     val room = roomRepository.findRoomById(roomId!!) ?: throw RoomNotFoundException()
                     val permission = permissionRepository.findPermissionByRank(user.rank?.id!!) ?: throw Exception()
-                    val asPermission = user.rank?.code == RankNames.OWNER || user.rank?.code == RankNames.S_ADMIN
-                            || user.rank?.code == RankNames.ADMIN || user.rank?.code == RankNames.MODERATOR
+                    val asPermission = rank.code == RankNames.OWNER || rank.code == RankNames.S_ADMIN || rank.code == RankNames.ADMIN || rank.code == RankNames.MODERATOR
                     val model = mapOf(
-                        "domain" to domain, "room" to room, "user" to user, "permission" to permission,
+                        "domain" to domain, "room" to room, "rank" to rank ,"user" to user, "permission" to permission,
                         "asPermission" to asPermission
                     )
                     if (user.kicked > 0) {
