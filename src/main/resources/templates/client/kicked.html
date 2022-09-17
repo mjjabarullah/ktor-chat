@@ -13,6 +13,7 @@
 <div class="main h-screen">
     <div class="fixed inset-0 flex flex-col items-center justify-center bg-skin-primary text-skin-on-primary text-center">
         <p class="text-[35px] font-bold">You've been kicked out </p>
+        <p th:if="${user.kickMsg != null}" class="text-[20px]" th:text="'Reason: '+${user.kickMsg}"></p>
         <p class="text-[20px]">you can re-enter chat after</p>
         <div class="flex justify-center items-center text-[30px] font-extrabold">
             <p x-cloak x-text="kickTime"></p>

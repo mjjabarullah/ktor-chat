@@ -1296,7 +1296,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 let formData = new FormData()
                 formData.append('time', time)
-                formData.append('reason', reason)
+                if (reason !== Defaults.EMPTY_STRING) formData.append('reason', reason)
                 axios.put(`/${domain.id}/users/${this.u.user.id}/mute`, formData).then(res => {
                     this.u.user.muted = res.data
                     this.u.user.status = Status.Muted
@@ -1341,7 +1341,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 let formData = new FormData()
                 formData.append('time', time)
-                formData.append('reason', reason)
+                if (reason !== Defaults.EMPTY_STRING) formData.append('reason', reason)
                 axios.put(`/${domain.id}/users/${this.u.user.id}/kick`, formData).then(res => {
                     this.u.user.kicked = res.data
                     this.u.user.muted = 0
@@ -1376,7 +1376,7 @@ document.addEventListener('alpine:init', () => {
                     return
                 }
                 let formData = new FormData()
-                formData.append('reason', reason)
+                if (reason !== Defaults.EMPTY_STRING) formData.append('reason', reason)
                 axios.put(`/${domain.id}/users/${this.u.user.id}/ban`, formData).then(res => {
                     this.u.user.banned = res.data
                     this.u.user.kicked = 0
