@@ -342,9 +342,20 @@ fun Route.adminRotes(
                                     .toEpochMilli()
                                 val reason = params["reason"]
                                 val userId = call.parameters["userId"]!!.toLong()
+                                val domainId = call.parameters["domainId"]!!.toInt()
+                                val user = userRepository.findUserById(userId)
+                                val roomId = user?.roomId!!
                                 userRepository.kick(userId, time, reason)
                                 val message = Message(content = "", type = MessageType.Kick)
                                 WsController.broadCastToMember(userId, message.encodeToString())
+                                userRepository.unMute(userId)
+                                val unMuteMessage =
+                                    Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                WsController.broadcastToRoom(domainId, roomId, unMuteMessage.encodeToString())
+                                val notification = Notification(
+                                    receiver = User(userId), content = "You have been unmuted"
+                                )
+                                notificationRepository.createNotification(notification)
                                 call.respond(HttpStatusCode.OK, time)
                             } catch (e: Exception) {
                                 e.printStackTrace()

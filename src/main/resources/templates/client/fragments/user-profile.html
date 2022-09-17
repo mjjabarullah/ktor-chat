@@ -3,7 +3,7 @@
         <template x-if="u.user">
             <div class="profile">
                 <div class="flex rounded px-4 py-2 bg-skin-hover text-white items-center relative">
-                    <template x-if="permission.avatar">
+                    <template x-if="user.canChangeAvatar">
                         <div class="relative flex-none">
                             <i @click="changeUserAvatarDialog" class="fa-solid fa-camera upload-icon"></i>
                         </div>
@@ -12,7 +12,7 @@
                     <div class="flex ml-4 flex-col flex-1 mt-auto">
                         <p class="text-left">
                             <span class="username" x-text="u.user.name"></span>
-                            <template x-if="permission.userName">
+                            <template x-if="user.canChangeName">
                                 <i @click="changeUserNameDialog"
                                    class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                             </template>
@@ -34,7 +34,7 @@
                     <div class="flex py-1 items-center">
                         <img class="rank-icon" :src="u.user.rank.icon" alt="" src="">
                         <p class="font-bold text-[16px] ml-4" x-text="u.user.rank.name"></p>
-                        <template x-if="permission.changeRank && u.user.rank.code!=='guest'">
+                        <template x-if="user.canChangeRank">
                             <i @click="changeUserRankDialog" class="ml-1 fa-solid fa-pen-to-square cursor-pointer"></i>
                         </template>
                     </div>
@@ -46,7 +46,7 @@
                             <p @click="tab=1"
                                class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
                                :class="tab===1? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Actions</p>
-                            <template x-if="user.sensPermission">
+                            <template x-if="user.canSeeInfo">
                                 <p @click="tab=2"
                                    class="py-1 px-2 text-[12px] rounded-t cursor-pointer border-t-[2px] border-x-[2px] border-skin-primary"
                                    :class="tab===2? 'bg-skin-primary text-skin-on-primary': 'text-skin-hover' ">Info</p>
@@ -107,7 +107,7 @@
                                         </div>
                                     </th>
                                 </tr>
-                                <template x-if="permission.mute">
+                                <template x-if="user.canMute">
                                     <tr @click="actionMuteDialog" class="cursor-pointer">
                                         <th>
                                             <div class="inline-flex items-center">
@@ -117,7 +117,7 @@
                                         </th>
                                     </tr>
                                 </template>
-                                <template x-if="permission.kick">
+                                <template x-if="user.canKick">
                                     <tr @click="actionKickDialog" class="cursor-pointer">
                                         <th>
                                             <div class="inline-flex items-center">
@@ -127,7 +127,7 @@
                                         </th>
                                     </tr>
                                 </template>
-                                <template x-if="permission.ban">
+                                <template x-if="user.canBan">
                                     <tr @click="actionBanDialog" class="cursor-pointer">
                                         <th>
                                             <div class="inline-flex items-center">
@@ -137,7 +137,7 @@
                                         </th>
                                     </tr>
                                 </template>
-                                <template x-if="permission.delAccount">
+                                <template x-if="user.canDelAc">
                                     <tr>
                                         <th>
                                             <div class="inline-flex items-center cursor-pointer">
@@ -150,7 +150,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <template x-if="user.sensPermission">
+                        <template x-if="user.canSeeInfo">
                             <div x-show="tab===2" class="mt-1 text-black">
                                 <table class="table w-full border-separate">
                                     <tbody>

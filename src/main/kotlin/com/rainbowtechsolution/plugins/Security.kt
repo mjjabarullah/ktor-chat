@@ -43,19 +43,6 @@ fun Application.configureSecurity() {
     val signKey = config.property("session.secretSignKey").getString()
     val encryptKey = config.property("session.secretEncryptKey").getString()
 
-    install(DoubleReceive)
-
-    install(Sessions) {
-        val secretSignKey = hex(signKey)
-        val secretEncryptKey = hex(encryptKey)
-        cookie<ChatSession>(Auth.COOKIE_AUTH, storage = directorySessionStorage(File("build/.sessions"))) {
-            cookie.path = "/"
-            cookie.extensions["SameSite"] = "lax"
-            cookie.maxAge = Duration.INFINITE
-            transform(SessionTransportTransformerEncrypt(secretEncryptKey, secretSignKey))
-        }
-    }
-
     install(Authentication) {
         form(Auth.AUTH_REGISTER_FORM) {
             userParamName = Auth.FIELD_USERNAME
@@ -208,5 +195,19 @@ fun Application.configureSecurity() {
             }
         }
     }
+
+    install(DoubleReceive)
+
+    install(Sessions) {
+        val secretSignKey = hex(signKey)
+        val secretEncryptKey = hex(encryptKey)
+        cookie<ChatSession>(Auth.COOKIE_AUTH, storage = directorySessionStorage(File("build/.sessions"))) {
+            cookie.path = "/"
+            cookie.extensions["SameSite"] = "lax"
+            cookie.maxAge = Duration.INFINITE
+            transform(SessionTransportTransformerEncrypt(secretEncryptKey, secretSignKey))
+        }
+    }
+
 }
 

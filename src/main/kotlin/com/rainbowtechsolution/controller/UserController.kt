@@ -267,8 +267,6 @@ class UserController : UserRepository {
         Users.update({ Users.id eq id }) {
             it[kicked] = time
             it[kickMsg] = reason
-            it[muted] = 0
-            it[muteMsg] = null
         }
     }
 
