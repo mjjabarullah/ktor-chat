@@ -93,7 +93,7 @@ fun Route.adminRotes(
                                         permissionRepository.findPermissionByRank(rankId) ?: throw Exception()
                                     if (!permission.delMsg) throw PermissionDeniedException()
                                     messageRepository.deleteMessage(msgId)
-                                    val message = Message(id = msgId, content = "", type = MessageType.DelChat)
+                                    val message = Message(id = msgId, type = MessageType.DelChat)
                                     WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                     call.respond(HttpStatusCode.OK)
                                 } catch (e: PermissionDeniedException) {
@@ -124,7 +124,7 @@ fun Route.adminRotes(
                                     ReportType.Chat -> {
                                         messageRepository.deleteMessage(targetId)
                                         reportRepository.deleteReportById(reportId)
-                                        val message = Message(id = targetId, content = "", type = MessageType.DelChat)
+                                        val message = Message(id = targetId, type = MessageType.DelChat)
                                         WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                     }
                                     ReportType.PvtChat -> {
@@ -134,7 +134,7 @@ fun Route.adminRotes(
                                         /*TODO*/
                                     }
                                 }
-                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                val message = Message(type = MessageType.ActionTaken)
                                 WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -153,7 +153,7 @@ fun Route.adminRotes(
                                     ReportType.PvtChat -> Unit/*TODO*/
                                     ReportType.NewsFeed -> Unit/*TODO*/
                                 }
-                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                val message = Message(type = MessageType.ActionTaken)
                                 WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -167,7 +167,7 @@ fun Route.adminRotes(
                                 val reportId = call.parameters["reportId"]!!.toInt()
                                 val domainId = call.parameters["domainId"]!!.toInt()
                                 reportRepository.deleteReportById(reportId)
-                                val message = Message(content = "", type = MessageType.ActionTaken)
+                                val message = Message(type = MessageType.ActionTaken)
                                 WsController.broadcastToDomain(domainId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -188,11 +188,11 @@ fun Route.adminRotes(
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val domainId = call.parameters["domainId"]!!.toInt()
                                 val name = params["name"].toString()
-                                if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
+                                if (!name.trim().isNameValid()) throw ValidationException(Errors.NAME_BAD_CHARACTERS)
                                 val isUserExists = userRepository.isUserExists(name, domainId)
                                 if (isUserExists) throw UserAlreadyFoundException(Errors.USER_NAME_REGISTERED)
                                 userRepository.updateName(userId, name)
-                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                val message = PvtMessage(type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: ValidationException) {
@@ -228,7 +228,7 @@ fun Route.adminRotes(
                                     }
                                 }
                                 userRepository.updateAvatar(userId, filePath)
-                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                val message = PvtMessage(type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: IOException) {
@@ -243,7 +243,7 @@ fun Route.adminRotes(
                                 val userId = call.parameters["userId"]!!.toLong()
                                 val avatar = call.receiveParameters()["avatar"].toString()
                                 userRepository.updateAvatar(userId, avatar)
-                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                val message = PvtMessage(type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -272,9 +272,9 @@ fun Route.adminRotes(
                                     receiver = User(userId), content = "Your rank changed to ${rank.name}"
                                 )
                                 notificationRepository.createNotification(notification)
-                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                val nMessage = Message(type = MessageType.Notification)
                                 WsController.broadCastToMember(userId, nMessage.encodeToString())
-                                val message = PvtMessage(content = "", type = MessageType.DataChanges)
+                                val message = PvtMessage(type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK, rank)
                             } catch (e: PermissionDeniedException) {
@@ -298,14 +298,14 @@ fun Route.adminRotes(
                                 val domainId = call.parameters["domainId"]!!.toInt()
                                 val roomId = user?.roomId!!
                                 userRepository.mute(userId, time, reason)
-                                val message = Message(user = User(id = userId), content = "", type = MessageType.Mute)
+                                val message = Message(user = User(id = userId), type = MessageType.Mute)
                                 WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 val notification = Notification(
                                     receiver = User(userId), content = "You have been muted for ${timeParam.getTime()}"
                                 )
                                 notificationRepository.createNotification(notification)
-                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                val nMessage = Message(type = MessageType.Notification)
                                 WsController.broadCastToMember(userId, nMessage.encodeToString())
                                 call.respond(HttpStatusCode.OK, time)
                             } catch (e: Exception) {
@@ -320,14 +320,14 @@ fun Route.adminRotes(
                                 val user = userRepository.findUserById(userId)
                                 val roomId = user?.roomId!!
                                 userRepository.unMute(userId)
-                                val message = Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                val message = Message(user = User(id = userId), type = MessageType.UnMute)
                                 WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 val notification = Notification(
                                     receiver = User(userId), content = "You have been unmuted"
                                 )
                                 notificationRepository.createNotification(notification)
-                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                val nMessage = Message(type = MessageType.Notification)
                                 WsController.broadCastToMember(userId, nMessage.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -348,12 +348,12 @@ fun Route.adminRotes(
                                 val user = userRepository.findUserById(userId)
                                 val roomId = user?.roomId!!
                                 userRepository.kick(userId, time, reason)
-                                val message = Message(content = "", type = MessageType.Kick)
+                                val message = Message(type = MessageType.Kick)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 if (user.muted > 0) {
                                     userRepository.unMute(userId)
                                     val unMuteMessage =
-                                        Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                        Message(user = User(id = userId), type = MessageType.UnMute)
                                     WsController.broadcastToRoom(domainId, roomId, unMuteMessage.encodeToString())
                                     val notification = Notification(
                                         receiver = User(userId), content = "You have been unmuted"
@@ -371,7 +371,7 @@ fun Route.adminRotes(
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
                                 userRepository.unKick(userId)
-                                val message = Message(content = "", type = MessageType.UnKick)
+                                val message = Message(type = MessageType.UnKick)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -386,7 +386,7 @@ fun Route.adminRotes(
                                 val reason = params["reason"]
                                 val userId = call.parameters["userId"]!!.toLong()
                                 userRepository.ban(userId, time, reason)
-                                val message = Message(content = "", type = MessageType.Ban)
+                                val message = Message(type = MessageType.Ban)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK, time)
                             } catch (e: Exception) {
@@ -399,7 +399,7 @@ fun Route.adminRotes(
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
                                 userRepository.unBan(userId)
-                                val message = Message(content = "", type = MessageType.UnBan)
+                                val message = Message(type = MessageType.UnBan)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -412,7 +412,7 @@ fun Route.adminRotes(
                             try {
                                 val userId = call.parameters["userId"]!!.toLong()
                                 userRepository.delete(userId)
-                                val message = Message(content = "", type = MessageType.DataChanges)
+                                val message = Message(type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {
@@ -442,7 +442,7 @@ fun Route.delPost(postRepository: PostRepository, messageType: MessageType) {
             val domainId = call.parameters["domainId"]!!.toInt()
             postRepository.deletePost(newsId)
             val message = Message(
-                content = "", user = User(id = userId), type = messageType
+                user = User(id = userId), type = messageType
             ).encodeToString()
             WsController.broadcastToDomain(domainId, message)
             call.respond(HttpStatusCode.OK)

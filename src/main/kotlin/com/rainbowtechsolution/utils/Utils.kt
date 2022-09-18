@@ -18,6 +18,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.regex.Pattern
 import javax.imageio.ImageIO
 
 fun getUUID() = UUID.randomUUID().toString()
@@ -54,16 +55,14 @@ suspend fun <T> dbQuery(block: () -> T): T = newSuspendedTransaction(Dispatchers
 
 fun String.isNameValid(): Boolean {
     for (char in Validation.BAD_CHARS) {
-        if (this.trim().contains(char)) return false
+        if (this.contains(char)) return false
     }
     return true
 }
 
 fun String.clean(): String {
     var result = this
-    Validation.BAD_CHARS.map {
-        result = result.replace(it, "")
-    }
+    Validation.BAD_CHARS.forEach { result = result.replace(it, "") }
     return result
 }
 
@@ -98,5 +97,56 @@ fun Long.getTime(): String {
         else -> ""
     }
 }
+
+fun checkYoutube(msg: String): String = when {
+    msg.contains("https://www.youtu") || msg.contains("https://youtu")
+            || msg.contains("https://www.youtube") || msg.contains("https://youtube") -> {
+        val message = msg.replace("https?://\\S+\\s?".toRegex(), "")
+        val videoId = getYoutubeVideoId(extractUrls(msg)[0])
+        if (videoId == null) msg
+        else """
+            $message <br>
+            <iframe frameborder="0" scrolling="no" marginheight="0" marginwidth="0" class="youtube" 
+                    src="https://www.youtube.com/embed/$videoId"> 
+            </iframe> 
+        """.trimIndent()
+    }
+    else -> msg
+}
+
+private fun extractUrls(text: String): List<String> {
+    val containedUrls = mutableListOf<String>()
+    val urlRegex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?+-=\\\\.&]*)"
+    val pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
+    val urlMatcher = pattern.matcher(text)
+    while (urlMatcher.find()) {
+        containedUrls.add(text.substring(urlMatcher.start(0), urlMatcher.end(0)).trim())
+    }
+    return containedUrls
+}
+
+private fun getYoutubeVideoId(url: String): String? {
+    if (url.isEmpty()) return null
+    var validYoutubeVideoId: String? = null
+    val regexPattern =
+        "^(?:https?://)?(?:[\\dA-Z-]+\\.)?(?:youtu\\.be/|youtube\\.com\\S*[^\\w\\-\\s])([\\w\\-]{11})(?=[^\\w\\-]|$)(?![?=&+%\\w]*(?:['\"][^<>]*>|</a>))[?=&+%\\w]*"
+    val regexCompiled = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE)
+    val regexMatcher = regexCompiled.matcher(url)
+    if (regexMatcher.find()) {
+        try {
+            validYoutubeVideoId = regexMatcher.group(1)
+        } catch (ignore: Exception) {
+        }
+    }
+    return validYoutubeVideoId
+}
+
+
+fun processCommands(content: String): String {
+    return ""
+}
+
+
+
 
 

@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 
 
 object Messages : LongIdTable("messages") {
-    val content = text("content")
+    val content = text("content").nullable()
     val image = varchar("image", 100).nullable()
     val audio = varchar("audio", 100).nullable()
     val userId = reference("user_id", Users.id, onDelete = ReferenceOption.CASCADE)

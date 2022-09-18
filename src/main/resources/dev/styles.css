@@ -1335,6 +1335,10 @@ input:checked + .slider {
     @apply bg-skin-primary/20 rounded-lg
 }
 
+.youtube{
+    @apply w-full lg:w-[300px] aspect-video
+}
+
 @layer utilities {
 
     .scrollbar::-webkit-scrollbar {

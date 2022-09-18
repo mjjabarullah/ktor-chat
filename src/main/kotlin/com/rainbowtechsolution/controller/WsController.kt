@@ -7,6 +7,7 @@ import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.repository.MessageRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.repository.WsRepository
+import com.rainbowtechsolution.utils.checkYoutube
 import com.rainbowtechsolution.utils.clean
 import com.rainbowtechsolution.utils.encodeToString
 import com.rainbowtechsolution.utils.getLogger
@@ -88,32 +89,33 @@ class WsController(
 
     override suspend fun sendMessage(domainId: Int, roomId: Int, userId: Long, message: Message) {
         val user = getUser(userId) ?: return
-        var msg = message.copy(content = message.content.trim().clean(), user = user, roomId = roomId)
         if (message.type == MessageType.Chat) {
+            val content = checkYoutube(message.content!!.trim().clean())
+            var msg = message.copy(content = content, user = user, roomId = roomId)
             msg = messageRepository.insertRoomMessage(msg)
-        }
-        msg.id?.let {
-            broadcastToRoom(domainId, roomId, msg.encodeToString())
-            userRepository.increasePoints(user.id!!)
+            msg.id?.let {
+                broadcastToRoom(domainId, roomId, msg.encodeToString())
+                userRepository.increasePoints(userId)
+            }
         }
     }
 
     override suspend fun sendPrivateMessage(message: PvtMessage) {
-        var pvtMessage = message.copy(content = message.content.trim().clean())
         if (message.type == MessageType.Chat) {
+            var pvtMessage = message.copy(content = message.content?.trim()?.clean())
             pvtMessage = messageRepository.insertPrivateMessage(pvtMessage)
+            val senderId = pvtMessage.sender?.id!!
+            val receiverId = pvtMessage.receiver?.id!!
+            val msg = pvtMessage.encodeToString()
+            broadCastToMember(senderId, msg)
+            broadCastToMember(receiverId, msg)
         }
-        val senderId = pvtMessage.sender?.id!!
-        val receiverId = pvtMessage.receiver?.id!!
-        val msg = pvtMessage.encodeToString()
-        broadCastToMember(senderId, msg)
-        broadCastToMember(receiverId, msg)
     }
 
     override suspend fun disconnectRoom(domainId: Int, roomId: Int, user: User, socket: WebSocketSession) {
         val currentRoom = domainRoomMembers[domainId]?.get(roomId)
         currentRoom?.remove(socket)
-        val message = Message(content = "", user = user, type = MessageType.Leave).encodeToString()
+        val message = Message(user = user, type = MessageType.Leave).encodeToString()
         broadcastToRoom(domainId, roomId, message)
         logger.info(domainRoomMembers.toString())
     }
@@ -122,5 +124,5 @@ class WsController(
         members.remove(socket)
     }
 
-    private fun getUser(userId: Long): User? = members.values.find { it -> it.id!! == userId }
+    private fun getUser(userId: Long): User? = members.values.find { it.id!! == userId }
 }

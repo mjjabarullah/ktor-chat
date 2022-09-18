@@ -93,5 +93,6 @@ object Errors {
     const val USER_NOT_FOUND = "User does not exists"
     const val USER_NAME_REGISTERED = "Username already registered."
     const val USER_NAME_OR_EMAIL_REGISTERED = "Username or Email address already exists."
+    const val NAME_BAD_CHARACTERS = "Name should not contain special characters."
 }
 

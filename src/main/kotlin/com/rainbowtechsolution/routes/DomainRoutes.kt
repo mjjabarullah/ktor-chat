@@ -192,7 +192,7 @@ fun Route.domainRoutes(
                             call.respond(HttpStatusCode.OK, userRes)
                         } catch (e: Exception) {
                             call.respond(HttpStatusCode.NotFound, Errors.USER_NOT_FOUND)
-                        }catch (e: Exception) {
+                        } catch (e: Exception) {
                             e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                         }
@@ -242,14 +242,14 @@ fun Route.domainRoutes(
                             val muted = if (difference <= 0) 0 else user.muted
                             if (user.muted != 0L && muted == 0L) {
                                 userRepository.unMute(userId)
-                                val message = Message(user = User(id = userId), content = "", type = MessageType.UnMute)
+                                val message = Message(user = User(id = userId), type = MessageType.UnMute)
                                 WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 val notification = Notification(
                                     receiver = User(userId), content = "You have been unmuted"
                                 )
                                 notificationRepository.createNotification(notification)
-                                val nMessage = Message(content = "", type = MessageType.Notification)
+                                val nMessage = Message(type = MessageType.Notification)
                                 WsController.broadCastToMember(userId, nMessage.encodeToString())
                             }
                             call.respond(HttpStatusCode.OK, muted)
@@ -346,7 +346,7 @@ fun Route.domainRoutes(
                         try {
                             val userId = call.sessions.get<ChatSession>()?.id!!
                             val name = call.receiveParameters()["name"].toString()
-                            if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
+                            if (!name.trim().isNameValid()) throw ValidationException(Errors.NAME_BAD_CHARACTERS)
                             val slug = call.request.host().getDomainSlug()
                             val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
                             val isUserExists = userRepository.isUserExists(name, domain.id!!)
@@ -788,7 +788,7 @@ fun Route.domainRoutes(
                             val reason = params["reason"].toString()
                             val type = ReportType.valueOf(params["type"].toString())
                             reportRepository.createReport(userId, targetId, domainId, type, reason, roomId)
-                            val message = Message(content = "", type = MessageType.Report)
+                            val message = Message(type = MessageType.Report)
                             WsController.broadcastToDomain(domainId, message.encodeToString())
                             call.respond(HttpStatusCode.OK)
                         } catch (e: Exception) {
@@ -964,9 +964,7 @@ fun Route.postRoute(
                 type = postType
             )
             postRepository.createPost(post = post)
-            val message = Message(
-                content = "", user = User(id = userId), type = messageType
-            ).encodeToString()
+            val message = Message(user = User(id = userId), type = messageType).encodeToString()
             WsController.broadcastToDomain(domainId, message)
             call.respond(HttpStatusCode.OK)
         } catch (e: Exception) {

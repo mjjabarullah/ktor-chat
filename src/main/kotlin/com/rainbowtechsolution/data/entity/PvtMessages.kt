@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 
 
 object PvtMessages : LongIdTable("pvt_messages") {
-    val content = varchar("content", 255)
+    val content = varchar("content", 255).nullable()
     val image = varchar("image", 100).nullable()
     val audio = varchar("audio", 100).nullable()
     val sender = reference("sender", Users.id, onDelete = ReferenceOption.CASCADE)

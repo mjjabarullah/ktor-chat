@@ -144,6 +144,8 @@ document.addEventListener('alpine:init', () => {
                 this.user = JSON.parse(JSON.stringify(user))
                 this.user.statusColor = this.user.password = Defaults.EMPTY_STRING
                 this.user.textBold = `${this.user.textBold}`
+                this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
+                this.user.canSeeAdminship = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
                 this.setSounds()
             },
             setSounds() {
@@ -156,8 +158,6 @@ document.addEventListener('alpine:init', () => {
             setPermissions() {
                 let isLowRank = this.u.user.rank.order > rank.order
                 let guest = this.u.user.rank.code === Defaults.GUEST
-                this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
-                this.user.canSeeAdminship = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
                 this.user.canChangeRank = permission.changeRank && !guest && isLowRank
                 this.user.canMute = permission.mute && isLowRank
                 this.user.canKick = permission.kick && isLowRank
@@ -1394,7 +1394,7 @@ document.addEventListener('alpine:init', () => {
                     this.closeSmallModal()
                 })
             },
-            actionDelAcDialog(){
+            actionDelAcDialog() {
                 if (!this.user.canDelAc) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
@@ -1410,6 +1410,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Success.USER_DELETED.replace(/%USER%/g, this.u.user.name), Css.SUCCESS)
                     this.showUserProfile = false
                 }).catch(e => this.showAlertMsg(Errors.USER_DELETION_FAILED))
+                this.closeSmallModal()
             }
         }
     })
