@@ -138,9 +138,9 @@
                                     </tr>
                                 </template>
                                 <template x-if="user.canDelAc">
-                                    <tr>
+                                    <tr @click="actionDelAcDialog" class="cursor-pointer">
                                         <th>
-                                            <div class="inline-flex items-center cursor-pointer">
+                                            <div class="inline-flex items-center">
                                                 <i class="fa-solid fa-trash-can text-red-500"></i>
                                                 <p class="ml-2"> Delete Account</p>
                                             </div>

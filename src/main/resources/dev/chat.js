@@ -9,6 +9,7 @@ import {
 /*import {soundManager} from 'soundmanager2/script/soundmanager2-nodebug' TODO: uncommend on production*/
 import {soundManager} from 'soundmanager2'
 
+
 //disableDevtool() /*TODO : Uncomment this in production*/
 
 window.axios = require('axios')
@@ -59,6 +60,7 @@ document.addEventListener('alpine:init', () => {
             remainingTime: Defaults.MAX_RECORDING_TIME,
             muteInterval: null,
             init() {
+
                 Object.freeze(domain)
                 Object.freeze(room)
                 Object.freeze(permission)
@@ -106,23 +108,16 @@ document.addEventListener('alpine:init', () => {
                 this.getNotifications()
 
                 let isUGCShowed = localStorage.getItem('isUGCShowed')
-                if (isUGCShowed !== "true") {
+                if (isUGCShowed !== 'true') {
                     this.showLoader = false
                     this.showUCGPolicyDialog()
                 } else {
-                    /*TODO: uncomment this*/
-                    /* this.showLoader = true
-                     setTimeout(() => {
-                         this.showLoader = false
-                         this.$refs.mainInput.focus()
-                         this.showMessages = true
-                     }, 15e2)*/
-
-                    this.showMessages = true
-                    this.showLoader = false
+                    setTimeout(() => {
+                        this.showLoader = false
+                        this.showMessages = true
+                    }, 15e2)
                     if (rank.code === RankCode.GUEST) this.showSmallModal(fn.guestDialogHtml())
                     else this.$refs.mainInput.focus()
-
                 }
 
                 this.$watch('user', currentUser => {
@@ -137,19 +132,18 @@ document.addEventListener('alpine:init', () => {
                     }
                 })
 
-                this.$watch('news.unReadCount', value => this.totalCount = value + this.adminship.unReadCount + this.globalFeed.unReadCount)
+                this.$watch('news.unReadCount', () => this.setTotalCount())
+                this.$watch('adminship.unReadCount', () => this.setTotalCount())
+                this.$watch('globalFeed.unReadCount', () => this.setTotalCount())
 
-                this.$watch('adminship.unReadCount', value => this.totalCount = this.news.unReadCount + value + this.globalFeed.unReadCount)
-
-                this.$watch('globalFeed.unReadCount', value => this.totalCount = this.news.unReadCount + this.adminship.unReadCount + value)
-
+            },
+            setTotalCount() {
+                this.totalCount = this.news.unReadCount + this.adminship.unReadCount + this.globalFeed.unReadCount
             },
             setUser() {
                 this.user = JSON.parse(JSON.stringify(user))
                 this.user.statusColor = this.user.password = Defaults.EMPTY_STRING
                 this.user.textBold = `${this.user.textBold}`
-                this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
-                this.user.asPermission = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
                 this.setSounds()
             },
             setSounds() {
@@ -158,6 +152,19 @@ document.addEventListener('alpine:init', () => {
                 this.user.pvtSound = sounds[1] === '1'
                 this.user.nameSound = sounds[2] === '1'
                 this.user.notifySound = sounds[3] === '1'
+            },
+            setPermissions() {
+                let isLowRank = this.u.user.rank.order > rank.order
+                let guest = this.u.user.rank.code === Defaults.GUEST
+                this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
+                this.user.canSeeAdminship = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
+                this.user.canChangeRank = permission.changeRank && !guest && isLowRank
+                this.user.canMute = permission.mute && isLowRank
+                this.user.canKick = permission.kick && isLowRank
+                this.user.canBan = permission.ban && isLowRank
+                this.user.canChangeName = permission.userName && isLowRank
+                this.user.canChangeAvatar = permission.avatar && isLowRank
+                this.user.canDelAc = permission.delAccount && isLowRank
             },
             initSM2() {
                 soundManager.setup({
@@ -208,7 +215,6 @@ document.addEventListener('alpine:init', () => {
                 this.showLeft = false
                 this.showRight = !this.showRight
             },
-
             /**
              * Global modals and functions
              * */
@@ -238,18 +244,22 @@ document.addEventListener('alpine:init', () => {
                 setTimeout(() => content.innerHTML = Defaults.EMPTY_STRING, 5e2)
             },
             showAlertMsg(msg, color) {
-                this.$refs.alertMsg.classList.add(color)
-                this.$refs.alertMsg.innerHTML = `
-                <div class="flex flex-col justify-center items-center w-full h-full">
-                    <p class="w-full text-center">${msg}</p>
-                </div>
-                `
-                this.showAlert = true
-                setTimeout(() => {
-                    this.$refs.alertMsg.classList.remove(color)
-                    this.$refs.alertMsg.innerHTML = ''
+                const alertMsg = this.$refs.alertMsg
+                if (this.alertInterval) clearInterval(this.alertInterval)
+                const show = () => {
+                    alertMsg.classList.add(color)
+                    alertMsg.innerHTML = `<div class="flex flex-col justify-center items-center w-full h-full">
+                            <p class="w-full text-center">${msg}</p>
+                        </div>`
+                    this.showAlert = true
+                }
+                const hide = () => {
+                    alertMsg.classList.remove(color)
+                    alertMsg.innerHTML = Defaults.EMPTY_STRING
                     this.showAlert = false
-                }, 3e3)
+                }
+                this.alertInterval = setTimeout(() => hide(), 3e3)
+                show()
             },
             textArea(el, height) {
                 el.style.height = `${height}px`
@@ -266,7 +276,6 @@ document.addEventListener('alpine:init', () => {
                 `
                 this.showImgModal(html)
             },
-
             /**
              * UGC Dialog
              * */
@@ -282,7 +291,6 @@ document.addEventListener('alpine:init', () => {
                     this.showSmallModal(fn.guestDialogHtml())
                 }
             },
-
             /**
              *
              * */
@@ -301,7 +309,6 @@ document.addEventListener('alpine:init', () => {
                 })
                 this.closeFullModal()
             },
-
             /**
              * Profile
              * */
@@ -542,17 +549,6 @@ document.addEventListener('alpine:init', () => {
             closeUserProfile() {
                 this.showUserProfile = false
             },
-            setPermissions() {
-                let isLowRank = this.u.user.rank.order > rank.order
-                let guest = this.u.user.rank.code === Defaults.GUEST
-                this.user.canChangeRank = permission.changeRank && !guest && isLowRank
-                this.user.canMute = permission.mute && isLowRank
-                this.user.canKick = permission.kick && isLowRank
-                this.user.canBan = permission.ban && isLowRank
-                this.user.canChangeName = permission.userName && isLowRank
-                this.user.canChangeAvatar = permission.avatar && isLowRank
-                this.user.canDelAc = permission.delAccount && isLowRank
-            },
             setUserStatus() {
                 this.u.user.muted > 0 ? this.u.user.status = Status.Muted :
                     this.u.user.kicked > 0 ? this.u.user.status = Status.Kicked :
@@ -741,9 +737,7 @@ document.addEventListener('alpine:init', () => {
                         }, 1000)
 
                         this.isRecording = true
-                    }).catch((e) => {
-                        this.showAlertMsg('You haven\'t given mic permission', Css.ERROR)
-                    })
+                    }).catch((e) => this.showAlertMsg(Errors.NO_MIC_PERMISSION, Css.ERROR))
 
                 }
             },
@@ -1106,7 +1100,7 @@ document.addEventListener('alpine:init', () => {
                         if (user.sessions > 0 || user.status === Status.Stay) this.onlineUsers.push(user)
                         else this.offlineUsers.push(user)
                     })
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e)))
+                })
             },
 
             /**
@@ -1183,12 +1177,12 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.showSmallModal(fn.writeNewsDialogHtml())
             },
-            delNews(newsId) {
+            delNews(postId) {
                 if (!permission.delNews) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                axios.delete(`/${domain.id}/news/${newsId}/delete`)
+                axios.delete(`/${domain.id}/news/${postId}/delete`)
                     .then(() => this.showAlertMsg(Success.NEWS_DELETED, Css.SUCCESS))
                     .catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
@@ -1197,7 +1191,7 @@ document.addEventListener('alpine:init', () => {
              * Adminship
              * */
             getAdminships() {
-                if (this.user.asPermission) axios.get(`/${domain.id}/adminship`).then(res => this.adminship = res.data)
+                if (this.user.canSeeAdminship) axios.get(`/${domain.id}/adminship`).then(res => this.adminship = res.data)
             },
             openAdminshipModal() {
                 if (mobile.matches) this.showLeft = false
@@ -1205,7 +1199,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.this.adminship.unReadCount !== 0) axios.post(`/${domain.id}/adminship/read`).then(() => this.adminship.unReadCount = 0)
             },
             writeAdminshipDialog() {
-                if (!this.user.asPermission) {
+                if (!this.user.canSeeAdminship) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1287,7 +1281,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                this.u.user.muted !== 0 ? this.unmute() : this.showSmallModal(fn.muteDialogHtml(userId, name))
+                this.u.user.muted !== 0 ? this.unmute() : this.showSmallModal(fn.muteDialogHtml())
             },
             mute(time, reason) {
                 if (!this.user.canMute) {
@@ -1321,7 +1315,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.user.muted > 0) {
                     axios.get(`/${domain.id}/users/check-mute`).then(res => {
                         this.user.muted = res.data
-                        this.user.muted > 0 ? this.user.status = Status.Muted : this.user.status = status
+                        this.user.muted > 0 ? this.user.status = Status.Muted : this.user.status = user.status
                         this.setStatusColor()
                         this.$refs.mainInput.disabled = this.user.muted > 0
                     })
@@ -1332,7 +1326,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                this.u.user.kicked !== 0 ? this.unkick() : this.showSmallModal(fn.kickDialogHtml(userId, name))
+                this.u.user.kicked !== 0 ? this.unkick() : this.showSmallModal(fn.kickDialogHtml())
             },
             kick(time, reason) {
                 if (!this.user.canKick) {
@@ -1368,7 +1362,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
-                this.u.user.banned !== 0 ? this.unban() : this.showSmallModal(fn.banDialogHtml(userId, name))
+                this.u.user.banned !== 0 ? this.unban() : this.showSmallModal(fn.banDialogHtml())
             },
             ban(reason) {
                 if (!this.user.canBan) {
@@ -1399,6 +1393,23 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Success.USER_UNBANNED.replace(/%USER%/g, this.u.user.name), Css.SUCCESS)
                     this.closeSmallModal()
                 })
+            },
+            actionDelAcDialog(){
+                if (!this.user.canDelAc) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showSmallModal(fn.delAcDialogHtml())
+            },
+            delAccount() {
+                if (!this.user.canDelAc) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                axios.delete(`/${domain.id}/users/${this.u.user.id}/delete`).then(() => {
+                    this.showAlertMsg(Success.USER_DELETED.replace(/%USER%/g, this.u.user.name), Css.SUCCESS)
+                    this.showUserProfile = false
+                }).catch(e => this.showAlertMsg(Errors.USER_DELETION_FAILED))
             }
         }
     })
@@ -1531,7 +1542,7 @@ document.addEventListener('alpine:init', () => {
             },
             writeAdminship() {
                 const input = this.$refs.input
-                if (!this.user.asPermission) {
+                if (!this.user.canSeeAdminship) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }

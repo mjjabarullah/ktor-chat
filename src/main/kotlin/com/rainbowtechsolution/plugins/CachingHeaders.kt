@@ -13,12 +13,13 @@ fun Application.configureCachingHeaders() {
                 //ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 2))
                 ContentType.Image.PNG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
                 ContentType.Image.SVG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
-                ContentType("image", "webp") -> CachingOptions(
-                    CacheControl.MaxAge(maxAgeSeconds = monthInSeconds)
-                )
+                ContentType.Image.GIF -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
+                WEBP -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
                 ContentType.Audio.MPEG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = monthInSeconds))
                 else -> null
             }
         }
     }
 }
+
+val WEBP: ContentType get() = ContentType("image", "webp")

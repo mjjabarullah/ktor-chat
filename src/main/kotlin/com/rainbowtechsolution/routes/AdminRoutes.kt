@@ -190,18 +190,20 @@ fun Route.adminRotes(
                                 val name = params["name"].toString()
                                 if (!name.isNameValid()) throw ValidationException("Name should not contain special characters.")
                                 val isUserExists = userRepository.isUserExists(name, domainId)
-                                if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
+                                if (isUserExists) throw UserAlreadyFoundException(Errors.USER_NAME_REGISTERED)
                                 userRepository.updateName(userId, name)
                                 val message = PvtMessage(content = "", type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: ValidationException) {
-                                call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
+                                call.respond(HttpStatusCode.BadRequest, e.message.toString())
                             } catch (e: UserAlreadyFoundException) {
-                                call.respond(HttpStatusCode.BadRequest, e.message ?: "Something went wrong.")
+                                call.respond(HttpStatusCode.BadRequest, e.message.toString())
                             } catch (e: Exception) {
                                 e.printStackTrace()
-                                call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+                                call.respond(
+                                    HttpStatusCode.InternalServerError, e.message ?: Errors.SOMETHING_WENT_WRONG
+                                )
                             }
                         }
 
@@ -398,6 +400,19 @@ fun Route.adminRotes(
                                 val userId = call.parameters["userId"]!!.toLong()
                                 userRepository.unBan(userId)
                                 val message = Message(content = "", type = MessageType.UnBan)
+                                WsController.broadCastToMember(userId, message.encodeToString())
+                                call.respond(HttpStatusCode.OK)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+
+                        delete("/delete") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                userRepository.delete(userId)
+                                val message = Message(content = "", type = MessageType.DataChanges)
                                 WsController.broadCastToMember(userId, message.encodeToString())
                                 call.respond(HttpStatusCode.OK)
                             } catch (e: Exception) {

@@ -40,7 +40,7 @@ document.addEventListener('alpine:init', () => {
             name: '',
             email: '',
             password: '',
-            gender:'',
+            gender: '',
             init() {
                 this.$refs.name.focus()
             },
@@ -90,6 +90,7 @@ document.addEventListener('alpine:init', () => {
                 this.$refs.name.focus()
             },
             login() {
+                this.errors = {}
                 this.formData.append('name', this.name)
                 this.formData.append('password', this.password)
                 axios.post('/login', this.formData).then(() => {

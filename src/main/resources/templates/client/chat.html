@@ -21,9 +21,9 @@
             </div>
         </div>
     </div>
-    <div x-cloak x-show="showAlert" class="alert" x-transition  x-ref="alertMsg" ></div>
+    <div x-cloak x-show="showAlert" class="alert" x-transition x-ref="alertMsg"></div>
     <div x-cloak x-show="showLoader" class="loader-wrap">
-        <div class="loader" x-transition x-show="showLoader"></div>
+        <img class="w-[300px]" src="/images/defaults/loader.gif" x-transition x-show="showLoader"></img>
     </div>
     <div x-cloak x-show="showFulModal" class="full-modal-wrap"
          x-transition:enter="transition ease-in-out duration-200"
@@ -47,12 +47,12 @@
 </div>
 
 <script th:inline="javascript">
-    const domain = [[${domain}]]
-    const room = [[${room}]]
-    const rank = [[${rank}]]
-    const permission = [[${permission}]]
-    const user = [[${user}]]
-    const userId = user.id
+    const domain = [[${domain}]];
+    const room = [[${room}]];
+    const user = [[${user}]];
+    const userId = user.id;
+    const rank = [[${rank}]];
+    const permission = [[${permission}]];
 </script>
 <script src="/js/chat.js"></script>
 </body>

@@ -119,7 +119,8 @@ export const Success = {
     USER_KICKED: '%USER% kicked',
     USER_UNKICKED: '%USER% unkicked',
     USER_BANNED: '%USER% banned',
-    USER_UNBANNED: '%USER% unbanned'
+    USER_UNBANNED: '%USER% unbanned',
+    USER_DELETED: '%USER% account deleted'
 }
 
 /**
@@ -143,7 +144,8 @@ export const Errors = {
     CONTENT_EMPTY: 'Content cannot be empty',
     REPORTING_FAILED: 'Message reporting failed',
     BLOCKING_FAILED: 'User blocking failed',
-    UNBLOCKING_FAILED: 'User unblocking failed'
+    UNBLOCKING_FAILED: 'User unblocking failed',
+    USER_DELETION_FAILED: 'User deletion failed'
 }
 
 /**

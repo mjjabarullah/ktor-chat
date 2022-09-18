@@ -181,7 +181,7 @@ export function guestDialogHtml() {
     return `
         <div class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-end items-center">
-                <i @click="closeSmallModal; $refs.mainInput.focus()" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+                <i @click="closeSmallModal; $nextTick(()=>$refs.mainInput.focus()) " class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4 text-center ">
                <img class="w-20 h-20 mx-auto" src="/images/defaults/happy.webp" alt=""> 
@@ -674,9 +674,9 @@ export function roomModalLoadingHtml() {
                 <p class="text-md font-bold ">Room List</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div> 
-            <div class="p-[10px] flex items-center justify-center">
-                <div class="loader"></div>   
-            </div> 
+            <div class="loader-wrap">
+                <img class="w-full" src="/images/defaults/loader.gif"></img>
+            </div>
         </div>
    `
 }
@@ -852,7 +852,7 @@ export function adminshipModalHtml() {
             </div>
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
-                    <template x-if="user.asPermission">
+                    <template x-if="user.canSeeAdminship">
                         <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
@@ -1422,6 +1422,24 @@ export function banDialogHtml() {
                     <button @click="ban(reason)" class="btn-action bg-green-500">Ban</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button> 
                 </div> 
+            </div>
+        </div>
+    `
+}
+
+export function delAcDialogHtml() {
+    return `
+        <div class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold" x-text="'Delete '+u.user.name"></p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="px-4 py-2">
+                <p class="text-[14px] mb-2" x-text="'Are you sure, want to delete '+u.user.name+'?'"></p>  
+                <div class="flex gap-2 justify-center">
+                    <button @click="delAccount" class="btn-action bg-green-500">Yes</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">No</button>          
+                </div>
             </div>
         </div>
     `

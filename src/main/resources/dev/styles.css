@@ -1037,7 +1037,7 @@ body {
 }
 
 .loader-wrap {
-    @apply z-[100] absolute top-0 left-0 h-full w-full flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent
+    @apply z-[100] absolute inset-0 h-full w-full flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent
 }
 
 .user-wrap img.avatar {
@@ -1220,24 +1220,6 @@ input:checked + .slider {
 
 .slider.round {
     @apply rounded-3xl before:rounded-[50%]
-}
-
-.loader {
-    @apply shadow-skin-primary/50 shadow-md h-12 w-12 bg-white border-l-skin-primary border-t-skin-primary border-r-transparent border-b-transparent border-[3px] rounded-full
-    relative before:absolute before:inset-[5px] before:border-l-skin-primary before:border-t-skin-primary before:border-[3px] before:rounded-full before:border-r-transparent before:border-b-transparent
-    after:absolute after:inset-[13px] after:border-l-skin-primary after:border-t-skin-primary after:border-[3px] after:rounded-full after:border-r-transparent after:border-b-transparent
-}
-
-.loader {
-    animation: loading 5s infinite linear
-}
-
-.loader::before {
-    animation: loading 2s infinite linear reverse
-}
-
-.loader::after {
-    animation: loading 4s infinite linear
 }
 
 @keyframes loading {

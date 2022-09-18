@@ -9,14 +9,15 @@
 <body x-data="banActions" th:classappend="${domain.theme}">
 <div class="main h-screen">
     <div class="fixed inset-0 flex flex-col items-center justify-center bg-skin-primary text-skin-on-primary text-center">
+        <i class="text-[50px] fa-solid fa-triangle-exclamation"></i>
         <p class="text-[35px] font-bold">You've been banned from this site</p>
         <p th:if="${user.banMsg != null}" class="text-[20px]" th:text="'Reason: '+${user.banMsg}"></p>
         <p class="text-[20px]">you cannot enter!</p>
     </div>
 </div>
 <script th:inline="javascript">
-    const domainId = [[${domain.id}]]
-    const userId = [[${user.id}]]
+    const domainId = [[${domain.id}]];
+    const userId = [[${user.id}]];
 </script>
 <script src="/js/chat.js"></script>
 </body>

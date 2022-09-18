@@ -191,6 +191,8 @@ fun Route.domainRoutes(
                             }
                             call.respond(HttpStatusCode.OK, userRes)
                         } catch (e: Exception) {
+                            call.respond(HttpStatusCode.NotFound, Errors.USER_NOT_FOUND)
+                        }catch (e: Exception) {
                             e.printStackTrace()
                             call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
                         }

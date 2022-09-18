@@ -22,14 +22,12 @@ import javax.imageio.ImageIO
 
 fun getUUID() = UUID.randomUUID().toString()
 
-inline fun <reified T> T.getLogger(): Logger {
-    return LoggerFactory.getLogger(T::class.simpleName.toString())
-}
+inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.simpleName.toString())
 
 inline fun <reified T> T.encodeToString(): String =
     jacksonObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(this)
 
-inline fun <reified T> String.decodeFromString(): T = jacksonObjectMapper().readValue<T>(this)
+inline fun <reified T> String.decodeFromString(): T = jacksonObjectMapper().readValue(this)
 
 suspend fun PartData.FileItem.saveImage(path: String, renderFormat: String) {
     withContext(Dispatchers.IO) {
@@ -86,7 +84,7 @@ fun String.toDob(): String {
     return date.format(f)
 }
 
-fun LocalDateTime.format(format: String = "dd/MM  H:mm"): String = format(DateTimeFormatter.ofPattern(format))
+fun LocalDateTime.format(format: String = "dd/MM  HH:mm"): String = format(DateTimeFormatter.ofPattern(format))
 
 fun Long.getTime(): String {
     val hour = this / 60
