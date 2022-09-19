@@ -939,11 +939,9 @@ fun Route.postRoute(
     }
 
     post("/create") {
-        var content = ""
-        val renderFormat = "webp"
-        val imageName = "${getUUID()}.$renderFormat"
-        var filePath = ChatDefaults.NEWS_IMAGE_UPLOAD_FOLDER
+        var filePath = ChatDefaults.POST_IMAGE_UPLOAD_FOLDER
         val uploadDir = File(filePath)
+        var content = ""
         try {
             val userId = call.sessions.get<ChatSession>()?.id!!
             val domainId = call.parameters["domainId"]!!.toInt()
@@ -952,13 +950,17 @@ fun Route.postRoute(
             if (!uploadDir.mkdirs() && !uploadDir.exists()) {
                 throw IOException("Failed to create directory ${uploadDir.absolutePath}")
             }
-            filePath += imageName
             var hasImage = false
             parts.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> content = part.value
                     is PartData.FileItem -> {
                         hasImage = true
+                        val name = part.originalFileName as String
+                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                        val renderFormat = if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                        val imageName = "${getUUID()}.$renderFormat"
+                        filePath += imageName
                         part.saveImage(filePath, renderFormat)
                     }
                     else -> Unit
@@ -966,10 +968,9 @@ fun Route.postRoute(
             }
             val image = if (hasImage) filePath else null
             val post = Post(
-                content = content, image = image, user = User(id = userId), domainId = domainId,
-                type = postType
+                content = content, image = image, user = User(id = userId), domainId = domainId, type = postType
             )
-            postRepository.createPost(post = post)
+            postRepository.createPost(post)
             val message = Message(user = User(id = userId), type = messageType).encodeToString()
             WsController.broadcastToDomain(domainId, message)
             call.respond(HttpStatusCode.OK)
