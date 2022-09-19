@@ -157,7 +157,7 @@ document.addEventListener('alpine:init', () => {
             },
             setPermissions() {
                 let isLowRank = this.u.user.rank.order > rank.order
-                let guest = this.u.user.rank.code === Defaults.GUEST
+                let guest = this.u.user.rank.code === RankCode.GUEST
                 this.user.canChangeRank = permission.changeRank && !guest && isLowRank
                 this.user.canMute = permission.mute && isLowRank
                 this.user.canKick = permission.kick && isLowRank
@@ -693,7 +693,7 @@ document.addEventListener('alpine:init', () => {
                     this.$refs.mainInput.focus()
                     return
                 }
-                this.sendToRoom({content: content, type: MessageType.Chat})
+                this.sendToRoom({content, type: MessageType.Chat})
                 this.$refs.mainInput.value = Defaults.EMPTY_STRING
                 this.$refs.mainInput.focus()
             },
@@ -799,6 +799,11 @@ document.addEventListener('alpine:init', () => {
                 if (message.type === MessageType.DelChat) {
                     const li = document.getElementById(`chat-${message.id}`)
                     if (li != null) li.remove()
+                }
+                if (message.type === MessageType.ClearChat) {
+                    const chatMessages = this.$refs.chatMessages
+                    chatMessages.innerHTML = Defaults.EMPTY_STRING
+                    chatMessages.insertAdjacentHTML('afterbegin', fn.renderClearMessage(message))
                 }
                 if (message.type === MessageType.News) {
                     this.getNews()
@@ -1461,8 +1466,8 @@ document.addEventListener('alpine:init', () => {
                 formData.append('textFont', this.textFont)
                 axios.put(`/${domain.id}/users/customize-text`, formData).then(res => {
                     this.user.textColor = res.data.textColor
-                    this.user.textBold = res.data.textBold
                     this.user.textFont = res.data.textFont
+                    this.user.textBold = `${res.data.textBold}`
                     this.showAlertMsg(Success.CHAT_TEXT_CUSTOMIZED, Css.SUCCESS)
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
                 this.closeSmallModal()

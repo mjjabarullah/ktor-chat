@@ -20,6 +20,7 @@ data class Permission(
     val voice: Boolean = false,
     val upload: Boolean = false,
     val gifUpload: Boolean = false,
+    val directDisplay: Boolean = false,
     val private: Boolean = false,
     val splEmo: Boolean = false,
     val status: Boolean = false,

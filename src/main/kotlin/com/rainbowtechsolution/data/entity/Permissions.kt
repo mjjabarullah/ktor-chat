@@ -19,6 +19,7 @@ object Permissions : IntIdTable("permissions") {
     val voice = bool("voice").default(false)
     val upload = bool("upload").default(false)
     val gifUpload = bool("gif_upload").default(false)
+    val directDisplay = bool("direct_display").default(false)
     val private = bool("private").default(false)
     val splEmo = bool("spl_emo").default(false)
     val status = bool("status").default(false)

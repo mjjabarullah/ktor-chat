@@ -96,3 +96,8 @@ object Errors {
     const val NAME_BAD_CHARACTERS = "Name should not contain special characters."
 }
 
+object Commands{
+    const val WC = "/wc"
+    const val ME = "/me"
+    const val CLEAR = "/clear"
+}

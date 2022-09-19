@@ -3,6 +3,7 @@ package com.rainbowtechsolution.routes
 import com.rainbowtechsolution.data.model.ChatSession
 import com.rainbowtechsolution.data.model.Message
 import com.rainbowtechsolution.data.model.PvtMessage
+import com.rainbowtechsolution.data.repository.PermissionRepository
 import com.rainbowtechsolution.data.repository.RoomRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.repository.WsRepository
@@ -17,7 +18,8 @@ import kotlinx.coroutines.channels.consumeEach
 fun Route.wsRoutes(
     wsRepository: WsRepository,
     userRepository: UserRepository,
-    roomRepository: RoomRepository
+    roomRepository: RoomRepository,
+    permissionRepository: PermissionRepository
 ) {
 
     webSocket("/chat/{domainId}/room/{roomId}") {
@@ -40,13 +42,14 @@ fun Route.wsRoutes(
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No room found"))
             return@webSocket
         }
+        val permission = permissionRepository.findPermissionByRank(user.rank?.id!!)!!
         try {
             wsRepository.connectRoom(user, roomId, domainId)
             incoming.consumeEach { frame ->
                 when (frame) {
                     is Frame.Text -> {
                         val message = frame.readText().decodeFromString<Message>()
-                        wsRepository.sendMessage(domainId, roomId, userId, message)
+                        wsRepository.sendMessage(domainId, roomId, userId, message, permission)
                     }
                     else -> Unit
                 }

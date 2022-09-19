@@ -2,15 +2,13 @@ package com.rainbowtechsolution.controller
 
 import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.model.Message
+import com.rainbowtechsolution.data.model.Permission
 import com.rainbowtechsolution.data.model.PvtMessage
 import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.repository.MessageRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.repository.WsRepository
-import com.rainbowtechsolution.utils.checkYoutube
-import com.rainbowtechsolution.utils.clean
-import com.rainbowtechsolution.utils.encodeToString
-import com.rainbowtechsolution.utils.getLogger
+import com.rainbowtechsolution.utils.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
 import java.util.concurrent.ConcurrentHashMap
@@ -27,47 +25,30 @@ class WsController(
         private val members = ConcurrentHashMap<WebSocketSession, User>()
 
         fun updateMember(user: User) {
-            members.forEach { (sessionId, u) ->
-                if (u.id!! == user.id!!) {
-                    user.socket = members[sessionId]?.socket
-                    members[sessionId] = user
-                    return@forEach
-                }
-            }
+            members.values.forEach { if (it.id == user.id) members[it.socket!!] = user.copy(socket = it.socket) }
         }
 
         suspend fun broadCastToMember(id: Long, message: String) {
-            members.values.forEach {
-                if (it.id == id) {
-                    send(it.socket, message)
-                }
-            }
+            members.values.forEach { if (it.id == id) send(it.socket, message) }
         }
 
         suspend fun broadcastToAll(message: String) {
-            members.values.forEach {
-                send(it.socket, message)
-            }
+            members.values.forEach { send(it.socket, message) }
         }
 
         suspend fun broadcastToRoom(domainId: Int, roomId: Int, message: String) {
-            domainRoomMembers[domainId]?.get(roomId)?.values?.forEach {
-                send(it.socket, message)
-            }
+            domainRoomMembers[domainId]?.get(roomId)?.values?.forEach { send(it.socket, message) }
         }
 
         suspend fun broadcastToDomain(domainId: Int, message: String) {
-            domainRoomMembers[domainId]?.values?.forEach {
-                it.values.forEach { user ->
-                    send(user.socket, message)
-                }
-            }
+            domainRoomMembers[domainId]?.values?.forEach { users -> users.values.forEach { send(it.socket, message) } }
         }
 
         private suspend fun send(socket: WebSocketSession?, message: String) {
             try {
                 if (socket?.isActive == true) socket.send(Frame.Text(message))
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -87,16 +68,30 @@ class WsController(
         logger.info(members.toString())
     }
 
-    override suspend fun sendMessage(domainId: Int, roomId: Int, userId: Long, message: Message) {
+    override suspend fun sendMessage(
+        domainId: Int, roomId: Int, userId: Long, message: Message, permission: Permission
+    ) {
         val user = getUser(userId) ?: return
-        if (message.type == MessageType.Chat) {
-            val content = checkYoutube(message.content!!.trim().clean())
-            var msg = message.copy(content = content, user = user, roomId = roomId)
-            msg = messageRepository.insertRoomMessage(msg)
-            msg.id?.let {
-                broadcastToRoom(domainId, roomId, msg.encodeToString())
-                userRepository.increasePoints(userId)
+        try {
+            var msg = message.copy(user = user, roomId = roomId)
+            msg = processCommands(msg, user, permission)
+            when (msg.type) {
+                MessageType.Chat -> {
+                    msg = checkYoutube(msg, permission)
+                    msg = messageRepository.insertRoomMessage(msg)
+                    msg.id?.let {
+                        broadcastToRoom(domainId, roomId, msg.encodeToString())
+                        userRepository.increasePoints(userId)
+                    }
+                }
+                MessageType.ClearChat -> {
+                    messageRepository.deleteAllMessageByRoomId(roomId)
+                    broadcastToRoom(domainId, roomId, msg.encodeToString())
+                }
+                else -> Unit
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

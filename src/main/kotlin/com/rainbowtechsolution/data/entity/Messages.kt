@@ -12,10 +12,12 @@ object Messages : LongIdTable("messages") {
     val userId = reference("user_id", Users.id, onDelete = ReferenceOption.CASCADE)
     val roomId = reference("room_id", Rooms.id, onDelete = ReferenceOption.CASCADE)
     val type = enumerationByName<MessageType>("type", 10)
+    val highLighted = bool("high_lighted").default(false)
+    val ytFrame = varchar("yt_frame", 255).nullable()
     val createdAt = datetime("created_at")
 }
 
 enum class MessageType {
-    Join, Chat, Leave, DelChat, Report, ActionTaken, DataChanges, News, DelNews, Adminship, DelAdminship, GlobalFeed,
-    DelGlobalFeed, Mute, UnMute, Kick, UnKick, Ban, UnBan, Notification
+    Join, Chat, Leave, DelChat, ClearChat, News, DelNews, Adminship, DelAdminship, GlobalFeed, DelGlobalFeed,
+    Notification, Report, ActionTaken, DataChanges, Mute, UnMute, Kick, UnKick, Ban, UnBan,
 }

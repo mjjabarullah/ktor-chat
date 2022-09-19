@@ -348,7 +348,7 @@ body {
 }
 
 .slate-3 {
-    @apply text-amber-800;
+    @apply text-slate-800;
 }
 
 .gray {
@@ -1037,7 +1037,7 @@ body {
 }
 
 .loader-wrap {
-    @apply z-[100] absolute inset-0 h-full w-full flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent
+    @apply z-[100] absolute inset-0 h-full w-full flex items-center justify-center
 }
 
 .user-wrap img.avatar {
@@ -1097,7 +1097,11 @@ body {
 }
 
 .emoticon {
-    @apply h-[24px] inline-block m-[5px] cursor-pointer
+    @apply h-[24px] inline-block p-[2px] cursor-pointer
+}
+
+.emoticon-md {
+    @apply h-[50px] inline-block p-[2px] cursor-pointer
 }
 
 .main-input-wrap {
@@ -1336,7 +1340,11 @@ input:checked + .slider {
 }
 
 .youtube{
-    @apply w-full lg:w-[300px] aspect-video
+    @apply w-full lg:w-[300px] aspect-video my-1 rounded
+}
+
+.highlighted{
+    @apply px-2 py-1 mt-1 rounded shadow
 }
 
 @layer utilities {

@@ -1,6 +1,5 @@
-import {Defaults, Errors, ReactType} from './constant'
+import {Defaults, Errors, MessageType, RankCode, ReactType} from './constant'
 import {emojis} from './emojis'
-
 
 export function renderWelcomeMessage() {
     const topic = room.topic.replace(/%ROOM%/g, room.name)
@@ -36,14 +35,32 @@ export function renderLeaveMessage(message) {
     `
 }
 
+export function renderClearMessage(message) {
+    return `
+         <li class="chat-wrap justify-center">
+            <div class="p-1">
+               <p class="rounded-md px-4 py-1 text-white bg-skin-primary text-[12px]">Room cleared by ${message.user.name}</p>
+            </div>
+        </li>
+    `
+}
+
 export function renderChatMessage(message) {
     const image = message.image ? `<img @click="showImageDialog($el)" src="${message.image}" alt="" class="lobby-image">` : Defaults.EMPTY_STRING
     const audio = message.audio ? `<audio  preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]"><source src="${message.audio}" type="audio/mpeg"></audio>` : Defaults.EMPTY_STRING
+    const youtube = message.ytFrame ? message.ytFrame : Defaults.EMPTY_STRING
     const gender = message.user.gender === 'Male' ? 'male' : 'female'
-    const bold = message.user.textBold ? ' font-bold' : ' font-normal'
+    const bold = message.user.textBold ? 'font-bold' : 'font-normal'
     const delIcon = permission.delMsg ? `<i @click="deleteChat(${message.id})" class="fa-solid fa-square-xmark icon-sm"></i>` : Defaults.EMPTY_STRING
     message.content = appendEmojis(message.content)
     message.content = message.content.replace(RegExp(`${user.name}`, 'gi'), `<span class="tag">${user.name}</span>`)
+    let clip = message.user.textBg = ''
+    if (message.highLighted) {
+        message.user.textBg = `b-${message.user.textColor} highlighted`
+        message.user.textColor = 'text-white'
+    } else {
+        clip = 'clip'
+    }
     return `
          <li id="chat-${message.id}" class="chat-wrap">
            <div class="flex py-1 px-2 w-full" >
@@ -61,8 +78,8 @@ export function renderChatMessage(message) {
                         <i @click="reportDialog(${message.id}, 1)" class="fa-solid fa-font-awesome icon-sm"></i> ${delIcon}
                     </div>
                 </div>
-                <div class=" px-1 pr-2">${image} ${audio}
-                    <p class="chat clip ${message.user.textColor} ${message.user.textFont} ${bold} ">
+                <div class=" px-1 pr-2">${image} ${audio} ${youtube}
+                    <p class="chat ${clip} ${message.user.textColor} ${message.user.textBg} ${message.user.textFont} ${bold}">
                         ${message.content}
                     </p>
                 </div>
@@ -503,11 +520,11 @@ export function customizeTextHtml() {
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
-                <template x-if="user.textFont"> 
-                    <p class="w-full clip" :class="[user.textFont, user.textColor, user.textBold=='true' ? 'font-bold' : 'font-normal' ]">Sample Text</p>
+                <template x-if="textFont"> 
+                    <p class="w-full clip" :class="[textFont, textColor, textBold=='true' ? 'font-bold' : 'font-normal' ]">Sample Text</p>
                 </template>    
                 <div class="w-full h-10 mb-4">
-                    <select x-model="user.textFont" class="input-text">
+                    <select x-model="textFont" class="input-text">
                         <option>Select Font</option>
                         <option value="signika">Signika</option>
                         <option value="grandstander">Grandstander</option>
@@ -529,7 +546,7 @@ export function customizeTextHtml() {
                 </div>
                 <p class="text-left font-bold text-[12px]">Text Bold</p>
                 <div class="w-full h-10 mb-2">
-                    <select x-model="user.textBold" class="input-text">
+                    <select x-model="textBold" class="input-text">
                         <option value="true">Yes</option>
                         <option value="false">No</option>
                     </select>

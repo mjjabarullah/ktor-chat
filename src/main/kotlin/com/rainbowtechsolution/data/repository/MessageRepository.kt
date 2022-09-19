@@ -24,4 +24,6 @@ interface MessageRepository {
     suspend fun setSeen(id: Long)
 
     suspend fun deleteMessage(id: Long): Int
+
+    suspend fun deleteAllMessageByRoomId(roomId: Int)
 }

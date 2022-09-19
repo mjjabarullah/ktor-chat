@@ -12,5 +12,7 @@ data class Message(
     val user: User? = null,
     val roomId: Int? = null,
     val type: MessageType,
+    val highLighted: Boolean = false,
+    val ytFrame: String? = null,
     val createdAt: String? = null
 )

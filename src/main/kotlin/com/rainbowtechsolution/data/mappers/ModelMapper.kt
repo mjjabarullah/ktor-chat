@@ -145,6 +145,7 @@ fun ResultRow.toPermissionModel(): Permission {
         voice = this[Permissions.voice],
         upload = this[Permissions.upload],
         gifUpload = this[Permissions.gifUpload],
+        directDisplay = this[Permissions.directDisplay],
         private = this[Permissions.private],
         splEmo = this[Permissions.splEmo],
         status = this[Permissions.status],

@@ -26,6 +26,8 @@ class MessageController : MessageRepository {
             it[userId] = message.user?.id!!
             it[roomId] = message.roomId!!
             it[type] = message.type
+            it[highLighted] = message.highLighted
+            it[ytFrame] = message.ytFrame
             it[createdAt] = LocalDateTime.now()
         }.resultedValues?.firstOrNull()?.let {
             resultMsg = resultMsg.copy(id = it[Messages.id].value, createdAt = it[Messages.createdAt].format())
@@ -73,8 +75,9 @@ class MessageController : MessageRepository {
     override suspend fun getRoomMessages(id: Int): List<Message> = dbQuery {
         val expressions = listOf<Expression<*>>(
             Messages.id, Messages.content, Messages.image, Messages.audio, Messages.type, Messages.roomId,
-            Messages.createdAt, Users.id, Users.name, Users.gender, Users.avatar, Users.nameFont, Users.nameColor,
-            Users.textFont, Users.textColor, Users.textBold, Ranks.icon, Ranks.name
+            Messages.highLighted, Messages.ytFrame, Messages.createdAt, Users.id, Users.name, Users.gender,
+            Users.avatar, Users.nameFont, Users.nameColor, Users.textFont, Users.textColor, Users.textBold, Ranks.icon,
+            Ranks.name
         )
         Messages
             .innerJoin(Users)
@@ -93,7 +96,7 @@ class MessageController : MessageRepository {
                 Message(
                     id = it[Messages.id].value, content = it[Messages.content], audio = it[Messages.audio],
                     image = it[Messages.image], createdAt = it[Messages.createdAt].format(), type = it[Messages.type],
-                    user = user
+                    user = user, highLighted = it[Messages.highLighted], ytFrame = it[Messages.ytFrame]
                 )
             }
             .reversed()
@@ -148,6 +151,10 @@ class MessageController : MessageRepository {
 
     override suspend fun deleteMessage(id: Long): Int = dbQuery {
         Messages.deleteWhere { Messages.id eq id }
+    }
+
+    override suspend fun deleteAllMessageByRoomId(roomId: Int): Unit = dbQuery {
+        Messages.deleteWhere { Messages.roomId eq roomId }
     }
 
 }

@@ -3,7 +3,14 @@ package com.rainbowtechsolution.utils
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.rainbowtechsolution.common.Commands
+import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.common.Validation
+import com.rainbowtechsolution.data.entity.Comments
+import com.rainbowtechsolution.data.entity.MessageType
+import com.rainbowtechsolution.data.model.Message
+import com.rainbowtechsolution.data.model.Permission
+import com.rainbowtechsolution.data.model.User
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +27,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
 import javax.imageio.ImageIO
+
 
 fun getUUID() = UUID.randomUUID().toString()
 
@@ -98,20 +106,22 @@ fun Long.getTime(): String {
     }
 }
 
-fun checkYoutube(msg: String): String = when {
-    msg.contains("https://www.youtu") || msg.contains("https://youtu")
-            || msg.contains("https://www.youtube") || msg.contains("https://youtube") -> {
-        val message = msg.replace("https?://\\S+\\s?".toRegex(), "")
-        val videoId = getYoutubeVideoId(extractUrls(msg)[0])
-        if (videoId == null) msg
-        else """
-            $message <br>
-            <iframe frameborder="0" scrolling="no" marginheight="0" marginwidth="0" class="youtube" 
-                    src="https://www.youtube.com/embed/$videoId"> 
-            </iframe> 
-        """.trimIndent()
+fun checkYoutube(message: Message, permission: Permission): Message {
+    val content = message.content!!
+    val hasYoutube = content.contains("https://www.youtu") || content.contains("https://youtu")
+            || content.contains("https://www.youtube") || content.contains("https://youtube")
+    return when {
+        hasYoutube && permission.directDisplay -> {
+            val trimmedContent = content.replace("https?://\\S+\\s?".toRegex(), "")
+            val videoId = getYoutubeVideoId(extractUrls(content)[0])
+            if (videoId == null) message
+            else message.copy(
+                ytFrame = """<iframe frameborder="0" scrolling="no" marginheight="0" marginwidth="0" class="youtube" 
+                src="https://www.youtube.com/embed/$videoId"> </iframe> """.trimIndent(), content = trimmedContent
+            )
+        }
+        else -> message
     }
-    else -> msg
 }
 
 private fun extractUrls(text: String): List<String> {
@@ -141,9 +151,34 @@ private fun getYoutubeVideoId(url: String): String? {
     return validYoutubeVideoId
 }
 
-
-fun processCommands(content: String): String {
-    return ""
+fun processCommands(message: Message, user: User, permission: Permission): Message {
+    var content = message.content!!
+    if (!content.startsWith("/")) return message
+    val code = user.rank?.code
+    val isGuest = code == RankNames.GUEST
+    val isUser = code == RankNames.USER
+    val isStaff =
+        code == RankNames.OWNER || code == RankNames.S_ADMIN || code == RankNames.ADMIN || code == RankNames.MODERATOR
+    val command = when {
+        content.length >= 3 && content.substring(0, 3).matches(Commands.ME.toRegex()) -> {
+            content = message.content.replace(Commands.ME, "")
+            Commands.ME
+        }
+        content.length >= 3 && content.substring(0, 3).matches(Commands.WC.toRegex()) -> {
+            content = message.content.replace(Commands.WC, "")
+            content =
+                """<img src="/images/defaults/welcome.svg" class="emoticon-md" /> Welcome<img src="/images/defaults/welcome.svg" class="emoticon-md" /> $content""".trimIndent()
+            Commands.WC
+        }
+        content.length >= 6 && content.substring(0, 6).matches(Commands.CLEAR.toRegex()) -> Commands.CLEAR
+        else -> ""
+    }
+    return when {
+        command == Commands.ME && !isGuest -> message.copy(highLighted = true, content = content)
+        command == Commands.WC && !isGuest && !isUser -> message.copy(content = content)
+        command == Commands.CLEAR && isStaff -> message.copy(type = MessageType.ClearChat)
+        else -> message
+    }
 }
 
 

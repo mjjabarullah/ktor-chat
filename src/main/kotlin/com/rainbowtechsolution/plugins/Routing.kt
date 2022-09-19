@@ -32,7 +32,7 @@ fun Application.configureRouting() {
 
     routing {
 
-        wsRoutes(wsRepository, userRepository, roomRepository)
+        wsRoutes(wsRepository, userRepository, roomRepository, permissionRepository)
 
         domainRoutes(
             domains, roomRepository, userRepository, messageRepository, domainRepository, rankRepository,

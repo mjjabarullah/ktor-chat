@@ -21,6 +21,7 @@ export const MessageType = {
     Chat: 'Chat',
     Leave: 'Leave',
     DelChat: 'DelChat',
+    ClearChat: 'ClearChat',
     Report: 'Report',
     ActionTaken: 'ActionTaken',
     News: 'News',
@@ -168,7 +169,6 @@ export const Defaults = {
     EMPTY_STRING: '',
     UNDEFINED: 'undefined',
     FUNC_TYPE: 'function',
-    GUEST: 'guest',
     MAX_RECORDING_TIME: 180,
     MIN_RECORDING_TIME: 10,
     MIN_PASS_LENGTH: 8
