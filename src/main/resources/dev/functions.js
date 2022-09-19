@@ -200,13 +200,13 @@ export function guestDialogHtml() {
             <div class="px-4 py-1 flex justify-end items-center">
                 <i @click="closeSmallModal; $nextTick(()=>$refs.mainInput.focus()) " class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div> 
-            <div class="p-4 text-center ">
+            <div class="pb-4 px-4 text-center ">
                <img class="w-20 h-20 mx-auto" src="/images/defaults/happy.webp" alt=""> 
                 <p class="mt-2 text-2xl font-bold">Welcome ${name}</p>
                 <p class="mt-2 text-[13px] leading-[15px]">You are currently logged in as guest. Click here to register your account in order to access more features.</p>
                 <div class="text-center flex gap-2 justify-center mt-2">
-                    <button @click="closeSmallModal; $nextTick(()=>$refs.mainInput.focus())" class="px-2 btn bg-red-500">Close</button>
-                    <button @click="showGuestRegisterDialog" class="px-2 btn bg-green-500">Register</button>          
+                    <button @click="closeSmallModal; $nextTick(()=>$refs.mainInput.focus())" class="px-2 btn-action bg-red-500">Close</button>
+                    <button @click="showGuestRegisterDialog" class="px-2 btn-action bg-green-500">Register</button>          
                 </div> 
             </div>
         </div>

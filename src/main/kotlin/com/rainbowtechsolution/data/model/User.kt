@@ -53,7 +53,7 @@ data class User(
     fun validate() {
         validate(this) {
             validate(User::name).isNotNull().isNotEmpty().isNotBlank().hasSize(min = 4, max = 12)
-                .doesNotContainAny(Validation.BAD_CHARS)
+                .doesNotContainAny(Validation.BAD_CHARS).doesNotContain("\\s+".toRegex())
             validate(User::email).isNotNull().isNotEmpty().isNotBlank().isEmail()
             validate(User::password).hasSize(min = 8)
             validate(User::gender).containsAny(Gender.values().map { it.name })

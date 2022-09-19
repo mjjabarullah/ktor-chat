@@ -6,8 +6,7 @@ import {
     avatars, bgColors, Css, Defaults, Errors, Gender, ImageType, MessageType, PostLink, RankCode, ReactType,
     ReportType, Status, Success, textColors
 } from "./constant"
-/*import {soundManager} from 'soundmanager2/script/soundmanager2-nodebug' TODO: uncommend on production*/
-import {soundManager} from 'soundmanager2'
+import {soundManager} from 'soundmanager2/script/soundmanager2-nodebug'
 
 
 //disableDevtool() /*TODO : Uncomment this in production*/
@@ -115,9 +114,9 @@ document.addEventListener('alpine:init', () => {
                     setTimeout(() => {
                         this.showLoader = false
                         this.showMessages = true
+                        if (rank.code === RankCode.GUEST) this.showSmallModal(fn.guestDialogHtml())
+                        else this.$refs.mainInput.focus()
                     }, 15e2)
-                    if (rank.code === RankCode.GUEST) this.showSmallModal(fn.guestDialogHtml())
-                    else this.$refs.mainInput.focus()
                 }
 
                 this.$watch('user', currentUser => {
@@ -887,23 +886,20 @@ document.addEventListener('alpine:init', () => {
                 input.focus()
             },
             openPvtDialog(id) {
-                const user = this.u
-                const exists = this.pvtUsers.find(user => user.id === id)
+                let user
+                if (this.u.user) user = Object.assign(this.u.user)
+                let exists = this.pvtUsers.find(user => user.id === id)
                 this.showUserProfile = false
                 this.closeFullModal()
                 if (mobile.matches) {
                     this.showLeft = false
                     this.showRight = false
                 }
-                if (exists != null && exists !== Defaults.UNDEFINED) {
+                if (exists) {
                     exists.minimize = false
                     exists.added = true
-                    if (exists.unReadCount > 0) {
-                        this.setAllSeen(exists.id)
-                    }
-                    this.$nextTick(() => {
-                        fn.dragElement(document.getElementById(`draggable-${exists.id}`), exists.id)
-                    })
+                    if (exists.unReadCount > 0) this.setAllSeen(exists.id)
+                    this.$nextTick(() => fn.dragElement(document.getElementById(`draggable-${exists.id}`), exists.id))
                     return
                 }
                 axios.get(`/${domain.id}/pvt/${id}/messages`).then(res => {
@@ -1029,14 +1025,31 @@ document.addEventListener('alpine:init', () => {
                 if (message.type === MessageType.Chat) {
                     const id = message.sender.id === userId ? message.receiver.id : message.sender.id
                     const user = this.pvtUsers.find(user => user.id === id)
-                    if (user.added && user.minimize === false) {
-                        if (message.sender.id !== userId) {
-                            message.seen = true
-                            this.setPvtMessageSeen(message.id)
-                        }
-                    } else soundManager.play('private')
-                    user.messages.unshift(message)
-                    this.setPvtNotifiCount()
+                    if (user) {
+                        if (user.added && !user.minimize) {
+                            if (message.sender.id !== userId) {
+                                message.seen = true
+                                this.setPvtMessageSeen(message.id)
+                            }
+                        } else soundManager.play('private')
+                        user.messages.unshift(message)
+                        this.setPvtNotifiCount()
+                    } else {
+                        axios.get(`/${domain.id}/pvt/users`).then(res => {
+                            const user = res.data.find(user => user.id === id)
+                            user.messages = []
+                            user.messages.unshift(message)
+                            user.minimize = false
+                            user.added = false
+                            user.isRecording = false
+                            user.remainingTime = Defaults.MAX_RECORDING_TIME
+                            user.recorder = new MicRecorder({bitrate: 80})
+                            user.interval = null
+                            this.pvtUsers.unshift(user)
+                            soundManager.play('private')
+                            this.setPvtNotifiCount()
+                        })
+                    }
                 }
                 if (message.type === MessageType.DataChanges) location.reload()
                 if (message.type === MessageType.Notification) {
@@ -1085,7 +1098,7 @@ document.addEventListener('alpine:init', () => {
                     user.unReadCount = 0
                     let unSeen = false
                     user.messages.forEach(message => {
-                        if (message.receiver.id === userId && message.seen === false) {
+                        if (message.receiver.id === userId && !message.seen) {
                             user.unReadCount++
                             unSeen = true
                         }
