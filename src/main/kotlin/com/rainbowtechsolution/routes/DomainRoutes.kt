@@ -159,667 +159,31 @@ fun Route.domainRoutes(
                 }
 
                 route("/users") {
-
-                    get("/{userId}") {
-                        try {
-                            val currentUserId = call.sessions.get<ChatSession>()?.id!!
-                            val userId = call.parameters["userId"]!!.toLong()
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val currentUser =
-                                userRepository.findUserById(currentUserId) ?: throw UserNotFoundException()
-                            val permission =
-                                permissionRepository.findPermissionByRank(currentUser.rank?.id!!) ?: throw Exception()
-                            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                            val rankCode = currentUser.rank?.code
-                            val canSeeSensitiveData =
-                                rankCode == RankNames.OWNER || rankCode == RankNames.ADMIN || rankCode == RankNames.S_ADMIN
-                            val trimmedUser = user.copy(deviceId = "", ip = "", country = "", email = "", timezone = "")
-                            var userRes = UserRes(user = if (canSeeSensitiveData) user else trimmedUser)
-                            if (permission.changeRank) {
-                                val ranks = rankRepository.getRanksBelowOrder(currentUser.rank?.order!!, domainId)
-                                userRes = userRes.copy(ranks = ranks)
-                            }
-                            if (canSeeSensitiveData) {
-                                if (user.ip != null && user.deviceId != null) {
-                                    val sameUser = userRepository.sameUser(domainId, user.ip!!, user.deviceId!!)
-                                    userRes =
-                                        userRes.copy(sameIps = sameUser.sameIps, sameDevices = sameUser.sameDevices)
-                                }
-                            }
-                            call.respond(HttpStatusCode.OK, userRes)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.NotFound, Errors.USER_NOT_FOUND)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    get("/blocked-users") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val users = userRepository.getBlockedUsers(userId)
-                            call.respond(HttpStatusCode.OK, users)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    route("/notifications") {
-                        get {
-                            try {
-                                val userId = call.sessions.get<ChatSession>()?.id!!
-                                val notificationRes = notificationRepository.getNotifications(userId)
-                                call.respond(HttpStatusCode.OK, notificationRes)
-                            } catch (e: Exception) {
-                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                            }
-                        }
-
-                        put("/read") {
-                            try {
-                                val userId = call.sessions.get<ChatSession>()?.id!!
-                                notificationRepository.read(userId)
-                                call.respond(HttpStatusCode.OK)
-                            } catch (e: Exception) {
-                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                            }
-                        }
-                    }
-
-                    get("/check-mute") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                            val roomId = user.roomId!!
-                            val currentTimeInMillis =
-                                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                            val difference = user.muted - currentTimeInMillis
-                            val muted = if (difference <= 0) 0 else user.muted
-                            if (user.muted != 0L && muted == 0L) {
-                                userRepository.unMute(userId)
-                                val message = Message(user = User(id = userId), type = MessageType.UnMute)
-                                WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
-                                WsController.broadCastToMember(userId, message.encodeToString())
-                                val notification = Notification(
-                                    receiver = User(userId), content = "You have been unmuted"
-                                )
-                                notificationRepository.createNotification(notification)
-                                val nMessage = Message(type = MessageType.Notification)
-                                WsController.broadCastToMember(userId, nMessage.encodeToString())
-                            }
-                            call.respond(HttpStatusCode.OK, muted)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    get("/check-kick") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
-                            val currentTimeInMillis =
-                                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                            val difference = user.kicked - currentTimeInMillis
-                            val kicked = if (difference <= 0) 0 else user.kicked
-                            if (user.kicked != 0L && kicked == 0L) userRepository.unKick(userId)
-                            call.respond(HttpStatusCode.OK, kicked)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    post("/block") {
-                        try {
-                            val blocker = call.sessions.get<ChatSession>()?.id!!
-                            val blocked = call.receiveParameters()["blocked"]!!.toLong()
-                            userRepository.blockUser(blocker, blocked)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    delete("/unblock") {
-                        try {
-                            val blocker = call.sessions.get<ChatSession>()?.id!!
-                            val blocked = call.receiveParameters()["blocked"]!!.toLong()
-                            userRepository.unblockUser(blocker, blocked)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-                        }
-                    }
-
-                    put("/update-avatar") {
-                        val parts = call.receiveMultipart()
-                        var filePath = ChatDefaults.AVATAR_FOLDER
-                        val userId = call.sessions.get<ChatSession>()?.id!!
-                        try {
-                            val uploadDir = File(filePath)
-                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                            }
-                            parts.forEachPart { part ->
-                                when (part) {
-                                    is PartData.FileItem -> {
-                                        val name = part.originalFileName as String
-                                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
-                                        val renderFormat =
-                                            if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
-                                        val imageName = "${getUUID()}.$renderFormat"
-                                        filePath += imageName
-                                        part.saveImage(filePath, renderFormat)
-                                    }
-                                    else -> Unit
-                                }
-                            }
-                            userRepository.updateAvatar(userId, filePath)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: IOException) {
-                            call.respond(HttpStatusCode.InternalServerError)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.BadRequest)
-                        }
-                    }
-
-                    put("/update-default-avatar") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val avatar = call.receiveParameters()["avatar"].toString()
-                            userRepository.updateAvatar(userId, avatar)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.BadRequest)
-                        }
-                    }
-
-                    put("/update-name") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val name = call.receiveParameters()["name"].toString()
-                            if (!name.trim().isNameValid()) throw ValidationException(Errors.NAME_BAD_CHARACTERS)
-                            val slug = call.request.host().getDomainSlug()
-                            val domain = domainRepository.findDomainBySlug(slug) ?: throw Exception()
-                            val isUserExists = userRepository.isUserExists(name, domain.id!!)
-                            if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
-                            userRepository.updateName(userId, name)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: ValidationException) {
-                            call.respond(HttpStatusCode.Conflict, e.message ?: "Something went wrong.")
-                        } catch (e: UserAlreadyFoundException) {
-                            call.respond(HttpStatusCode.Conflict, e.message ?: "Something went wrong.")
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/customize-name") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val nameColor = call.receiveParameters()["nameColor"]
-                            val font = call.receiveParameters()["nameFont"]
-                            userRepository.customizeName(userId, nameColor, font)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-password") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val user = userRepository.findUserById(userId) ?: throw Exception()
-                            if (user.rank?.code == RankNames.GUEST) throw Exception()
-                            val password = call.receiveParameters()["password"].toString()
-                            if (password.length < 8) throw Exception("Must have min 8 letters")
-                            userRepository.updatePassword(userId, password.hashPassword())
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-mood") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val mood = call.receiveParameters()["mood"]
-                            userRepository.updateMood(userId, mood)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-about") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val about = call.receiveParameters()["about"]
-                            userRepository.updateAbout(userId, about)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-status") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val status = call.receiveParameters()["status"].toString()
-                            userRepository.updateStatus(userId, Status.valueOf(status))
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-gender") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val gender = call.receiveParameters()["gender"].toString()
-                            userRepository.updateGender(userId, Gender.valueOf(gender))
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/update-dob") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val param = call.receiveParameters()["dob"]
-                            userRepository.updateDob(userId, param?.toDob())
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/customize-text") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val params = call.receiveParameters()
-                            val isTextBold = params["textBold"].toBoolean()
-                            val textColor = params["textColor"]
-                            val textFont = params["textFont"]
-                            userRepository.customizeText(userId, isTextBold, textColor, textFont)
-                            val user = userRepository.findUserById(userId)
-                            WsController.updateMember(user!!)
-                            call.respond(HttpStatusCode.OK, user)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/change-sounds") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val params = call.receiveParameters()
-                            val sounds = params["sounds"].toString()
-                            userRepository.changeSounds(userId, sounds)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
-
-                    put("/change-private") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val private = call.receiveParameters()["private"].toBoolean()
-                            userRepository.changePrivate(userId, private)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
-                        }
-                    }
+                    userRoute(userRepository, rankRepository, permissionRepository, notificationRepository)
                 }
 
                 route("/rooms") {
-
-                    get {
-                        try {
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val rooms = roomRepository.getRoomsByDomain(domainId)
-                            call.respond(HttpStatusCode.OK, rooms)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
-                        }
-                    }
-
-                    route("/{roomId}") {
-
-                        get("/users") {
-                            try {
-                                val roomId = call.parameters["roomId"]!!.toInt()
-                                val limit = call.request.queryParameters["limit"].toString().toInt()
-                                val users = userRepository.getUsersByRoom(roomId, limit)
-                                call.respond(HttpStatusCode.OK, users)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
-                            }
-                        }
-
-                        post("/join") {
-                            try {
-                                val chatSession = call.sessions.get<ChatSession>()
-                                val userId = chatSession?.id!!
-                                val roomId = call.parameters["roomId"]!!.toInt()
-                                userRepository.joinRoom(roomId, userId)
-                                call.respondRedirect("/")
-                            } catch (e: Exception) {
-                                call.respond(HttpStatusCode.InternalServerError)
-                                e.printStackTrace()
-                            }
-                        }
-
-                        post("/upload-image") {
-                            val parts = call.receiveMultipart()
-                            var content: String? = null
-                            var filePath = ChatDefaults.MAIN_IMAGE_UPLOAD_FOLDER
-                            try {
-                                val uploadDir = File(filePath)
-                                if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                    throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                                }
-                                parts.forEachPart { part ->
-                                    when (part) {
-                                        is PartData.FormItem -> content = part.value
-                                        is PartData.FileItem -> {
-                                            val name = part.originalFileName as String
-                                            val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
-                                            val renderFormat =
-                                                if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
-                                            val imageName = "${getUUID()}.$renderFormat"
-                                            filePath += imageName
-                                            part.saveImage(filePath, renderFormat)
-                                        }
-                                        else -> Unit
-                                    }
-                                }
-                                val message = Message(content = content, image = filePath, type = MessageType.Chat)
-                                call.respond(HttpStatusCode.OK, message)
-                            } catch (e: IOException) {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            } catch (e: Exception) {
-                                call.respond(HttpStatusCode.BadRequest)
-                            }
-                        }
-
-                        post("/upload-audio") {
-                            val parts = call.receiveMultipart()
-                            var content = ""
-                            val audioName = "${getUUID()}.mp3"
-                            var filePath = ChatDefaults.MAIN_AUDIO_UPLOAD_FOLDER
-
-                            try {
-                                val uploadDir = File(filePath)
-                                if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                    throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                                }
-                                filePath += audioName
-                                parts.forEachPart { part ->
-                                    when (part) {
-                                        is PartData.FormItem -> content = part.value
-                                        is PartData.FileItem -> part.saveAudio(filePath)
-                                        else -> Unit
-                                    }
-                                }
-                                val message = Message(content = content, audio = filePath, type = MessageType.Chat)
-                                call.respond(HttpStatusCode.OK, message)
-                            } catch (e: IOException) {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            } catch (e: Exception) {
-                                File(filePath).delete()
-                                call.respond(HttpStatusCode.BadRequest)
-                            }
-                        }
-
-                        route("/messages") {
-
-                            get {
-                                try {
-                                    val roomId = call.parameters["roomId"]?.toInt()
-                                    val messages = messageRepository.getRoomMessages(roomId!!)
-                                    call.respond(HttpStatusCode.OK, messages)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
-                                }
-                            }
-
-                            get("/{msgId}") {
-                                try {
-                                    val msgId = call.parameters["msgId"]!!.toLong()
-                                    val message =
-                                        messageRepository.findMessageById(msgId) ?: throw MessageNotFoundException()
-                                    call.respond(HttpStatusCode.OK, message)
-                                } catch (e: MessageNotFoundException) {
-                                    call.respond(HttpStatusCode.NotFound, e.message.toString())
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                                }
-                            }
-                        }
-                    }
+                    roomRoute(userRepository, roomRepository, messageRepository)
                 }
 
                 route("/pvt") {
-
-                    get("/users") {
-                        try {
-                            val chatSession = call.sessions.get<ChatSession>()
-                            val userId = chatSession?.id!!
-                            val pvtUsersId = messageRepository.getPvtUserIds(userId)
-                            val usersMessages = pvtUsersId.map {
-                                async { messageRepository.getPrivateMessages(it, userId) }
-                            }.awaitAll()
-                            val pvtUsers = pvtUsersId.mapIndexed { i, id ->
-                                val sender =
-                                    if (usersMessages[i][0].receiver?.id == userId) usersMessages[i][0].sender
-                                    else usersMessages[i][0].receiver
-                                PvtUser(
-                                    id, sender?.name, sender?.avatar, sender?.nameColor, sender?.nameFont,
-                                    sender?.private!!, usersMessages[i]
-                                )
-                            }
-                            call.respond(HttpStatusCode.OK, pvtUsers)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    get("/{receiverId}/messages") {
-                        try {
-                            val sender = call.sessions.get<ChatSession>()?.id!!
-                            val receiver = call.parameters["receiverId"]!!.toLong()
-                            val messages = messageRepository.getPrivateMessages(sender, receiver)
-                            call.respond(HttpStatusCode.OK, messages)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/{senderId}/all-seen") {
-                        try {
-                            val receiver = call.sessions.get<ChatSession>()?.id!!
-                            val sender = call.parameters["senderId"]!!.toLong()
-                            messageRepository.setAllSeen(sender, receiver)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/{msgId}/seen") {
-                        try {
-                            val msgId = call.parameters["msgId"]!!.toLong()
-                            messageRepository.setSeen(msgId)
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError)
-                        }
-                    }
-
-                    post("/{receiverId}/upload-audio") {
-                        val sender = User(id = call.sessions.get<ChatSession>()?.id)
-                        val receiver = User(id = call.parameters["receiverId"]?.toLong())
-                        val parts = call.receiveMultipart()
-                        var content = ""
-                        val audioName = "${getUUID()}.mp3"
-                        var filePath = ChatDefaults.PRIVATE_AUDIO_UPLOAD_FOLDER
-
-                        try {
-                            val uploadDir = File(filePath)
-                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                            }
-                            filePath += audioName
-                            parts.forEachPart { part ->
-                                when (part) {
-                                    is PartData.FormItem -> content = part.value
-                                    is PartData.FileItem -> part.saveAudio(filePath)
-                                    else -> Unit
-                                }
-                            }
-                            val message = PvtMessage(
-                                content = content, audio = filePath, type = MessageType.Chat,
-                                sender = sender, receiver = receiver
-                            )
-                            call.respond(HttpStatusCode.OK, message)
-                        } catch (e: IOException) {
-                            call.respond(HttpStatusCode.InternalServerError)
-                        } catch (e: Exception) {
-                            File(filePath).delete()
-                            call.respond(HttpStatusCode.BadRequest)
-                        }
-                    }
-
-                    post("/{receiverId}/upload-image") {
-                        val sender = User(id = call.sessions.get<ChatSession>()?.id)
-                        val receiver = User(id = call.parameters["receiverId"]?.toLong())
-                        val parts = call.receiveMultipart()
-                        var content = ""
-                        var filePath = ChatDefaults.PRIVATE_IMAGE_UPLOAD_FOLDER
-                        try {
-                            val uploadDir = File(filePath)
-                            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
-                                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
-                            }
-                            parts.forEachPart { part ->
-                                when (part) {
-                                    is PartData.FormItem -> content = part.value
-                                    is PartData.FileItem -> {
-                                        val name = part.originalFileName as String
-                                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
-                                        val renderFormat =
-                                            if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
-                                        val imageName = "${getUUID()}.$renderFormat"
-                                        filePath += imageName
-                                        part.saveImage(filePath, renderFormat)
-                                    }
-                                    else -> Unit
-                                }
-                            }
-                            val message = PvtMessage(
-                                content = content, image = filePath, type = MessageType.Chat,
-                                sender = sender, receiver = receiver
-                            )
-                            call.respond(HttpStatusCode.OK, message)
-                        } catch (e: IOException) {
-                            call.respond(HttpStatusCode.InternalServerError)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.BadRequest)
-                        }
-                    }
+                    pvtRoute(messageRepository)
                 }
 
                 route("/reports") {
-                    get {
-                        try {
-                            val domainId = call.parameters["domainId"]!!.toInt()
-                            val reports = reportRepository.getReportsByDomain(domainId)
-                            call.respond(HttpStatusCode.OK, reports)
-                        } catch (e: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
-                        }
-                    }
-
-                    post("/create") {
-                        try {
-                            val userId = call.sessions.get<ChatSession>()?.id!!
-                            val domainId = call.parameters["domainId"]?.toInt()!!
-                            val params = call.receiveParameters()
-                            val targetId = params["targetId"]?.toLong()!!
-                            val roomId = params["roomId"]?.toInt()!!
-                            val reason = params["reason"].toString()
-                            val type = ReportType.valueOf(params["type"].toString())
-                            reportRepository.createReport(userId, targetId, domainId, type, reason, roomId)
-                            val message = Message(type = MessageType.Report)
-                            WsController.broadcastToDomain(domainId, message.encodeToString())
-                            call.respond(HttpStatusCode.OK)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
-                        }
-                    }
+                    reportRoute(reportRepository)
                 }
 
                 route("/news") {
-                    postRoute(
-                        userRepository, postRepository, PostType.Announcement, MessageType.News
-                    )
+                    postRoute(userRepository, postRepository, PostType.Announcement, MessageType.News)
                 }
 
                 route("/adminship") {
-                    postRoute(
-                        userRepository, postRepository, PostType.AdminShip, MessageType.Adminship
-                    )
+                    postRoute(userRepository, postRepository, PostType.AdminShip, MessageType.Adminship)
                 }
 
                 route("/global-feed") {
-                    postRoute(
-                        userRepository, postRepository, PostType.GlobalFeed, MessageType.GlobalFeed
-                    )
+                    postRoute(userRepository, postRepository, PostType.GlobalFeed, MessageType.GlobalFeed)
                 }
             }
         }
@@ -922,6 +286,652 @@ fun Route.domainRoutes(
     }
 }
 
+fun Route.userRoute(
+    userRepository: UserRepository, rankRepository: RankRepository, permissionRepository: PermissionRepository,
+    notificationRepository: NotificationRepository
+) {
+    get("/{userId}") {
+        try {
+            val currentUserId = call.sessions.get<ChatSession>()?.id!!
+            val userId = call.parameters["userId"]!!.toLong()
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val currentUser =
+                userRepository.findUserById(currentUserId) ?: throw UserNotFoundException()
+            val permission =
+                permissionRepository.findPermissionByRank(currentUser.rank?.id!!) ?: throw Exception()
+            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+            val rankCode = currentUser.rank?.code
+            val canSeeSensitiveData =
+                rankCode == RankNames.OWNER || rankCode == RankNames.ADMIN || rankCode == RankNames.S_ADMIN
+            val trimmedUser = user.copy(deviceId = "", ip = "", country = "", email = "", timezone = "")
+            var userRes = UserRes(user = if (canSeeSensitiveData) user else trimmedUser)
+            if (permission.changeRank) {
+                val ranks = rankRepository.getRanksBelowOrder(currentUser.rank?.order!!, domainId)
+                userRes = userRes.copy(ranks = ranks)
+            }
+            if (canSeeSensitiveData) {
+                if (user.ip != null && user.deviceId != null) {
+                    val sameUser = userRepository.sameUser(domainId, user.ip!!, user.deviceId!!)
+                    userRes =
+                        userRes.copy(sameIps = sameUser.sameIps, sameDevices = sameUser.sameDevices)
+                }
+            }
+            call.respond(HttpStatusCode.OK, userRes)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.NotFound, Errors.USER_NOT_FOUND)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    get("/blocked-users") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val users = userRepository.getBlockedUsers(userId)
+            call.respond(HttpStatusCode.OK, users)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    route("/notifications") {
+        get {
+            try {
+                val userId = call.sessions.get<ChatSession>()?.id!!
+                val notificationRes = notificationRepository.getNotifications(userId)
+                call.respond(HttpStatusCode.OK, notificationRes)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+            }
+        }
+
+        put("/read") {
+            try {
+                val userId = call.sessions.get<ChatSession>()?.id!!
+                notificationRepository.read(userId)
+                call.respond(HttpStatusCode.OK)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+            }
+        }
+    }
+
+    get("/check-mute") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+            val roomId = user.roomId!!
+            val currentTimeInMillis =
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val difference = user.muted - currentTimeInMillis
+            val muted = if (difference <= 0) 0 else user.muted
+            if (user.muted != 0L && muted == 0L) {
+                userRepository.unMute(userId)
+                val message = Message(user = User(id = userId), type = MessageType.UnMute)
+                WsController.broadcastToRoom(domainId, roomId, message.encodeToString())
+                WsController.broadCastToMember(userId, message.encodeToString())
+                val notification = Notification(
+                    receiver = User(userId), content = "You have been unmuted"
+                )
+                notificationRepository.createNotification(notification)
+                val nMessage = Message(type = MessageType.Notification)
+                WsController.broadCastToMember(userId, nMessage.encodeToString())
+            }
+            call.respond(HttpStatusCode.OK, muted)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    get("/check-kick") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val user = userRepository.findUserById(userId) ?: throw UserNotFoundException()
+            val currentTimeInMillis =
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val difference = user.kicked - currentTimeInMillis
+            val kicked = if (difference <= 0) 0 else user.kicked
+            if (user.kicked != 0L && kicked == 0L) userRepository.unKick(userId)
+            call.respond(HttpStatusCode.OK, kicked)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    post("/block") {
+        try {
+            val blocker = call.sessions.get<ChatSession>()?.id!!
+            val blocked = call.receiveParameters()["blocked"]!!.toLong()
+            userRepository.blockUser(blocker, blocked)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    delete("/unblock") {
+        try {
+            val blocker = call.sessions.get<ChatSession>()?.id!!
+            val blocked = call.receiveParameters()["blocked"]!!.toLong()
+            userRepository.unblockUser(blocker, blocked)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    put("/update-avatar") {
+        val parts = call.receiveMultipart()
+        var filePath = ChatDefaults.AVATAR_FOLDER
+        val userId = call.sessions.get<ChatSession>()?.id!!
+        try {
+            val uploadDir = File(filePath)
+            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+            }
+            parts.forEachPart { part ->
+                when (part) {
+                    is PartData.FileItem -> {
+                        val name = part.originalFileName as String
+                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                        val renderFormat = if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                        val imageName = "${getUUID()}.$renderFormat"
+                        filePath += imageName
+                        part.saveImage(filePath, renderFormat)
+                    }
+                    else -> Unit
+                }
+            }
+            userRepository.updateAvatar(userId, filePath)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: IOException) {
+            call.respond(HttpStatusCode.InternalServerError)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest)
+        }
+    }
+
+    put("/update-default-avatar") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val avatar = call.receiveParameters()["avatar"].toString()
+            userRepository.updateAvatar(userId, avatar)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.BadRequest)
+        }
+    }
+
+    put("/update-name") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val name = call.receiveParameters()["name"].toString()
+            if (!name.trim().isNameValid()) throw ValidationException(Errors.NAME_BAD_CHARACTERS)
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val isUserExists = userRepository.isUserExists(name, domainId)
+            if (isUserExists) throw UserAlreadyFoundException("Username already taken.")
+            userRepository.updateName(userId, name)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: ValidationException) {
+            call.respond(HttpStatusCode.Conflict, e.message.toString())
+        } catch (e: UserAlreadyFoundException) {
+            call.respond(HttpStatusCode.Conflict, e.message.toString())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    put("/customize-name") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val nameColor = call.receiveParameters()["nameColor"]
+            val font = call.receiveParameters()["nameFont"]
+            userRepository.customizeName(userId, nameColor, font)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-password") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val user = userRepository.findUserById(userId) ?: throw Exception()
+            if (user.rank?.code == RankNames.GUEST) throw Exception()
+            val password = call.receiveParameters()["password"].toString()
+            if (password.length < 8) throw Exception("Must have min 8 letters")
+            userRepository.updatePassword(userId, password.hashPassword())
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-mood") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val mood = call.receiveParameters()["mood"]
+            userRepository.updateMood(userId, mood)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-about") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val about = call.receiveParameters()["about"]
+            userRepository.updateAbout(userId, about)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-status") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val status = call.receiveParameters()["status"].toString()
+            userRepository.updateStatus(userId, Status.valueOf(status))
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-gender") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val gender = call.receiveParameters()["gender"].toString()
+            userRepository.updateGender(userId, Gender.valueOf(gender))
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/update-dob") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val param = call.receiveParameters()["dob"]
+            userRepository.updateDob(userId, param?.toDob())
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/customize-text") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val params = call.receiveParameters()
+            val isTextBold = params["textBold"].toBoolean()
+            val textColor = params["textColor"]
+            val textFont = params["textFont"]
+            userRepository.customizeText(userId, isTextBold, textColor, textFont)
+            val user = userRepository.findUserById(userId)
+            WsController.updateMember(user!!)
+            call.respond(HttpStatusCode.OK, user)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/change-sounds") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val params = call.receiveParameters()
+            val sounds = params["sounds"].toString()
+            userRepository.changeSounds(userId, sounds)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+
+    put("/change-private") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val private = call.receiveParameters()["private"].toBoolean()
+            userRepository.changePrivate(userId, private)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+}
+
+fun Route.roomRoute(
+    userRepository: UserRepository, roomRepository: RoomRepository, messageRepository: MessageRepository
+) {
+    get {
+        try {
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val rooms = roomRepository.getRoomsByDomain(domainId)
+            call.respond(HttpStatusCode.OK, rooms)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    route("/{roomId}") {
+
+        get("/users") {
+            try {
+                val roomId = call.parameters["roomId"]!!.toInt()
+                val limit = call.request.queryParameters["limit"].toString().toInt()
+                val users = userRepository.getUsersByRoom(roomId, limit)
+                call.respond(HttpStatusCode.OK, users)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+            }
+        }
+
+        post("/join") {
+            try {
+                val chatSession = call.sessions.get<ChatSession>()
+                val userId = chatSession?.id!!
+                val roomId = call.parameters["roomId"]!!.toInt()
+                userRepository.joinRoom(roomId, userId)
+                call.respondRedirect("/")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError)
+                e.printStackTrace()
+            }
+        }
+
+        post("/upload-image") {
+            val parts = call.receiveMultipart()
+            var content: String? = null
+            var filePath = ChatDefaults.MAIN_IMAGE_UPLOAD_FOLDER
+            try {
+                val uploadDir = File(filePath)
+                if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                    throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                }
+                parts.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem -> content = part.value
+                        is PartData.FileItem -> {
+                            val name = part.originalFileName as String
+                            val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                            val renderFormat =
+                                if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                            val imageName = "${getUUID()}.$renderFormat"
+                            filePath += imageName
+                            part.saveImage(filePath, renderFormat)
+                        }
+                        else -> Unit
+                    }
+                }
+                val message = Message(content = content, image = filePath, type = MessageType.Chat)
+                call.respond(HttpStatusCode.OK, message)
+            } catch (e: IOException) {
+                call.respond(HttpStatusCode.InternalServerError)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+
+        post("/upload-audio") {
+            val parts = call.receiveMultipart()
+            var content = ""
+            val audioName = "${getUUID()}.mp3"
+            var filePath = ChatDefaults.MAIN_AUDIO_UPLOAD_FOLDER
+
+            try {
+                val uploadDir = File(filePath)
+                if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                    throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+                }
+                filePath += audioName
+                parts.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem -> content = part.value
+                        is PartData.FileItem -> part.saveAudio(filePath)
+                        else -> Unit
+                    }
+                }
+                val message = Message(content = content, audio = filePath, type = MessageType.Chat)
+                call.respond(HttpStatusCode.OK, message)
+            } catch (e: IOException) {
+                call.respond(HttpStatusCode.InternalServerError)
+            } catch (e: Exception) {
+                File(filePath).delete()
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+
+        route("/messages") {
+
+            get {
+                try {
+                    val roomId = call.parameters["roomId"]?.toInt()
+                    val messages = messageRepository.getRoomMessages(roomId!!)
+                    call.respond(HttpStatusCode.OK, messages)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
+                }
+            }
+
+            get("/{msgId}") {
+                try {
+                    val msgId = call.parameters["msgId"]!!.toLong()
+                    val message =
+                        messageRepository.findMessageById(msgId) ?: throw MessageNotFoundException()
+                    call.respond(HttpStatusCode.OK, message)
+                } catch (e: MessageNotFoundException) {
+                    call.respond(HttpStatusCode.NotFound, e.message.toString())
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+                }
+            }
+        }
+    }
+}
+
+fun Route.pvtRoute(messageRepository: MessageRepository) {
+    get("/users") {
+        try {
+            val chatSession = call.sessions.get<ChatSession>()
+            val userId = chatSession?.id!!
+            val pvtUsersId = messageRepository.getPvtUserIds(userId)
+            val usersMessages = pvtUsersId.map {
+                async { messageRepository.getPrivateMessages(it, userId) }
+            }.awaitAll()
+            val pvtUsers = pvtUsersId.mapIndexed { i, id ->
+                val sender =
+                    if (usersMessages[i][0].receiver?.id == userId) usersMessages[i][0].sender
+                    else usersMessages[i][0].receiver
+                PvtUser(
+                    id, sender?.name, sender?.avatar, sender?.nameColor, sender?.nameFont,
+                    sender?.private!!, usersMessages[i]
+                )
+            }
+            call.respond(HttpStatusCode.OK, pvtUsers)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    get("/{receiverId}/messages") {
+        try {
+            val sender = call.sessions.get<ChatSession>()?.id!!
+            val receiver = call.parameters["receiverId"]!!.toLong()
+            val messages = messageRepository.getPrivateMessages(sender, receiver)
+            call.respond(HttpStatusCode.OK, messages)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/{senderId}/all-seen") {
+        try {
+            val receiver = call.sessions.get<ChatSession>()?.id!!
+            val sender = call.parameters["senderId"]!!.toLong()
+            messageRepository.setAllSeen(sender, receiver)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/{msgId}/seen") {
+        try {
+            val msgId = call.parameters["msgId"]!!.toLong()
+            messageRepository.setSeen(msgId)
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post("/{receiverId}/upload-audio") {
+        val sender = User(id = call.sessions.get<ChatSession>()?.id)
+        val receiver = User(id = call.parameters["receiverId"]?.toLong())
+        val parts = call.receiveMultipart()
+        var content = ""
+        val audioName = "${getUUID()}.mp3"
+        var filePath = ChatDefaults.PRIVATE_AUDIO_UPLOAD_FOLDER
+
+        try {
+            val uploadDir = File(filePath)
+            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+            }
+            filePath += audioName
+            parts.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> content = part.value
+                    is PartData.FileItem -> part.saveAudio(filePath)
+                    else -> Unit
+                }
+            }
+            val message = PvtMessage(
+                content = content, audio = filePath, type = MessageType.Chat,
+                sender = sender, receiver = receiver
+            )
+            call.respond(HttpStatusCode.OK, message)
+        } catch (e: IOException) {
+            call.respond(HttpStatusCode.InternalServerError)
+        } catch (e: Exception) {
+            File(filePath).delete()
+            call.respond(HttpStatusCode.BadRequest)
+        }
+    }
+
+    post("/{receiverId}/upload-image") {
+        val sender = User(id = call.sessions.get<ChatSession>()?.id)
+        val receiver = User(id = call.parameters["receiverId"]?.toLong())
+        val parts = call.receiveMultipart()
+        var content = ""
+        var filePath = ChatDefaults.PRIVATE_IMAGE_UPLOAD_FOLDER
+        try {
+            val uploadDir = File(filePath)
+            if (!uploadDir.mkdirs() && !uploadDir.exists()) {
+                throw IOException("Failed to create directory ${uploadDir.absolutePath}")
+            }
+            parts.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> content = part.value
+                    is PartData.FileItem -> {
+                        val name = part.originalFileName as String
+                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                        val renderFormat =
+                            if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                        val imageName = "${getUUID()}.$renderFormat"
+                        filePath += imageName
+                        part.saveImage(filePath, renderFormat)
+                    }
+                    else -> Unit
+                }
+            }
+            val message = PvtMessage(
+                content = content, image = filePath, type = MessageType.Chat,
+                sender = sender, receiver = receiver
+            )
+            call.respond(HttpStatusCode.OK, message)
+        } catch (e: IOException) {
+            call.respond(HttpStatusCode.InternalServerError)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest)
+        }
+    }
+}
+
+fun Route.reportRoute(reportRepository: ReportRepository) {
+    get {
+        try {
+            val domainId = call.parameters["domainId"]!!.toInt()
+            val reports = reportRepository.getReportsByDomain(domainId)
+            call.respond(HttpStatusCode.OK, reports)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, "Something went wrong")
+        }
+    }
+
+    post("/create") {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val domainId = call.parameters["domainId"]?.toInt()!!
+            val params = call.receiveParameters()
+            val targetId = params["targetId"]?.toLong()!!
+            val roomId = params["roomId"]?.toInt()!!
+            val reason = params["reason"].toString()
+            val type = ReportType.valueOf(params["type"].toString())
+            reportRepository.createReport(userId, targetId, domainId, type, reason, roomId)
+            val message = Message(type = MessageType.Report)
+            WsController.broadcastToDomain(domainId, message.encodeToString())
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, e.message.toString())
+        }
+    }
+}
+
 fun Route.postRoute(
     userRepository: UserRepository, postRepository: PostRepository, postType: PostType, messageType: MessageType
 ) {
@@ -946,7 +956,6 @@ fun Route.postRoute(
             val userId = call.sessions.get<ChatSession>()?.id!!
             val domainId = call.parameters["domainId"]!!.toInt()
             val parts = call.receiveMultipart()
-
             if (!uploadDir.mkdirs() && !uploadDir.exists()) {
                 throw IOException("Failed to create directory ${uploadDir.absolutePath}")
             }
