@@ -1347,6 +1347,10 @@ input:checked + .slider {
     @apply px-2 py-1 mt-1 rounded shadow
 }
 
+.record-indicator{
+    @apply z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1
+}
+
 @layer utilities {
 
     .scrollbar::-webkit-scrollbar {

@@ -953,7 +953,7 @@ export function adminshipModalHtml() {
                         <template x-if="adminship.posts.length==0">
                             <li class="pvt-user-wrap">
                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                                    <img class="w-[40px]" src="/images/defaults/global-feed.webp" alt="">
+                                    <img class="w-[40px]" src="/images/defaults/adminship.webp" alt="">
                                     <p class="text-[12px] font-bold" > No Adminship Posts</p>
                                 </div>
                             </li>

@@ -11,7 +11,7 @@
                     <img @click="showDrawPad" src="/images/defaults/brush.webp" class="icon-md">
                     <img @click="customizeTextDialog;showOption=false" src="/images/defaults/palette.webp"
                          class="icon-md">
-                    <div class="relative flex-none">
+                    <div th:if="${permission.upload}" class="relative flex-none">
                         <input x-ref='upload' @change="uploadImage($event)" class="input-image" type="file"
                                accept="image/*">
                         <img @click="$refs.upload.click(); showOption=false" src="/images/defaults/picture.webp"
@@ -19,8 +19,7 @@
                     </div>
                 </div>
             </div>
-            <div x-transition x-cloak x-show="isRecording"
-                 class="z-40 absolute bottom-[55px] left-12 bg-red-500 rounded border border-gray-200 flex justify-center p-1 items-center gap-1">
+            <div x-transition x-cloak x-show="isRecording" class="record-indicator">
                 <div class="bg-white rounded-full w-[10px] h-[10px] animate-ping mx-auto"></div>
                 <p class="text-white font-bold text-[12px] mx-auto" x-text="'Rec '+ remainingTime"></p>
             </div>

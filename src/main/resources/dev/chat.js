@@ -3,8 +3,8 @@
 import Alpine from 'alpinejs'
 import * as fn from './functions'
 import {
-    avatars, bgColors, Css, Defaults, Errors, Gender, MessageType, PostLink, RankCode, ReactType, ReportType,
-    Status, Success, textColors
+    avatars, bgColors, Css, Defaults, Errors, Gender, ImageType, MessageType, PostLink, RankCode, ReactType,
+    ReportType, Status, Success, textColors
 } from "./constant"
 /*import {soundManager} from 'soundmanager2/script/soundmanager2-nodebug' TODO: uncommend on production*/
 import {soundManager} from 'soundmanager2'
@@ -347,6 +347,12 @@ document.addEventListener('alpine:init', () => {
                 if (file == null || file.type === Defaults.UNDEFINED) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
+                    return
+                }
+                const filename = file.name
+                const extension = filename.substring(filename.lastIndexOf('.') + 1, filename.length)
+                if (extension === ImageType.GIF && !permission.gifUpload) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
                 this.showLoader = true
@@ -746,7 +752,6 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
                     return
                 }
-                this.showLoader = true
                 const formData = new FormData()
                 const file = event.target.files[0]
                 const pattern = /image-*/
@@ -754,9 +759,15 @@ document.addEventListener('alpine:init', () => {
                 if (file == null || file.type === Defaults.UNDEFINED) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
-                    this.showLoader = false
                     return
                 }
+                const filename = file.name
+                const extension = filename.substring(filename.lastIndexOf('.') + 1, filename.length)
+                if (extension === ImageType.GIF && !permission.gifUpload && !permission.upload) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showLoader = true
                 formData.append('image', file)
                 formData.append('content', content)
                 axios.post(`${domain.id}/rooms/${room.id}/upload-image`, formData).then(res => {
@@ -790,7 +801,7 @@ document.addEventListener('alpine:init', () => {
                         chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
                         if (message.user.id !== userId) soundManager.play('chat')
                     }
-                    if(message.user.id === userId){
+                    if (message.user.id === userId) {
                         this.user.points = message.user.points
                         this.user.level = message.user.level
                     }
@@ -989,16 +1000,21 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg('You can\'t private to this user', Css.ERROR)
                     return
                 }
-                this.showLoader = true
                 const formData = new FormData()
                 const file = event.target.files[0]
                 const pattern = /image-*/
                 if (file == null || file.type === Defaults.UNDEFINED) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
-                    this.showLoader = false
                     return
                 }
+                const filename = file.name
+                const extension = filename.substring(filename.lastIndexOf('.') + 1, filename.length)
+                if (extension === ImageType.GIF && !permission.gifUpload && !permission.upload) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
+                this.showLoader = true
                 formData.append("image", file)
                 axios.post(`/${domain.id}/pvt/${id}/upload-image`, formData).then(res => {
                     this.sendToUser(res.data)
@@ -1205,7 +1221,7 @@ document.addEventListener('alpine:init', () => {
             openAdminshipModal() {
                 if (mobile.matches) this.showLeft = false
                 this.showFullModal(fn.adminshipModalHtml(this.adminship.posts))
-                if (this.this.adminship.unReadCount !== 0) axios.post(`/${domain.id}/adminship/read`).then(() => this.adminship.unReadCount = 0)
+                if (this.adminship.unReadCount !== 0) axios.post(`/${domain.id}/adminship/read`).then(() => this.adminship.unReadCount = 0)
             },
             writeAdminshipDialog() {
                 if (!this.user.canSeeAdminship) {
@@ -1234,7 +1250,7 @@ document.addEventListener('alpine:init', () => {
             openGlobalFeedModal() {
                 if (mobile.matches) this.showLeft = false
                 this.showFullModal(fn.globalFeedModalHtml())
-                if (this.this.globalFeed.unReadCount !== 0) axios.post(`/${domain.id}/global-feed/read`).then(() => this.globalFeed.unReadCount = 0)
+                if (this.globalFeed.unReadCount !== 0) axios.post(`/${domain.id}/global-feed/read`).then(() => this.globalFeed.unReadCount = 0)
             },
             writeGlobalFeedDialog() {
                 if (this.user.muted > 0) {

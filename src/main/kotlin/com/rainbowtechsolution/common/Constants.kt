@@ -52,7 +52,7 @@ object ChatDefaults {
     const val AVATAR_FOLDER = "uploads/avatars/"
     const val COLOR = "black"
     const val POST_PER_PAGE = 10L
-    const val LEVEL_INCREASE = 2
+    const val LEVEL_INCREASE = 50
 
     private val permission = Permission(name = false, nameColor = false)
 
@@ -101,4 +101,9 @@ object Commands{
     const val WC = "/wc"
     const val ME = "/me"
     const val CLEAR = "/clear"
+}
+
+object ImageType {
+    const val GIF ="gif"
+    const val WEBP ="webp"
 }

@@ -1,9 +1,6 @@
 package com.rainbowtechsolution.routes
 
-import com.rainbowtechsolution.common.Auth
-import com.rainbowtechsolution.common.ChatDefaults
-import com.rainbowtechsolution.common.Errors
-import com.rainbowtechsolution.common.RankNames
+import com.rainbowtechsolution.common.*
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.model.*
@@ -299,8 +296,6 @@ fun Route.domainRoutes(
 
                     put("/update-avatar") {
                         val parts = call.receiveMultipart()
-                        val renderFormat = "webp"
-                        val imageName = "${getUUID()}.$renderFormat"
                         var filePath = ChatDefaults.AVATAR_FOLDER
                         val userId = call.sessions.get<ChatSession>()?.id!!
                         try {
@@ -308,10 +303,15 @@ fun Route.domainRoutes(
                             if (!uploadDir.mkdirs() && !uploadDir.exists()) {
                                 throw IOException("Failed to create directory ${uploadDir.absolutePath}")
                             }
-                            filePath += imageName
                             parts.forEachPart { part ->
                                 when (part) {
                                     is PartData.FileItem -> {
+                                        val name = part.originalFileName as String
+                                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                                        val renderFormat =
+                                            if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                                        val imageName = "${getUUID()}.$renderFormat"
+                                        filePath += imageName
                                         part.saveImage(filePath, renderFormat)
                                     }
                                     else -> Unit
@@ -549,21 +549,25 @@ fun Route.domainRoutes(
 
                         post("/upload-image") {
                             val parts = call.receiveMultipart()
-                            var content = ""
-                            val renderFormat = "webp"
-                            val imageName = "${getUUID()}.$renderFormat"
+                            var content: String? = null
                             var filePath = ChatDefaults.MAIN_IMAGE_UPLOAD_FOLDER
-
                             try {
                                 val uploadDir = File(filePath)
                                 if (!uploadDir.mkdirs() && !uploadDir.exists()) {
                                     throw IOException("Failed to create directory ${uploadDir.absolutePath}")
                                 }
-                                filePath += imageName
                                 parts.forEachPart { part ->
                                     when (part) {
                                         is PartData.FormItem -> content = part.value
-                                        is PartData.FileItem -> part.saveImage(filePath, renderFormat)
+                                        is PartData.FileItem -> {
+                                            val name = part.originalFileName as String
+                                            val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                                            val renderFormat =
+                                                if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                                            val imageName = "${getUUID()}.$renderFormat"
+                                            filePath += imageName
+                                            part.saveImage(filePath, renderFormat)
+                                        }
                                         else -> Unit
                                     }
                                 }
@@ -572,7 +576,6 @@ fun Route.domainRoutes(
                             } catch (e: IOException) {
                                 call.respond(HttpStatusCode.InternalServerError)
                             } catch (e: Exception) {
-                                File(filePath).delete()
                                 call.respond(HttpStatusCode.BadRequest)
                             }
                         }
@@ -736,20 +739,24 @@ fun Route.domainRoutes(
                         val receiver = User(id = call.parameters["receiverId"]?.toLong())
                         val parts = call.receiveMultipart()
                         var content = ""
-                        val renderFormat = "webp"
-                        val imageName = "${getUUID()}.$renderFormat"
                         var filePath = ChatDefaults.PRIVATE_IMAGE_UPLOAD_FOLDER
-
                         try {
                             val uploadDir = File(filePath)
                             if (!uploadDir.mkdirs() && !uploadDir.exists()) {
                                 throw IOException("Failed to create directory ${uploadDir.absolutePath}")
                             }
-                            filePath += imageName
                             parts.forEachPart { part ->
                                 when (part) {
                                     is PartData.FormItem -> content = part.value
-                                    is PartData.FileItem -> part.saveImage(filePath, renderFormat)
+                                    is PartData.FileItem -> {
+                                        val name = part.originalFileName as String
+                                        val extension = name.substring(name.lastIndexOf(".") + 1, name.length)
+                                        val renderFormat =
+                                            if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
+                                        val imageName = "${getUUID()}.$renderFormat"
+                                        filePath += imageName
+                                        part.saveImage(filePath, renderFormat)
+                                    }
                                     else -> Unit
                                 }
                             }
@@ -761,7 +768,6 @@ fun Route.domainRoutes(
                         } catch (e: IOException) {
                             call.respond(HttpStatusCode.InternalServerError)
                         } catch (e: Exception) {
-                            File(filePath).delete()
                             call.respond(HttpStatusCode.BadRequest)
                         }
                     }

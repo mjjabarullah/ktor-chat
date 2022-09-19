@@ -132,6 +132,5 @@ class WsController(
         } else user.points += 1
         userRepository.updatePointsAndLevel(user.id!!, user.points, user.level)
         UserController.updateUser(user)
-
     }
 }

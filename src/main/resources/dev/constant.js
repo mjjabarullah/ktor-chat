@@ -41,6 +41,13 @@ export const MessageType = {
 }
 
 /**
+ * Image Type
+ * */
+export const ImageType = {
+    GIF: 'gif'
+}
+
+/**
  * Status Type
  * */
 export const Status = {
