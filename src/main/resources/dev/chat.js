@@ -790,6 +790,10 @@ document.addEventListener('alpine:init', () => {
                         chatMessages.insertAdjacentHTML('afterbegin', fn.renderChatMessage(message))
                         if (message.user.id !== userId) soundManager.play('chat')
                     }
+                    if(message.user.id === userId){
+                        this.user.points = message.user.points
+                        this.user.level = message.user.level
+                    }
                 }
                 if (message.type === MessageType.Leave) {
                     const chatMessages = this.$refs.chatMessages

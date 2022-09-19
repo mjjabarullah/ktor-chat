@@ -31,7 +31,7 @@ interface UserRepository {
 
     suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User>
 
-    suspend fun increasePoints(id: Long)
+    suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int)
 
     suspend fun updateAvatar(id: Long, avatar: String)
 

@@ -1,4 +1,4 @@
-import {Defaults, Errors, MessageType, RankCode, ReactType} from './constant'
+import {Defaults, Errors, ReactType} from './constant'
 import {emojis} from './emojis'
 
 export function renderWelcomeMessage() {
@@ -587,7 +587,7 @@ export function messageModalHtml() {
                                             <p class="ellipsis username clip" :class="[pvtUser.nameColor, pvtUser.nameFont]" x-text="pvtUser.name">
                                             <p class="flex items-center clip ellipsis text-gray-500 text-[12px]" x-text="getPvtMessage(pvtUser)"></p>
                                         </div>
-                                       <p x-show="user.unReadCount>0" class="count-md" x-text="user.unReadCount"></p>
+                                       <p x-show="pvtUser.unReadCount>0" class="count-md" x-text="pvtUser.unReadCount"></p>
                                     </div>
                                 </div>
                             </li> 
@@ -1228,8 +1228,8 @@ export function notificationModalHtml() {
                                                     <p class="text-[10px] font-bold text-white">New</p> 
                                                 </div>
                                                 <p class="ellipsis username clip text-black">System</p>
-                                                <p class="date" x-text="notification.createdAt"></p>
                                                 <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="notification.content"></p>
+                                                <p class="date" x-text="notification.createdAt"></p>
                                             </div>
                                         </div>
                                     </div>

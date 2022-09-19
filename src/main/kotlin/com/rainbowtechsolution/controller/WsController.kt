@@ -1,11 +1,10 @@
 package com.rainbowtechsolution.controller
 
+import com.rainbowtechsolution.common.ChatDefaults
 import com.rainbowtechsolution.data.entity.MessageType
-import com.rainbowtechsolution.data.model.Message
-import com.rainbowtechsolution.data.model.Permission
-import com.rainbowtechsolution.data.model.PvtMessage
-import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.MessageRepository
+import com.rainbowtechsolution.data.repository.NotificationRepository
 import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.data.repository.WsRepository
 import com.rainbowtechsolution.utils.*
@@ -16,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 class WsController(
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
+    private val notificationRepository: NotificationRepository,
 ) : WsRepository {
 
     private val logger = getLogger()
@@ -80,8 +80,8 @@ class WsController(
                     msg = checkYoutube(msg, permission)
                     msg = messageRepository.insertRoomMessage(msg)
                     msg.id?.let {
+                        increasePoints(user)
                         broadcastToRoom(domainId, roomId, msg.encodeToString())
-                        userRepository.increasePoints(userId)
                     }
                 }
                 MessageType.ClearChat -> {
@@ -119,5 +119,19 @@ class WsController(
         members.remove(socket)
     }
 
-    private fun getUser(userId: Long): User? = members.values.find { it.id!! == userId }
+    private fun getUser(userId: Long): User? = members.values.find { it.id == userId }
+
+    private suspend fun increasePoints(user: User) {
+        if (user.points > user.level * ChatDefaults.LEVEL_INCREASE) {
+            user.level += 1
+            user.points = 0
+            val notification = Notification(receiver = user, content = "Congratulations! You got level ${user.level}")
+            notificationRepository.createNotification(notification)
+            val message = Message(type = MessageType.Notification)
+            broadCastToMember(user.id!!, message.encodeToString())
+        } else user.points += 1
+        userRepository.updatePointsAndLevel(user.id!!, user.points, user.level)
+        UserController.updateUser(user)
+
+    }
 }

@@ -17,7 +17,15 @@ import java.time.LocalDateTime
 
 class UserController : UserRepository {
 
-    private var userCache: Cache<Long, User> = Caffeine.newBuilder().maximumSize(10_000).build()
+    companion object {
+        private var userCache: Cache<Long, User> = Caffeine.newBuilder().maximumSize(10_000).build()
+
+        fun updateUser(user: User) {
+            val cachedUser = userCache.getIfPresent(user.id) ?: return
+            cachedUser.points = user.points
+            cachedUser.level = user.level
+        }
+    }
 
     override suspend fun register(user: User, domainId: Int, rankId: Int): Long = dbQuery {
         Users.insertAndGetId {
@@ -144,11 +152,10 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun increasePoints(id: Long): Unit = dbQuery {
+    override suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int): Unit = dbQuery {
         Users.update({ Users.id eq id }) {
-            with(SqlExpressionBuilder) {
-                it[points] = points + 1
-            }
+            it[Users.points]= points
+            it[Users.level]= level
         }
     }
 
