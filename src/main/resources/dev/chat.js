@@ -1289,6 +1289,13 @@ document.addEventListener('alpine:init', () => {
                 this.showDropDown = false
                 this.showFullModal(fn.searchModalHtml())
             },
+            /*
+            * Search
+            * */
+            openInvestigationModal() {
+                this.showDropDown = false
+                this.showFullModal(fn.investigationModalHtml())
+            },
             /**
              * Actions
              * */
@@ -1652,6 +1659,53 @@ document.addEventListener('alpine:init', () => {
                     if (res.data.length > 0) this.searchedUsers = res.data
                     else this.searchedUsers = [{empty: 'empty'}]
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            }
+        }
+    })
+
+    Alpine.data('investigation', () => {
+        return {
+            recentUsers: [],
+            searchedUsers: [],
+            pvtMessages: [],
+            query: Defaults.EMPTY_STRING,
+            tab: 0,
+            victim: null,
+            init() {
+                this.$watch('query', value => {
+                    if (value === Defaults.EMPTY_STRING) this.searchedUsers = this.recentUsers
+                })
+                this.getRecentUsers()
+            },
+            getRecentUsers() {
+                axios.get(`/${domain.id}/users/recent`).then(res => {
+                    this.searchedUsers = res.data
+                    this.recentUsers = res.data
+                })
+            },
+            searchUser() {
+                if (this.query === Defaults.EMPTY_STRING) return
+                axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            },
+            investigate(user) {
+                this.victim = user
+                axios.get(`/${domain.id}/users/${this.victim.id}/investigate`).then(res => {
+                    this.pvtMessages = res.data
+                    this.tab = 1
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            },
+            investigateAll() {
+                this.victim = this.user
+                axios.get(`/${domain.id}/users/investigate`).then(res => {
+                    this.pvtMessages = res.data
+                    this.tab = 1
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            },
+            goBack() {
+                this.tab = 0
             }
         }
     })

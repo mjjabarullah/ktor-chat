@@ -11,6 +11,7 @@ data class Message(
     val audio: String? = null,
     val user: User? = null,
     val roomId: Int? = null,
+    val domainId: Int? = null,
     val type: MessageType,
     val highLighted: Boolean = false,
     val ytFrame: String? = null,

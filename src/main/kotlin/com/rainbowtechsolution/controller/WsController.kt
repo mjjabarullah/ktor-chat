@@ -68,12 +68,10 @@ class WsController(
         logger.info(members.toString())
     }
 
-    override suspend fun sendMessage(
-        domainId: Int, roomId: Int, userId: Long, message: Message, permission: Permission
-    ) {
-        val user = getUser(userId) ?: return
+    override suspend fun sendMessage(message: Message, permission: Permission) {
+        val user = getUser(message.user?.id!!) ?: return
         try {
-            var msg = message.copy(user = user, roomId = roomId)
+            var msg = message.copy(user = user)
             msg = processCommands(msg, user, permission)
             when (msg.type) {
                 MessageType.Chat -> {
@@ -81,12 +79,12 @@ class WsController(
                     msg = messageRepository.insertRoomMessage(msg)
                     msg.id?.let {
                         increasePoints(user)
-                        broadcastToRoom(domainId, roomId, msg.encodeToString())
+                        broadcastToRoom(message.domainId!!, message.roomId!!, msg.encodeToString())
                     }
                 }
                 MessageType.ClearChat -> {
-                    messageRepository.deleteAllMessageByRoomId(roomId)
-                    broadcastToRoom(domainId, roomId, msg.encodeToString())
+                    messageRepository.deleteAllMessageByRoomId(message.roomId!!)
+                    broadcastToRoom(message.domainId!!, message.roomId, msg.encodeToString())
                 }
                 else -> Unit
             }

@@ -17,6 +17,10 @@ interface MessageRepository {
 
     suspend fun getPrivateMessages(sender: Long, receiver: Long): List<PvtMessage>
 
+    suspend fun getPrivateMessagesByUser(userId: Long): List<PvtMessage>
+
+    suspend fun getPrivateMessagesByDomain(domainId: Int): List<PvtMessage>
+
     suspend fun getPvtUserIds(id: Long): List<Long>
 
     suspend fun setAllSeen(sender: Long, receiver: Long)

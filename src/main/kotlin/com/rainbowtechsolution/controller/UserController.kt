@@ -144,7 +144,7 @@ class UserController : UserRepository {
             .orderBy(Ranks.order)
         online.unionAll(offline).map {
             User(
-                id = it[Users.id].value, name = it[Users.name], avatar = it[Users.avatar], mood = it[Users.mood],
+                id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar], mood = it[Users.mood],
                 gender = it[Users.gender].name, nameColor = it[Users.nameColor], nameFont = it[Users.nameFont],
                 level = it[Users.level], sessions = it[Users.sessions], status = it[Users.status].name,
                 muted = it[Users.muted], rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
@@ -152,10 +152,23 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun getUsersByDomain(domainId: Int, query: String): List<User> = dbQuery {
+    override suspend fun getRecentUsers(domainId: Int): List<User> = dbQuery {
+        Users
+            .select { Users.domainId eq domainId }
+            .orderBy(Users.id, SortOrder.DESC)
+            .limit(100)
+            .map {
+                User(
+                    id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
+                    nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+                )
+            }
+    }
+
+    override suspend fun searchUserByName(domainId: Int, query: String): List<User> = dbQuery {
         Users.select { (Users.domainId eq domainId) and (Users.name like "%$query%") }.map {
             User(
-                id = it[Users.id].value, name = it[Users.name], avatar = it[Users.avatar],
+                id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
                 nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
             )
         }

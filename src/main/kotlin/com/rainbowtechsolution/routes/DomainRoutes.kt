@@ -290,17 +290,6 @@ fun Route.userRoute(
     userRepository: UserRepository, rankRepository: RankRepository, permissionRepository: PermissionRepository,
     notificationRepository: NotificationRepository
 ) {
-    get {
-        try {
-            val domainId = call.parameters["domainId"]!!.toInt()
-            val search = call.request.queryParameters["search"].toString()
-            val users = userRepository.getUsersByDomain(domainId, search)
-            call.respond(HttpStatusCode.OK, users)
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
-            e.printStackTrace()
-        }
-    }
 
     get("/{userId}") {
         try {

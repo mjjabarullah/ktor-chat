@@ -2,6 +2,7 @@ package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.entity.Gender
 import com.rainbowtechsolution.data.entity.Status
+import com.rainbowtechsolution.data.model.PvtMessage
 import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.model.UserRes
 
@@ -31,7 +32,9 @@ interface UserRepository {
 
     suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User>
 
-    suspend fun getUsersByDomain(domainId: Int, query: String): List<User>
+    suspend fun getRecentUsers(domainId: Int): List<User>
+
+    suspend fun searchUserByName(domainId: Int, query: String): List<User>
 
     suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int)
 
@@ -80,5 +83,6 @@ interface UserRepository {
     suspend fun unblockUser(blocker: Long, blocked: Long)
 
     suspend fun getBlockedUsers(userId: Long): List<User>
+
 
 }

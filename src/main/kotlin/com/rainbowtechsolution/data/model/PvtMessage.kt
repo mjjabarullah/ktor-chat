@@ -11,6 +11,7 @@ data class PvtMessage(
     val audio: String? = null,
     val sender: User? = null,
     val receiver: User? = null,
+    val domainId: Int? = null,
     val type: MessageType,
     val seen: Boolean = false,
     val createdAt: String? = null

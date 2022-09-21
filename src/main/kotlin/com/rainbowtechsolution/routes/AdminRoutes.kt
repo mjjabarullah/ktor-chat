@@ -180,7 +180,52 @@ fun Route.adminRotes(
 
                 route("/users") {
 
+                    get {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val search = call.request.queryParameters["search"].toString()
+                            val users = userRepository.searchUserByName(domainId, search)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
+                    get("/recent") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val users = userRepository.getRecentUsers(domainId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
+                    get("/investigate") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val messages = messageRepository.getPrivateMessagesByDomain(domainId)
+                            call.respond(HttpStatusCode.OK, messages)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
                     route("/{userId}") {
+
+                        get("/investigate") {
+                            try {
+                                val userId = call.parameters["userId"]!!.toLong()
+                                val messages = messageRepository.getPrivateMessagesByUser(userId)
+                                call.respond(HttpStatusCode.OK, messages)
+                            } catch (e: Exception) {
+                                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                                e.printStackTrace()
+                            }
+                        }
 
                         put("/update-name") {
                             try {

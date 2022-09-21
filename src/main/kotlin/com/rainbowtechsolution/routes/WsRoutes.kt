@@ -48,8 +48,9 @@ fun Route.wsRoutes(
             incoming.consumeEach { frame ->
                 when (frame) {
                     is Frame.Text -> {
-                        val message = frame.readText().decodeFromString<Message>()
-                        wsRepository.sendMessage(domainId, roomId, userId, message, permission)
+                        var message = frame.readText().decodeFromString<Message>()
+                        message = message.copy(roomId = roomId, user= user, domainId = domainId)
+                        wsRepository.sendMessage(message, permission)
                     }
                     else -> Unit
                 }
@@ -64,6 +65,7 @@ fun Route.wsRoutes(
 
     webSocket("/{domainId}/member/{userId}") {
         val userId = call.parameters["userId"]?.toLong()
+        val domainId = call.parameters["domainId"]!!.toInt()
         val chatSession = call.sessions.get<ChatSession>()
         val sessionId = call.sessionId
         if (chatSession == null || sessionId == null) {
@@ -81,7 +83,7 @@ fun Route.wsRoutes(
             incoming.consumeEach { frame ->
                 if (frame is Frame.Text) {
                     var pvtMessage = frame.readText().decodeFromString<PvtMessage>()
-                    pvtMessage = pvtMessage.copy(sender = sender)
+                    pvtMessage = pvtMessage.copy(sender = sender, domainId = domainId)
                     wsRepository.sendPrivateMessage(pvtMessage)
                 }
             }

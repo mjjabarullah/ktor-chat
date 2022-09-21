@@ -36,7 +36,7 @@
             <img class="icon-md" src="/images/defaults/search.webp">
             <p>Search</p>
         </div>
-        <div th:if="${rank.code == 'owner'}" class="h-menu">
+        <div th:if="${rank.code == 'owner'}" @click="openInvestigationModal" class="h-menu">
             <img class="icon-md" src="/images/defaults/investigate.webp">
             <p>Investigation</p>
         </div>

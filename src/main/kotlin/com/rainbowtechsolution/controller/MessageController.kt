@@ -4,12 +4,12 @@ import com.rainbowtechsolution.data.entity.Messages
 import com.rainbowtechsolution.data.entity.PvtMessages
 import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.entity.Users
-import com.rainbowtechsolution.data.repository.MessageRepository
 import com.rainbowtechsolution.data.mappers.toPvtMessageModel
 import com.rainbowtechsolution.data.model.Message
 import com.rainbowtechsolution.data.model.PvtMessage
 import com.rainbowtechsolution.data.model.Rank
 import com.rainbowtechsolution.data.model.User
+import com.rainbowtechsolution.data.repository.MessageRepository
 import com.rainbowtechsolution.utils.dbQuery
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.*
@@ -43,6 +43,7 @@ class MessageController : MessageRepository {
             it[audio] = message.audio
             it[sender] = message.sender?.id!!
             it[receiver] = message.receiver?.id!!
+            it[domainId] = message.domainId!!
             it[type] = message.type
             it[createdAt] = LocalDateTime.now()
         }.resultedValues!!.first().apply {
@@ -119,6 +120,36 @@ class MessageController : MessageRepository {
             .map { it.toPvtMessageModel(sTable, rTable) }
     }
 
+    override suspend fun getPrivateMessagesByUser(userId: Long): List<PvtMessage> = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.private, Users.gender
+        )
+        val sTable = Users.slice(expressions).selectAll().alias("sender")
+        val rTable = Users.slice(expressions).selectAll().alias("receiver")
+        PvtMessages
+            .innerJoin(sTable, { sender }, { sTable[Users.id] })
+            .innerJoin(rTable, { PvtMessages.receiver }, { rTable[Users.id] })
+            .select { (PvtMessages.sender eq userId) or (PvtMessages.receiver eq userId) }
+            .orderBy(PvtMessages.id to SortOrder.DESC)
+            .limit(200)
+            .map { it.toPvtMessageModel(sTable, rTable) }
+    }
+
+    override suspend fun getPrivateMessagesByDomain(domainId: Int): List<PvtMessage> = dbQuery {
+        val expressions = listOf<Expression<*>>(
+            Users.id, Users.name, Users.avatar, Users.nameColor, Users.nameFont, Users.private, Users.gender
+        )
+        val sTable = Users.slice(expressions).selectAll().alias("sender")
+        val rTable = Users.slice(expressions).selectAll().alias("receiver")
+        PvtMessages
+            .innerJoin(sTable, { sender }, { sTable[Users.id] })
+            .innerJoin(rTable, { PvtMessages.receiver }, { rTable[Users.id] })
+            .select { PvtMessages.domainId eq domainId }
+            .orderBy(PvtMessages.id to SortOrder.DESC)
+            .limit(200)
+            .map { it.toPvtMessageModel(sTable, rTable) }
+    }
+
     override suspend fun getPvtUserIds(id: Long): List<Long> = dbQuery {
         val userId = Expression.build {
             Case().When(Op.build { PvtMessages.sender eq id }, PvtMessages.receiver).Else(PvtMessages.sender)
@@ -156,5 +187,6 @@ class MessageController : MessageRepository {
     override suspend fun deleteAllMessageByRoomId(roomId: Int): Unit = dbQuery {
         Messages.deleteWhere { Messages.roomId eq roomId }
     }
+
 
 }

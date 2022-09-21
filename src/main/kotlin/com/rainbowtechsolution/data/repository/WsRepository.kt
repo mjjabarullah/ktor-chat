@@ -10,7 +10,7 @@ interface WsRepository {
 
     suspend fun connectRoom(user: User, roomId: Int, domainId: Int)
 
-    suspend fun sendMessage(domainId: Int, roomId: Int, userId: Long, message: Message, permission: Permission)
+    suspend fun sendMessage(message: Message, permission: Permission)
 
     suspend fun connectUser(user: User)
 

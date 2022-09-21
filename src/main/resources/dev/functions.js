@@ -1162,7 +1162,7 @@ export function reportModalHtml() {
                                         <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
                                             <p class="ellipsis username clip text-black" x-text="report.name">
                                             <p class="date" x-text="report.createdAt"></p>
-                                            <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="'Reason : '+report.reason"></p>
+                                            <p class="flex items-center ellipsis text-gray-500 text-[13px]" x-text="'Reason : '+report.reason"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -1334,6 +1334,103 @@ export function searchModalHtml() {
                    </ul>               
                </div>
            </div>
+       </div>
+    `
+}
+
+export function investigationModalHtml() {
+    return `
+        <div x-data="investigation" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Investigation</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div x-show="tab==0" class="p-[10px] flex-1 relative text-black">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <div class="h-10 my-4">
+                        <label class="h-full">
+                            <input @input.debounce.1000ms="searchUser" x-model="query" class="input-text" type="text"
+                             placeholder="Search by username" autocomplete="off" required maxlength="40">
+                        </label>
+                    </div>
+                    <div class="flex my-4 justify-center">
+                        <button @click="investigateAll" class="btn-action bg-green-500">Investigate All</button>         
+                    </div>
+                    <ul>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.name">
+                                <li @click="investigate(sUser)" class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2 rounded" >
+                                   <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                           </div>
+                                       </div> 
+                                   </div>
+                                </li>
+                           </template>
+                        </template>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.empty">
+                                    <li class="pvt-user-wrap">
+                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                            <p class="text-[12px] font-bold" >No User Found</p>
+                                        </div>
+                                   </li>
+                            </template>
+                        </template>
+                   </ul>               
+               </div>
+            </div>
+            <div x-show="tab==1" class="p-[10px] flex-1 relative text-black">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <div class="flex my-4 justify-center">
+                        <button @click="goBack" class="text-center outline-none text-white font-bold rounded-md text-[12px] py-0.5 px-4 bg-green-500"><i class="fa-solid fa-arrow-left"></i> Go back</button>         
+                    </div>
+                    <ul>
+                       <template x-if="pvtMessages.length>0"> 
+                            <template x-for="pvtMessage in pvtMessages" :key="pvtMessage.id"> 
+                                <li class="chat-wrap">
+                                   <div class="flex py-1 px-2 w-full" >
+                                        <img @click="getUserProfile(pvtMessage.sender.id)" class="avatar flex-none cursor-pointer" 
+                                            :class="[pvtMessage.sender.gender=='Male'? 'male' : 'female']" :src="pvtMessage.sender.avatar">
+                                        <div class="ml-2 flex-1 ">
+                                            <div class="flex justify-between">
+                                                <p>
+                                                   <span class="username" :class="[pvtMessage.sender.name == victim.name? 'tag' :'']" x-text="pvtMessage.sender.name"></span> to 
+                                                   <span class="username" :class="[pvtMessage.receiver.name == victim.name? 'tag' :'']" x-text="pvtMessage.receiver.name"></span>
+                                                </p>
+                                                <p class="date" x-text="pvtMessage.createdAt"></p>
+                                            </div>
+                                            <div class="px-1 pr-2">
+                                                <template x-if="pvtMessage.image">
+                                                    <img @click="showImageDialog($el)" :src="pvtMessage.image" alt="" class="lobby-image"> 
+                                                </template>
+                                                <template>
+                                                    <audio  preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]">
+                                                        <source :src="pvtMessage.audio" type="audio/mpeg">
+                                                    </audio> 
+                                                </template>
+                                                <p class="chat text-start" x-text="pvtMessage.content ? pvtMessage.content:''"></p>
+                                            </div>
+                                        </div>
+                                   </div>
+                                </li>
+                            </template>
+                        </template>
+                        <template x-if="pvtMessages.length == 0">
+                           <li class="pvt-user-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/topic.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No Messages Found</p>
+                                </div>
+                           </li>
+                        </template> 
+                   </ul>               
+               </div>
+            </div>
        </div>
     `
 }
