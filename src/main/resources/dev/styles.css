@@ -1013,7 +1013,7 @@ body {
 }
 
 .h-menu {
-    @apply items-center border-b border-gray-200 flex gap-2 px-4 py-1 cursor-pointer lg:hover:bg-skin-primary/5
+    @apply items-center border-b border-gray-200 flex gap-2 px-4 py-2 cursor-pointer lg:hover:bg-skin-primary/5
 }
 
 .h-menu p {

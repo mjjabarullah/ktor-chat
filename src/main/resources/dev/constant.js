@@ -174,7 +174,6 @@ export const Css = {
  * */
 export const Defaults = {
     EMPTY_STRING: '',
-    UNDEFINED: 'undefined',
     FUNC_TYPE: 'function',
     MAX_RECORDING_TIME: 180,
     MIN_RECORDING_TIME: 10,

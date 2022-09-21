@@ -18,9 +18,9 @@ window.mobile = window.matchMedia('(max-width: 640px)')
 window.tablet = window.matchMedia('(min-width: 768px)')
 window.desktop = window.matchMedia('(min-width: 1024px)')
 
+const isGuest = rank.code === RankCode.GUEST
 
 document.addEventListener('alpine:init', () => {
-
 
     Alpine.data('chat', () => {
         return {
@@ -114,7 +114,7 @@ document.addEventListener('alpine:init', () => {
                     setTimeout(() => {
                         this.showLoader = false
                         this.showMessages = true
-                        if (rank.code === RankCode.GUEST) this.showSmallModal(fn.guestDialogHtml())
+                        if (isGuest) this.showSmallModal(fn.guestDialogHtml())
                         else this.$refs.mainInput.focus()
                     }, 15e2)
                 }
@@ -322,6 +322,7 @@ document.addEventListener('alpine:init', () => {
                     this.user.gender === Gender.Female ? this.user.genderColor = Css.Pink : this.user.statusColor = Defaults.EMPTY_STRING
             },
             showLogoutDialog() {
+                this.showDropDown=false;
                 this.showSmallModal(fn.logoutHtml())
             },
             logout() {
@@ -343,7 +344,7 @@ document.addEventListener('alpine:init', () => {
                 const formData = new FormData()
                 const file = el.files[0]
                 const pattern = /image-*/
-                if (file == null || file.type === Defaults.UNDEFINED) return
+                if (!file) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
                     return
@@ -427,7 +428,7 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changePasswordDialog() {
-                if (rank.code === RankCode.GUEST) {
+                if (isGuest) {
                     this.showAlertMsg(Errors.GUEST_DOESNT_HAVE_PASSWORD, Css.ERROR)
                     return
                 }
@@ -623,7 +624,7 @@ document.addEventListener('alpine:init', () => {
                 const formData = new FormData()
                 const file = el.files[0]
                 const pattern = /image-*/
-                if (file == null || file.type === Defaults.UNDEFINED) return
+                if (!file) return
                 if (!file.type.match(pattern)) {
                     this.showLoader = false
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
@@ -755,7 +756,7 @@ document.addEventListener('alpine:init', () => {
                 const file = event.target.files[0]
                 const pattern = /image-*/
                 const content = this.$refs.mainInput.value
-                if (file == null || file.type === Defaults.UNDEFINED) return
+                if (!file) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
                     return
@@ -999,7 +1000,7 @@ document.addEventListener('alpine:init', () => {
                 const formData = new FormData()
                 const file = event.target.files[0]
                 const pattern = /image-*/
-                if (file == null || file.type === Defaults.UNDEFINED) return
+                if (!file) return
                 if (!file.type.match(pattern)) {
                     this.showAlertMsg(Errors.INVALID_FILE_FORMAT, Css.ERROR)
                     return

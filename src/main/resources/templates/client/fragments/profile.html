@@ -136,7 +136,7 @@
                     <div x-show="tab===2" class="mt-1 text-black flex flex-col">
                         <table class="table w-full border-separate">
                             <tbody>
-                            <tr>
+                            <tr th:if="${permission.private}">
                                 <th>Enable Private</th>
                                 <td>
                                     <label class="switch">
@@ -145,17 +145,14 @@
                                     </label>
                                 </td>
                             </tr>
-                            <template x-if="rank.code!=='guest'">
-                                <tr @click="changePasswordDialog">
-                                    <th>
-                                        <div class="inline-flex items-center cursor-pointer">
-                                            <i class="fa-solid fa-key text-green-500"></i>
-                                            <p class="ml-2">Change Password</p>
-                                        </div>
-                                    </th>
-                                    <td></td>
-                                </tr>
-                            </template>
+                            <tr th:if="${rank.code != 'guest'}" @click="changePasswordDialog">
+                                <th>
+                                    <div class="inline-flex items-center cursor-pointer">
+                                        <i class="fa-solid fa-key text-green-500"></i>
+                                        <p class="ml-2">Change Password</p>
+                                    </div>
+                                </th>
+                            </tr>
                             <tr @click="openBlockedModal">
                                 <th>
                                     <div class="inline-flex items-center cursor-pointer">
@@ -163,16 +160,22 @@
                                         <p class="ml-2">Manage Blocked Users</p>
                                     </div>
                                 </th>
-                                <td></td>
                             </tr>
-                            <tr>
+                            <tr th:if="${rank.code != 'guest'}">
                                 <th>
                                     <div class="inline-flex items-center cursor-pointer">
                                         <i class="fa-solid fa-filter text-blue-500"></i>
                                         <p class="ml-2">Emoji Spam Filter</p>
                                     </div>
                                 </th>
-                                <td></td>
+                            </tr>
+                            <tr th:if="${rank.code != 'owner' && rank.code != 'guest'}">
+                                <th>
+                                    <div class="inline-flex items-center cursor-pointer">
+                                        <i class="fa-solid fa-trash text-red-500"></i>
+                                        <p class="ml-2">Request Account Delete</p>
+                                    </div>
+                                </th>
                             </tr>
                             </tbody>
                         </table>

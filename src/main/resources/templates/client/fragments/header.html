@@ -28,19 +28,31 @@
     </div>
     <div x-show="showDropDown" x-cloak class="h-menu-wrap" x-transition.origin.top.left>
         <div @click="showProfile = true; showDropDown= false" class="h-menu">
-            <i class="fa-solid fa-user-pen"></i>
-            <p>Profile</p>
+            <img class="icon-md" src="/images/defaults/edit.webp" >
+            <p>Edit Profile</p>
         </div>
-        <div class="h-menu">
-            <i class="fa-solid fa-gear"></i>
+        <div th:if="${rank.code != 'guest'}" class="h-menu">
+            <img class="icon-md" src="/images/defaults/search.webp" >
+            <p>Search</p>
+        </div>
+        <div th:if="${rank.code == 'owner'}" class="h-menu">
+            <img class="icon-md" src="/images/defaults/investigate.webp" >
+            <p>Investigation</p>
+        </div>
+        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}" class="h-menu">
+            <img class="icon-md" src="/images/defaults/users.webp" >
+            <p>Manage Users</p>
+        </div>
+        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}" class="h-menu">
+            <img class="icon-md" src="/images/defaults/settings.webp" >
             <p>Room Settings</p>
         </div>
-        <div class="h-menu">
-            <i class="fa-solid fa-desktop"></i>
+        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin'}" class="h-menu">
+            <img class="icon-md" src="/images/defaults/admin.webp" >
             <p>Admin Panel</p>
         </div>
-        <div @click="showLogoutDialog; showDropDown=false;" class="h-menu">
-            <i class="fa-solid fa-right-from-bracket"></i>
+        <div @click="showLogoutDialog" class="h-menu">
+            <img class="icon-md" src="/images/defaults/logout.webp" >
             <p>Logout</p>
         </div>
     </div>
