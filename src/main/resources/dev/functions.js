@@ -387,7 +387,7 @@ export function changeMoodHtml() {
                                autocomplete="off" required maxlength="40" autofocus>
                     </label>
                 </div> 
-                 <div class="flex gap-2 justify-center">
+                <div class="flex gap-2 justify-center">
                     <button @click="changeMood(mood)" class="btn-action bg-green-500">Change</button>          
                     <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
                 </div>
@@ -734,7 +734,7 @@ export function roomModalHtml() {
 
 export function newsModalHtml() {
     return `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" >
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Announcements</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
@@ -801,7 +801,7 @@ export function newsModalHtml() {
                                         </label>
                                         <ul x-show="showComments">
                                             <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                <li class="comment-wrap" >
                                                     <div class="flex justify-between "> 
                                                        <div class="flex gap-2 text-start">
                                                            <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
@@ -862,7 +862,7 @@ export function writeNewsDialogHtml() {
 
 export function adminshipModalHtml() {
     return `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" >
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Adminship</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
@@ -929,7 +929,7 @@ export function adminshipModalHtml() {
                                         </label>
                                         <ul x-show="showComments">
                                             <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                <li class="comment-wrap" >
                                                     <div class="flex justify-between "> 
                                                        <div class="flex gap-2 text-start">
                                                            <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
@@ -990,7 +990,7 @@ export function writeAdminshipDialogHtml() {
 
 export function globalFeedModalHtml() {
     return `
-        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" xmlns="http://www.w3.org/1999/html">
+        <div class="flex flex-col text-skin-on-primary h-full w-full text-center" >
             <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
                 <p class="text-md font-bold ">Global Feed</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
@@ -1057,7 +1057,7 @@ export function globalFeedModalHtml() {
                                         </label>
                                         <ul x-show="showComments">
                                             <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" xmlns="http://www.w3.org/1999/html">
+                                                <li class="comment-wrap" >
                                                     <div class="flex justify-between "> 
                                                        <div class="flex gap-2 text-start">
                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
@@ -1262,15 +1262,15 @@ export function blockedModalHtml() {
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <ul>
                         <template x-if="blockedUsers.length>0"> 
-                            <template x-for="user in blockedUsers" :key="index"> 
-                                <li class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" xmlns="http://www.w3.org/1999/html">
+                            <template x-for="blockedUser in blockedUsers" :key="blockedUser.id"> 
+                                <li class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" >
                                    <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
                                            <div class="flex items-center gap-2">
-                                               <img class="avatar flex-none cursor-pointer" :src="user.avatar" alt="">
-                                               <p class="username clip" :class="user.nameColor, user.nameFont" x-text="user.name"></p>
+                                               <img class="avatar flex-none cursor-pointer" :src="blockedUser.avatar" alt="">
+                                               <p class="username clip" :class="blockedUser.nameColor, blockedUser.nameFont" x-text="blockedUser.name"></p>
                                            </div>  
-                                           <i @click="unblock(user.id, user.name)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
+                                           <i @click="unblock(blockedUser.id, blockedUser.name)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
                                        </div> 
                                    </div>
                                </li>
@@ -1285,6 +1285,53 @@ export function blockedModalHtml() {
                            </li>
                         </template>
                    </ul> 
+               </div>
+           </div>
+       </div>
+    `
+}
+
+export function searchModalHtml() {
+    return `
+        <div x-data="search" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Search User</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative text-black">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <div class="h-10 my-4">
+                        <label class="h-full">
+                            <input @input.debounce.1000ms="searchUser" x-model="query" class="input-text" type="text"
+                             placeholder="Search by username" autocomplete="off" required maxlength="40">
+                        </label>
+                    </div>
+                    <ul>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.name">
+                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" >
+                                   <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                           </div>
+                                       </div> 
+                                   </div>
+                                </li>
+                           </template>
+                        </template>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.empty">
+                                    <li class="pvt-user-wrap">
+                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                            <p class="text-[12px] font-bold" >No User Found</p>
+                                        </div>
+                                   </li>
+                            </template>
+                        </template>
+                   </ul>               
                </div>
            </div>
        </div>

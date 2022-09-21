@@ -21,38 +21,41 @@
             </div>
             <div @click="openNotificationModal" class="relative">
                 <i class="fa-solid fa-bell icon-white"></i>
-                <p x-cloak x-show="notification.unReadCount > 0" x-transition class="count" x-text="notification.unReadCount"></p>
+                <p x-cloak x-show="notification.unReadCount > 0" x-transition class="count"
+                   x-text="notification.unReadCount"></p>
             </div>
             <i @click="toggleRight" class="fa-solid fa-user-group icon-white md:hidden block"></i>
         </div>
     </div>
     <div x-show="showDropDown" x-cloak class="h-menu-wrap" x-transition.origin.top.left>
         <div @click="showProfile = true; showDropDown= false" class="h-menu">
-            <img class="icon-md" src="/images/defaults/edit.webp" >
+            <img class="icon-md" src="/images/defaults/edit.webp">
             <p>Edit Profile</p>
         </div>
-        <div th:if="${rank.code != 'guest'}" class="h-menu">
-            <img class="icon-md" src="/images/defaults/search.webp" >
+        <div th:if="${rank.code != 'guest'}" @click="openSearchModal" class="h-menu">
+            <img class="icon-md" src="/images/defaults/search.webp">
             <p>Search</p>
         </div>
         <div th:if="${rank.code == 'owner'}" class="h-menu">
-            <img class="icon-md" src="/images/defaults/investigate.webp" >
+            <img class="icon-md" src="/images/defaults/investigate.webp">
             <p>Investigation</p>
         </div>
-        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}" class="h-menu">
-            <img class="icon-md" src="/images/defaults/users.webp" >
+        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}"
+             class="h-menu">
+            <img class="icon-md" src="/images/defaults/users.webp">
             <p>Manage Users</p>
         </div>
-        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}" class="h-menu">
-            <img class="icon-md" src="/images/defaults/settings.webp" >
+        <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}"
+             class="h-menu">
+            <img class="icon-md" src="/images/defaults/settings.webp">
             <p>Room Settings</p>
         </div>
         <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin'}" class="h-menu">
-            <img class="icon-md" src="/images/defaults/admin.webp" >
+            <img class="icon-md" src="/images/defaults/admin.webp">
             <p>Admin Panel</p>
         </div>
         <div @click="showLogoutDialog" class="h-menu">
-            <img class="icon-md" src="/images/defaults/logout.webp" >
+            <img class="icon-md" src="/images/defaults/logout.webp">
             <p>Logout</p>
         </div>
     </div>

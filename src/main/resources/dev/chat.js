@@ -90,10 +90,6 @@ document.addEventListener('alpine:init', () => {
 
                 this.reCheckPvtMessages()
 
-                this.setStatusColor()
-
-                this.setGenderColor()
-
                 this.getReports()
 
                 this.getNews()
@@ -116,7 +112,7 @@ document.addEventListener('alpine:init', () => {
                         this.showMessages = true
                         if (isGuest) this.showSmallModal(fn.guestDialogHtml())
                         else this.$refs.mainInput.focus()
-                    }, 15e2)
+                    }, 1e3)
                 }
 
                 this.$watch('user', currentUser => {
@@ -146,9 +142,11 @@ document.addEventListener('alpine:init', () => {
                 this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
                 this.user.canSeeAdminship = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
                 this.setSounds()
+                this.setStatusColor()
+                this.setGenderColor()
             },
             setSounds() {
-                let sounds = this.user.sounds.split('')
+                let sounds = this.user.sounds.split(Defaults.EMPTY_STRING)
                 this.user.chatSound = sounds[0] === '1'
                 this.user.pvtSound = sounds[1] === '1'
                 this.user.nameSound = sounds[2] === '1'
@@ -197,12 +195,10 @@ document.addEventListener('alpine:init', () => {
             responsive() {
                 this.showRight = desktop.matches || tablet.matches
                 this.showLeft = desktop.matches
-
                 desktop.onchange = () => {
                     this.showLeft = desktop.matches
                     this.showRight = desktop.matches || tablet.matches
                 }
-
                 tablet.onchange = () => this.showRight = desktop.matches || tablet.matches
             },
             toggleLeft() {
@@ -286,9 +282,7 @@ document.addEventListener('alpine:init', () => {
                 this.showMessages = true
                 this.$refs.mainInput.focus()
                 localStorage.setItem("isUGCShowed", "true")
-                if (rank.code === RankCode.GUEST) {
-                    this.showSmallModal(fn.guestDialogHtml())
-                }
+                if (isGuest) this.showSmallModal(fn.guestDialogHtml())
             },
             /**
              *
@@ -322,7 +316,7 @@ document.addEventListener('alpine:init', () => {
                     this.user.gender === Gender.Female ? this.user.genderColor = Css.Pink : this.user.statusColor = Defaults.EMPTY_STRING
             },
             showLogoutDialog() {
-                this.showDropDown=false;
+                this.showDropDown = false;
                 this.showSmallModal(fn.logoutHtml())
             },
             logout() {
@@ -872,11 +866,14 @@ document.addEventListener('alpine:init', () => {
              * */
             getPvtMessage(user) {
                 const message = user.messages[0]
-                const person = (message != null && message.sender.id === userId) ? 'You : ' : `${user.name} :`
-                let content = message != null ? fn.appendEmojis(message.content) : Defaults.EMPTY_STRING
-                if (message.image && content === Defaults.EMPTY_STRING) content += '(Image)'
-                if (message.audio && content === Defaults.EMPTY_STRING) content += '(Audio)'
-                return person + content
+                if (message) {
+                    const person = (message.sender.id === userId) ? 'You : ' : `${user.name} :`
+                    let content = message.content ? fn.appendEmojis(message.content) : Defaults.EMPTY_STRING
+                    if (message.image && content === Defaults.EMPTY_STRING) content += '(Image)'
+                    if (message.audio && content === Defaults.EMPTY_STRING) content += '(Audio)'
+                    return person + content
+                }
+                return ''
             },
             getPvtEmojis(el) {
                 el.innerHTML = fn.pvtEmojisHtml()
@@ -1254,7 +1251,6 @@ document.addEventListener('alpine:init', () => {
                     this.adminship.posts = this.adminship.posts.filter(adminship => adminship.id !== postId)
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
-
             /*
             * Global Feed
             * */
@@ -1286,7 +1282,13 @@ document.addEventListener('alpine:init', () => {
                     .then(() => this.showAlertMsg(Success.GLOBAL_FEED_DELETED, Css.SUCCESS))
                     .catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
-
+            /*
+            * Search
+            * */
+            openSearchModal() {
+                this.showDropDown = false
+                this.showFullModal(fn.searchModalHtml())
+            },
             /**
              * Actions
              * */
@@ -1630,6 +1632,25 @@ document.addEventListener('alpine:init', () => {
                 axios.post(`/${domain.id}/global-feed/create`, formData).then(() => {
                     this.closeSmallModal()
                     this.showAlertMsg(Success.GLOBAL_FEED_CREATED, Css.SUCCESS)
+                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+            }
+        }
+    })
+
+    Alpine.data('search', () => {
+        return {
+            searchedUsers: [],
+            query: Defaults.EMPTY_STRING,
+            init() {
+                this.$watch('query', value => {
+                    if (value === Defaults.EMPTY_STRING) this.searchedUsers = []
+                })
+            },
+            searchUser() {
+                if (this.query === Defaults.EMPTY_STRING) return
+                axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             }
         }

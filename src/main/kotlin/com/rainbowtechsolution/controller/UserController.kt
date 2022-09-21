@@ -152,10 +152,19 @@ class UserController : UserRepository {
         }
     }
 
+    override suspend fun getUsersByDomain(domainId: Int, query: String): List<User> = dbQuery {
+        Users.select { (Users.domainId eq domainId) and (Users.name like "%$query%") }.map {
+            User(
+                id = it[Users.id].value, name = it[Users.name], avatar = it[Users.avatar],
+                nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+            )
+        }
+    }
+
     override suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int): Unit = dbQuery {
         Users.update({ Users.id eq id }) {
-            it[Users.points]= points
-            it[Users.level]= level
+            it[Users.points] = points
+            it[Users.level] = level
         }
     }
 

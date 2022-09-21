@@ -31,6 +31,8 @@ interface UserRepository {
 
     suspend fun getUsersByRoom(roomId: Int, limit: Int): List<User>
 
+    suspend fun getUsersByDomain(domainId: Int, query: String): List<User>
+
     suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int)
 
     suspend fun updateAvatar(id: Long, avatar: String)
@@ -78,4 +80,5 @@ interface UserRepository {
     suspend fun unblockUser(blocker: Long, blocked: Long)
 
     suspend fun getBlockedUsers(userId: Long): List<User>
+
 }
