@@ -1,13 +1,18 @@
+<!--suppress HtmlUnknownAttribute -->
 <div x-show="showLeft" class="left-side-wrap"
      x-transition:enter="transition ease-in-out duration-50"
      x-transition:enter-start="opacity-0 transform scale-x-0 -translate-x-1/2"
      x-transition:enter-end="opacity-100 transform scale-x-100 translate-x-0"
      x-transition:leave="transition ease-in-out duration-50"
      x-transition:leave-start="opacity-100 transform scale-x-100 translate-x-0"
-     x-transition:leave-end="opacity-0 transform scale-x-0 -translate-x-1/2">
-    <div class="h-full w-full flex flex-col rounded-tr-xl lg:rounded-none">
-        <div class="left top-0 flex flex-col overflow-y-auto overflow-x-hidden h-full w-full">
-            <ul class="flex flex-col ">
+     x-transition:leave-end="opacity-0 transform scale-x-0 -translate-x-1/2"
+     xmlns:x-transition="http://www.w3.org/1999/xhtml">
+    <div class="p-[10px] flex-1 relative h-full w-full">
+        <div class="h-full absolute inset-0 overflow-y-auto scrollbar">
+            <div class="">
+
+            </div>
+            <ul class="pb-4">
                 <li class="pt-[10px] px-1">
                     <div @click="openRoomsModal" class="menu-wrap">
                         <div class="menu border-red-600">

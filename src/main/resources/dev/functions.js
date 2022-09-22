@@ -751,82 +751,80 @@ export function newsModalHtml() {
                         </button> 
                     </template>
                     <ul>
-                        <template x-if="news.posts.length>0">
-                            <template x-for="post in news.posts" :key="post.id">
-                                <li x-data="post" x-init="setData(1)" class="card-wrap" >
-                                    <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
-                                               <div class="text-start">
-                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
-                                                   <p class="date" x-text="post.createdAt"></p>
-                                               </div>
-                                           </div> 
-                                           <template x-if="permission.delNews">
-                                              <i @click="delNews(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                           </template>                       
-                                       </div>
-                                        <div class="card-content">
-                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
-                                           <template x-if="post.image"> 
-                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
-                                           </template>
-                                        </div>  
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
-                                            <div class="flex items-center gap-2"> 
-                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
-                                              </div>
-                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
-                                              </div>
-                                            </div>
-                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
-                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
-                                            </div>
+                        <template x-for="post in news.posts" :key="post.id">
+                            <li x-data="post" x-init="setData(1)" class="card-wrap" >
+                                <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
+                                           <div class="text-start">
+                                               <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                               <p class="date" x-text="post.createdAt"></p>
+                                           </div>
+                                       </div> 
+                                       <template x-if="permission.delNews">
+                                          <i @click="delNews(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                       </template>                       
+                                   </div>
+                                    <div class="card-content">
+                                       <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                       <template x-if="post.image"> 
+                                           <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
+                                       </template>
+                                    </div>  
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex mt-4 mb-2 justify-between items-center px-1">
+                                        <div class="flex items-center gap-2"> 
+                                          <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
+                                            <p class="text-[12px]" x-text="post.likeCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
+                                            <p class="text-[12px]" x-text="post.loveCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
+                                            <p class="text-[12px]" x-text="post.lolCount"></p> 
+                                          </div>
+                                          <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
+                                            <p class="text-[12px]" x-text="post.dislikeCount"></p> 
+                                          </div>
                                         </div>
-                                        <template x-if="!user.isGuest"> 
-                                            <label class="h-10">
-                                                <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
-                                                type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
-                                            </label>
-                                        </template>
-                                        <ul x-show="showComments">
-                                            <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" >
-                                                    <div class="flex justify-between "> 
-                                                       <div class="flex gap-2 text-start">
-                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
-                                                           <div>
-                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
-                                                               <p class="date" x-text="comment.createdAt"></p>
-                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
-                                                           </div>
-                                                       </div> 
-                                                       <template x-if="permission.delComment || post.user.id === userId">
-                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                                       </template>                       
-                                                    </div>  
-                                                </li> 
-                                            </template>
-                                        </ul>
+                                        <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
+                                            <p class="text-[12px]" x-text="post.commentsCount"></p> 
+                                        </div>
                                     </div>
-                                </li>
-                            </template>
+                                    <template x-if="!user.isGuest"> 
+                                        <label class="h-10">
+                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                        </label>
+                                    </template>
+                                    <ul x-show="showComments">
+                                        <template x-for="comment in post.comments" :key="comment.id">
+                                            <li class="comment-wrap" >
+                                                <div class="flex justify-between "> 
+                                                   <div class="flex gap-2 text-start">
+                                                       <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                       <div>
+                                                           <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                           <p class="date" x-text="comment.createdAt"></p>
+                                                           <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                       </div>
+                                                   </div> 
+                                                   <template x-if="permission.delComment || post.user.id === userId">
+                                                      <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                   </template>                       
+                                                </div>  
+                                            </li> 
+                                        </template>
+                                    </ul>
+                                </div>
+                            </li> 
                         </template>
                         <template x-if="news.posts.length==0">
                             <li class="pvt-user-wrap">
@@ -881,80 +879,78 @@ export function adminshipModalHtml() {
                         </button> 
                     </template>
                     <ul>
-                        <template x-if="adminship.posts.length>0">
-                            <template x-for="post in adminship.posts" :key="post.id">
-                                <li x-data="post" x-init="setData(3)" class="card-wrap">
-                                    <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
-                                               <div class="text-start">
-                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
-                                                   <p class="date" x-text="post.createdAt"></p>
-                                               </div>
-                                           </div> 
-                                           <template x-if="permission.delAS">
-                                              <i @click="delAdminship(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                           </template>                       
-                                       </div>
-                                        <div class="card-content">
-                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
-                                           <template x-if="post.image"> 
-                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
-                                           </template>
-                                        </div>  
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <div class="flex mt-4 mb-2 justify-between items-center px-1">
-                                            <div class="flex items-center gap-2"> 
-                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
-                                              </div>
-                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
-                                              </div>
-                                            </div>
-                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
-                                                <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
-                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
-                                            </div>
+                        <template x-for="post in adminship.posts" :key="post.id">
+                            <li x-data="post" x-init="setData(3)" class="card-wrap">
+                                <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
+                                           <div class="text-start">
+                                               <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                               <p class="date" x-text="post.createdAt"></p>
+                                           </div>
+                                       </div> 
+                                       <template x-if="permission.delAS">
+                                          <i @click="delAdminship(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                       </template>                       
+                                   </div>
+                                    <div class="card-content">
+                                       <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                       <template x-if="post.image"> 
+                                           <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
+                                       </template>
+                                    </div>  
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex mt-4 mb-2 justify-between items-center px-1">
+                                        <div class="flex items-center gap-2"> 
+                                          <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/like.webp"> 
+                                            <p class="text-[12px]" x-text="post.likeCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/heart.webp"> 
+                                            <p class="text-[12px]" x-text="post.loveCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/lol.webp"> 
+                                            <p class="text-[12px]" x-text="post.lolCount"></p> 
+                                          </div>
+                                          <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/dislike.webp"> 
+                                            <p class="text-[12px]" x-text="post.dislikeCount"></p> 
+                                          </div>
                                         </div>
-                                         <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
-                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
-                                        </label>
-                                        <ul x-show="showComments">
-                                            <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" >
-                                                    <div class="flex justify-between "> 
-                                                       <div class="flex gap-2 text-start">
-                                                           <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
-                                                           <div>
-                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
-                                                               <p class="date" x-text="comment.createdAt"></p>
-                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
-                                                           </div>
-                                                       </div> 
-                                                       <template x-if="permission.delComment || post.user.id === userId">
-                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                                       </template>                       
-                                                    </div>  
-                                                </li> 
-                                            </template>
-                                        </ul>
+                                        <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
+                                            <img class="w-[20px] h-[20px]" alt="" src="/images/defaults/comment.webp"> 
+                                            <p class="text-[12px]" x-text="post.commentsCount"></p> 
+                                        </div>
                                     </div>
-                                </li>
-                            </template>
+                                     <label class="h-10">
+                                        <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                        type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                    </label>
+                                    <ul x-show="showComments">
+                                        <template x-for="comment in post.comments" :key="comment.id">
+                                            <li class="comment-wrap" >
+                                                <div class="flex justify-between "> 
+                                                   <div class="flex gap-2 text-start">
+                                                       <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                       <div>
+                                                           <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                           <p class="date" x-text="comment.createdAt"></p>
+                                                           <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                       </div>
+                                                   </div> 
+                                                   <template x-if="permission.delComment || post.user.id === userId">
+                                                      <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                   </template>                       
+                                                </div>  
+                                            </li> 
+                                        </template>
+                                    </ul>
+                                </div>
+                            </li>
                         </template>
                         <template x-if="adminship.posts.length==0">
                             <li class="pvt-user-wrap">
@@ -1009,82 +1005,80 @@ export function globalFeedModalHtml() {
                         </button> 
                     </template>
                     <ul>
-                        <template x-if="globalFeed.posts.length>0">
-                            <template x-for="post in globalFeed.posts" :key="post.id">
-                                <li x-data="post" x-init="setData(2)" class="card-wrap" >
-                                    <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
-                                               <div class="text-start">
-                                                   <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
-                                                   <p class="date" x-text="post.createdAt"></p>
-                                               </div>
-                                           </div> 
-                                           <template x-if="permission.delGF">
-                                              <i @click="delGlobalFeed(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                           </template>                       
-                                       </div>
-                                        <div class="card-content">
-                                           <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
-                                           <template x-if="post.image"> 
-                                               <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
-                                           </template>
-                                        </div>  
-                                    </div>
-                                    <div  class="flex flex-col">
-                                        <div class="flex m-2 justify-between items-center">
-                                            <div class="flex items-center gap-1"> 
-                                              <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
-                                                <img class="w-4 h-4" alt="" src="/images/defaults/like.webp"> 
-                                                <p class="text-[12px]" x-text="post.likeCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
-                                                <img class="w-4 h-4" alt="" src="/images/defaults/heart.webp"> 
-                                                <p class="text-[12px]" x-text="post.loveCount"></p> 
-                                              </div>  
-                                              <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
-                                                <img class="w-4 h-4" alt="" src="/images/defaults/lol.webp"> 
-                                                <p class="text-[12px]" x-text="post.lolCount"></p> 
-                                              </div>
-                                              <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
-                                                <img class="w-4 h-4" alt="" src="/images/defaults/dislike.webp"> 
-                                                <p class="text-[12px]" x-text="post.dislikeCount"></p> 
-                                              </div>
-                                            </div>
-                                            <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
-                                                <img class="w-4 h-4" alt="" src="/images/defaults/comment.webp"> 
-                                                <p class="text-[12px]" x-text="post.commentsCount"></p> 
-                                            </div>
+                        <template x-for="post in globalFeed.posts" :key="post.id">
+                            <li x-data="post" x-init="setData(2)" class="card-wrap" >
+                                <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img @click="getUserProfile(post.user.id)" class="avatar flex-none cursor-pointer" :src="post.user.avatar" alt="">
+                                           <div class="text-start">
+                                               <p class="username clip" :class="[post.user.nameColor, post.user.nameFont]" x-text="post.user.name"></p>
+                                               <p class="date" x-text="post.createdAt"></p>
+                                           </div>
+                                       </div> 
+                                       <template x-if="permission.delGF">
+                                          <i @click="delGlobalFeed(post.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                       </template>                       
+                                   </div>
+                                    <div class="card-content">
+                                       <p class="chat clip" :class="[post.user.textColor, post.user.textFont, post.user.textBold?'font-bold':'font-normal' ]" x-text="post.content"></p> 
+                                       <template x-if="post.image"> 
+                                           <img @click="showImageDialog($el)" :src="post.image" alt="" class="post-image">
+                                       </template>
+                                    </div>  
+                                </div>
+                                <div  class="flex flex-col">
+                                    <div class="flex m-2 justify-between items-center">
+                                        <div class="flex items-center gap-1"> 
+                                          <div @click="postReact(post.id, 1)" class="reaction" :class="post.liked?'reacted':''">
+                                            <img class="w-4 h-4" alt="" src="/images/defaults/like.webp"> 
+                                            <p class="text-[12px]" x-text="post.likeCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 2)" class="reaction" :class="post.loved?'reacted':''">
+                                            <img class="w-4 h-4" alt="" src="/images/defaults/heart.webp"> 
+                                            <p class="text-[12px]" x-text="post.loveCount"></p> 
+                                          </div>  
+                                          <div @click="postReact(post.id, 3)" class="reaction" :class="post.laughed?'reacted':''">
+                                            <img class="w-4 h-4" alt="" src="/images/defaults/lol.webp"> 
+                                            <p class="text-[12px]" x-text="post.lolCount"></p> 
+                                          </div>
+                                          <div @click="postReact(post.id, 4)" class="reaction" :class="post.disliked?'reacted':''">
+                                            <img class="w-4 h-4" alt="" src="/images/defaults/dislike.webp"> 
+                                            <p class="text-[12px]" x-text="post.dislikeCount"></p> 
+                                          </div>
                                         </div>
-                                        <template x-show="!user.isGuest"> 
-                                            <label class="h-10">
-                                                <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
-                                                type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
-                                            </label>
-                                        </template>
-                                        <ul x-show="showComments">
-                                            <template x-for="comment in post.comments" :key="comment.id">
-                                                <li class="comment-wrap" >
-                                                    <div class="flex justify-between "> 
-                                                       <div class="flex gap-2 text-start">
-                                                          <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
-                                                           <div>
-                                                               <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
-                                                               <p class="date" x-text="comment.createdAt"></p>
-                                                               <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
-                                                           </div>
-                                                       </div> 
-                                                       <template x-if="permission.delComment || post.user.id === userId">
-                                                          <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
-                                                       </template>                       
-                                                    </div>  
-                                                </li> 
-                                            </template>
-                                        </ul>
+                                        <div x-show="post.commentsCount >0" @click="getComments(post.id)" class="reaction">
+                                            <img class="w-4 h-4" alt="" src="/images/defaults/comment.webp"> 
+                                            <p class="text-[12px]" x-text="post.commentsCount"></p> 
+                                        </div>
                                     </div>
-                                </li>
-                            </template>
+                                    <template x-show="!user.isGuest"> 
+                                        <label class="h-10">
+                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                        </label>
+                                    </template>
+                                    <ul x-show="showComments">
+                                        <template x-for="comment in post.comments" :key="comment.id">
+                                            <li class="comment-wrap" >
+                                                <div class="flex justify-between "> 
+                                                   <div class="flex gap-2 text-start">
+                                                      <img @click="getUserProfile(comment.user.id)" class="avatar flex-none cursor-pointer" :src="comment.user.avatar" alt="">
+                                                       <div>
+                                                           <p class="username clip" :class="[comment.user.nameColor, comment.user.nameFont]" x-text="comment.user.name"></p>
+                                                           <p class="date" x-text="comment.createdAt"></p>
+                                                           <p class="chat clip mt-1" :class="[comment.user.textColor]" x-text="comment.content"></p>
+                                                       </div>
+                                                   </div> 
+                                                   <template x-if="permission.delComment || post.user.id === userId">
+                                                      <i @click="delComment(post.id, comment.id)" class="fa-solid fa-trash-can icon-sm"></i>
+                                                   </template>                       
+                                                </div>  
+                                            </li> 
+                                        </template>
+                                    </ul>
+                                </div>
+                            </li>
                         </template>
                         <template x-if="globalFeed.posts.length==0">
                             <li class="pvt-user-wrap">
@@ -1230,24 +1224,22 @@ export function notificationModalHtml() {
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <ul >
-                        <template x-if="notification.notifications.length>0">
-                            <template x-for="notification in notification.notifications" :key="notification.id">
-                               <li class="report-user-wrap">
-                                   <div class="w-full gap-2">
-                                        <div class="flex h-full w-full items-center">
-                                            <img class="avatar flex-none mx-1" src="/images/defaults/bot.webp">
-                                            <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center relative">
-                                                <div x-show="!notification.seen" class="bg-red-500 absolute px-1 rounded right-1 top-1">
-                                                    <p class="text-[10px] font-bold text-white">New</p> 
-                                                </div>
-                                                <p class="ellipsis username clip text-black">System</p>
-                                                <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="notification.content"></p>
-                                                <p class="date" x-text="notification.createdAt"></p>
+                        <template x-for="notification in notification.notifications" :key="notification.id">
+                           <li class="report-user-wrap">
+                               <div class="w-full gap-2">
+                                    <div class="flex h-full w-full items-center">
+                                        <img class="avatar flex-none mx-1" src="/images/defaults/bot.webp">
+                                        <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center relative">
+                                            <div x-show="!notification.seen" class="bg-red-500 absolute px-1 rounded right-1 top-1">
+                                                <p class="text-[10px] font-bold text-white">New</p> 
                                             </div>
+                                            <p class="ellipsis username clip text-black">System</p>
+                                            <p class="flex items-center clip ellipsis text-gray-500 text-[13px]" x-text="notification.content"></p>
+                                            <p class="date" x-text="notification.createdAt"></p>
                                         </div>
                                     </div>
-                                </li>
-                             </template>
+                                </div>
+                            </li>
                         </template>
                         <template x-if="notification.notifications.length==0">
                            <li class="pvt-user-wrap">
@@ -1274,20 +1266,18 @@ export function blockedModalHtml() {
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <ul>
-                        <template x-if="blockedUsers.length>0"> 
-                            <template x-for="blockedUser in blockedUsers" :key="blockedUser.id"> 
-                                <li class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" >
-                                   <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img class="avatar flex-none cursor-pointer" :src="blockedUser.avatar" alt="">
-                                               <p class="username clip" :class="blockedUser.nameColor, blockedUser.nameFont" x-text="blockedUser.name"></p>
-                                           </div>  
-                                           <i @click="unblock(blockedUser.id, blockedUser.name)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
-                                       </div> 
-                                   </div>
-                               </li>
-                            </template>
+                        <template x-for="blockedUser in blockedUsers" :key="blockedUser.id"> 
+                            <li class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" >
+                               <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img class="avatar flex-none cursor-pointer" :src="blockedUser.avatar" alt="">
+                                           <p class="username clip" :class="blockedUser.nameColor, blockedUser.nameFont" x-text="blockedUser.name"></p>
+                                       </div>  
+                                       <i @click="unblock(blockedUser.id, blockedUser.name)" class="text-red-500 fas fa-times-circle text-xl cursor-pointer"></i> 
+                                   </div> 
+                               </div>
+                           </li>
                         </template>
                         <template x-if="blockedUsers.length==0">
                            <li class="pvt-user-wrap">
@@ -1324,28 +1314,24 @@ export function searchModalHtml() {
                     </div>
                     <ul>
                         <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.name">
-                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
-                                   <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
-                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
-                                           </div>
-                                       </div> 
-                                   </div>
-                                </li>
-                           </template>
+                            <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
+                               <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                           <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                       </div>
+                                   </div> 
+                               </div>
+                            </li>
                         </template>
-                        <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.empty">
-                                    <li class="pvt-user-wrap">
-                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
-                                            <p class="text-[12px] font-bold" >No User Found</p>
-                                        </div>
-                                   </li>
-                            </template>
+                        <template x-if="isEmpty">
+                            <li class="pvt-user-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No User Found</p>
+                                </div>
+                            </li>
                         </template>
                    </ul>               
                </div>
@@ -1392,28 +1378,24 @@ export function manageUsersModalHtml() {
                     </div>
                     <ul>
                         <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.name">
-                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
-                                   <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
-                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
-                                           </div>
-                                       </div> 
-                                   </div>
-                                </li>
-                           </template>
+                            <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
+                               <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                           <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                       </div>
+                                   </div> 
+                               </div>
+                            </li>
                         </template>
-                        <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.empty">
-                                    <li class="pvt-user-wrap">
-                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
-                                            <p class="text-[12px] font-bold" >No User Found</p>
-                                        </div>
-                                   </li>
-                            </template>
+                        <template x-if="isEmpty">
+                            <li class="pvt-user-wrap">
+                               <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No User Found</p>
+                                </div>
+                           </li>
                         </template>
                    </ul>               
                </div>
@@ -1445,28 +1427,24 @@ export function investigationModalHtml() {
                     </div>
                     <ul>
                         <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.name">
-                                <li @click="investigate(sUser)" class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2 rounded" >
-                                   <div class="flex flex-col w-full">
-                                       <div class="flex items-center justify-between"> 
-                                           <div class="flex items-center gap-2">
-                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
-                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
-                                           </div>
-                                       </div> 
-                                   </div>
-                                </li>
-                           </template>
+                            <li @click="investigate(sUser)" class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2 rounded" >
+                               <div class="flex flex-col w-full">
+                                   <div class="flex items-center justify-between"> 
+                                       <div class="flex items-center gap-2">
+                                           <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                           <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                       </div>
+                                   </div> 
+                               </div>
+                            </li>
                         </template>
-                        <template x-for="sUser in searchedUsers" :key="sUser.id">
-                            <template x-if="sUser.empty">
-                                    <li class="pvt-user-wrap">
-                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
-                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
-                                            <p class="text-[12px] font-bold" >No User Found</p>
-                                        </div>
-                                   </li>
-                            </template>
+                        <template x-if="isEmpty">
+                            <li class="pvt-user-wrap">
+                                <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                    <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                    <p class="text-[12px] font-bold" >No User Found</p>
+                                </div>
+                            </li>
                         </template>
                    </ul>               
                </div>
@@ -1477,35 +1455,33 @@ export function investigationModalHtml() {
                         <button @click="goBack" class="text-center outline-none text-white font-bold rounded-md text-[12px] py-0.5 px-4 bg-green-500"><i class="fa-solid fa-arrow-left"></i> Go back</button>         
                     </div>
                     <ul>
-                       <template x-if="pvtMessages.length>0"> 
-                            <template x-for="pvtMessage in pvtMessages" :key="pvtMessage.id"> 
-                                <li class="chat-wrap">
-                                   <div class="flex py-1 px-2 w-full" >
-                                        <img @click="getUserProfile(pvtMessage.sender.id)" class="avatar flex-none cursor-pointer" 
-                                            :class="[pvtMessage.sender.gender=='Male'? 'male' : 'female']" :src="pvtMessage.sender.avatar">
-                                        <div class="ml-2 flex-1 ">
-                                            <div class="flex justify-between">
-                                                <p>
-                                                   <span class="username" :class="[pvtMessage.sender.name == victim.name? 'tag' :'']" x-text="pvtMessage.sender.name"></span> to 
-                                                   <span class="username" :class="[pvtMessage.receiver.name == victim.name? 'tag' :'']" x-text="pvtMessage.receiver.name"></span>
-                                                </p>
-                                                <p class="date" x-text="pvtMessage.createdAt"></p>
-                                            </div>
-                                            <div class="px-1 pr-2">
-                                                <template x-if="pvtMessage.image">
-                                                    <img @click="showImageDialog($el)" :src="pvtMessage.image" alt="" class="lobby-image"> 
-                                                </template>
-                                                <template>
-                                                    <audio  preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]">
-                                                        <source :src="pvtMessage.audio" type="audio/mpeg">
-                                                    </audio> 
-                                                </template>
-                                                <p class="chat text-start" x-text="pvtMessage.content ? pvtMessage.content:''"></p>
-                                            </div>
+                        <template x-for="pvtMessage in pvtMessages" :key="pvtMessage.id"> 
+                            <li class="chat-wrap">
+                               <div class="flex py-1 px-2 w-full" >
+                                    <img @click="getUserProfile(pvtMessage.sender.id)" class="avatar flex-none cursor-pointer" 
+                                        :class="[pvtMessage.sender.gender=='Male'? 'male' : 'female']" :src="pvtMessage.sender.avatar">
+                                    <div class="ml-2 flex-1 ">
+                                        <div class="flex justify-between">
+                                            <p>
+                                               <span class="username" :class="[pvtMessage.sender.name == victim.name? 'tag' :'']" x-text="pvtMessage.sender.name"></span> to 
+                                               <span class="username" :class="[pvtMessage.receiver.name == victim.name? 'tag' :'']" x-text="pvtMessage.receiver.name"></span>
+                                            </p>
+                                            <p class="date" x-text="pvtMessage.createdAt"></p>
                                         </div>
-                                   </div>
-                                </li>
-                            </template>
+                                        <div class="px-1 pr-2">
+                                            <template x-if="pvtMessage.image">
+                                                <img @click="showImageDialog($el)" :src="pvtMessage.image" alt="" class="lobby-image"> 
+                                            </template>
+                                            <template>
+                                                <audio  preload="auto" controls controlslist="nodownload noplaybackrate" class="w-[250px]">
+                                                    <source :src="pvtMessage.audio" type="audio/mpeg">
+                                                </audio> 
+                                            </template>
+                                            <p class="chat text-start" x-text="pvtMessage.content ? pvtMessage.content:''"></p>
+                                        </div>
+                                    </div>
+                               </div>
+                            </li>
                         </template>
                         <template x-if="pvtMessages.length == 0">
                            <li class="pvt-user-wrap">

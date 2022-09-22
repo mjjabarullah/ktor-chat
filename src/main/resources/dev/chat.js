@@ -56,7 +56,6 @@ document.addEventListener('alpine:init', () => {
             remainingTime: Defaults.MAX_RECORDING_TIME,
             muteInterval: null,
             init() {
-
                 Object.freeze(domain)
                 Object.freeze(room)
                 Object.freeze(permission)
@@ -73,7 +72,7 @@ document.addEventListener('alpine:init', () => {
 
                 this.$refs.mainEmojis.innerHTML = fn.getEmojisHtml()
 
-                this.$refs.mainInput.disabled = this.user.muted
+                this.$refs.mainInput.disabled = this.user.muted > 0
 
                 this.checkMute()
 
@@ -907,7 +906,6 @@ document.addEventListener('alpine:init', () => {
                     user.recorder = new MicRecorder({bitrate: 80})
                     user.interval = null
                     this.pvtUsers.unshift(user)
-                    this.showUserProfile = false
                     this.$nextTick(() => fn.dragElement(document.getElementById(`draggable-${user.id}`), user.id))
                 })
                 this.setPvtNotifiCount()
@@ -1060,7 +1058,6 @@ document.addEventListener('alpine:init', () => {
                 }
                 if (message.type === MessageType.UnMute) {
                     this.user.muted = 0
-                    this.checkMute()
                 }
                 if (message.type === MessageType.Kick) location.reload()
                 if (message.type === MessageType.Ban) location.reload()
@@ -1657,17 +1654,21 @@ document.addEventListener('alpine:init', () => {
             searchedUsers: [],
             query: Defaults.EMPTY_STRING,
             loading: false,
+            isEmpty: false,
             init() {
                 this.$watch('query', value => {
-                    if (value === Defaults.EMPTY_STRING) this.searchedUsers = []
+                    if (value === Defaults.EMPTY_STRING){
+                        this.searchedUsers = []
+                        this.isEmpty = false
+                    }
                 })
             },
             searchUser() {
                 if (this.query === Defaults.EMPTY_STRING) return
                 this.loading = true
                 axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => {
                     this.loading = false
@@ -1683,9 +1684,13 @@ document.addEventListener('alpine:init', () => {
             searchedUsers: [],
             query: Defaults.EMPTY_STRING,
             loading: false,
+            isEmpty:false,
             init() {
                 this.$watch('query', value => {
-                    if (value === Defaults.EMPTY_STRING && this.selected === Defaults.EMPTY_STRING) this.searchedUsers = this.recentUsers
+                    if (value === Defaults.EMPTY_STRING && this.selected === Defaults.EMPTY_STRING){
+                        this.searchedUsers = this.recentUsers
+                        this.isEmpty = false
+                    }
                 })
                 this.getRecentUsers()
             },
@@ -1699,8 +1704,8 @@ document.addEventListener('alpine:init', () => {
                 if (this.query === Defaults.EMPTY_STRING) return
                 this.loading = true
                 axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                     this.selected = Defaults.EMPTY_STRING
                 }).catch(e => {
@@ -1717,8 +1722,8 @@ document.addEventListener('alpine:init', () => {
                 this.selected = 'muted'
                 this.loading = true
                 axios.get(`/${domain.id}/users/muted`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => {
                     this.loading = false
@@ -1734,8 +1739,8 @@ document.addEventListener('alpine:init', () => {
                 this.selected = 'banned'
                 this.loading = true
                 axios.get(`/${domain.id}/users/banned`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => {
                     this.loading = false
@@ -1751,8 +1756,8 @@ document.addEventListener('alpine:init', () => {
                 this.selected = 'kicked'
                 this.loading = true
                 axios.get(`/${domain.id}/users/kicked`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => {
                     this.loading = false
@@ -1768,8 +1773,8 @@ document.addEventListener('alpine:init', () => {
                 this.selected = 'staff'
                 this.loading = true
                 axios.get(`/${domain.id}/users/staff`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => {
                     this.loading = false
@@ -1788,9 +1793,13 @@ document.addEventListener('alpine:init', () => {
             tab: 0,
             victim: null,
             loading: false,
+            isEmpty: false,
             init() {
                 this.$watch('query', value => {
-                    if (value === Defaults.EMPTY_STRING) this.searchedUsers = this.recentUsers
+                    if (value === Defaults.EMPTY_STRING){
+                        this.searchedUsers = this.recentUsers
+                        this.isEmpty = false
+                    }
                 })
                 this.getRecentUsers()
             },
@@ -1804,8 +1813,8 @@ document.addEventListener('alpine:init', () => {
                 if (this.query === Defaults.EMPTY_STRING) return
                 this.loading = true
                 axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
-                    if (res.data.length > 0) this.searchedUsers = res.data
-                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.isEmpty = res.data.length === 0
+                    this.searchedUsers = res.data
                     this.loading = false
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
