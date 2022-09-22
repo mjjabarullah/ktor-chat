@@ -41,7 +41,7 @@
             <p>Investigation</p>
         </div>
         <div th:if="${rank.code == 'owner' || rank.code == 'super admin' || rank.code == 'admin' || rank.code == 'moderator'}"
-             class="h-menu">
+             @click="openManageUsersModal" class="h-menu">
             <img class="icon-md" src="/images/defaults/users.webp">
             <p>Manage Users</p>
         </div>

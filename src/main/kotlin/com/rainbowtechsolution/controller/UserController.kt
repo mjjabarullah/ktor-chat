@@ -3,6 +3,7 @@ package com.rainbowtechsolution.controller
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.rainbowtechsolution.common.ChatDefaults
+import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.data.entity.*
 import com.rainbowtechsolution.data.mappers.toUserModel
 import com.rainbowtechsolution.data.model.Rank
@@ -144,10 +145,18 @@ class UserController : UserRepository {
             .orderBy(Ranks.order)
         online.unionAll(offline).map {
             User(
-                id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar], mood = it[Users.mood],
-                gender = it[Users.gender].name, nameColor = it[Users.nameColor], nameFont = it[Users.nameFont],
-                level = it[Users.level], sessions = it[Users.sessions], status = it[Users.status].name,
-                muted = it[Users.muted], rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
+                id = it[Users.id].value,
+                name = it[Users.name].capitalize(),
+                avatar = it[Users.avatar],
+                mood = it[Users.mood],
+                gender = it[Users.gender].name,
+                nameColor = it[Users.nameColor],
+                nameFont = it[Users.nameFont],
+                level = it[Users.level],
+                sessions = it[Users.sessions],
+                status = it[Users.status].name,
+                muted = it[Users.muted],
+                rank = Rank(name = it[Ranks.name], icon = it[Ranks.icon])
             )
         }
     }
@@ -155,6 +164,59 @@ class UserController : UserRepository {
     override suspend fun getRecentUsers(domainId: Int): List<User> = dbQuery {
         Users
             .select { Users.domainId eq domainId }
+            .orderBy(Users.id, SortOrder.DESC)
+            .limit(100)
+            .map {
+                User(
+                    id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
+                    nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+                )
+            }
+    }
+
+    override suspend fun getMutedUsers(domainId: Int): List<User> = dbQuery {
+        Users
+            .select { Users.muted greater 0 }
+            .orderBy(Users.id, SortOrder.DESC)
+            .limit(100)
+            .map {
+                User(
+                    id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
+                    nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+                )
+            }
+    }
+
+    override suspend fun getKickedUsers(domainId: Int): List<User> = dbQuery {
+        Users
+            .select { Users.kicked greater 0 }
+            .orderBy(Users.id, SortOrder.DESC)
+            .limit(100)
+            .map {
+                User(
+                    id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
+                    nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+                )
+            }
+    }
+
+    override suspend fun getBannedUsers(domainId: Int): List<User> = dbQuery {
+        Users
+            .select { Users.banned greater 0 }
+            .orderBy(Users.id, SortOrder.DESC)
+            .limit(100)
+            .map {
+                User(
+                    id = it[Users.id].value, name = it[Users.name].capitalize(), avatar = it[Users.avatar],
+                    nameColor = it[Users.nameColor], nameFont = it[Users.nameFont]
+                )
+            }
+    }
+
+    override suspend fun getStaffUsers(domainId: Int): List<User> = dbQuery {
+        Users
+            .innerJoin(Ranks)
+            .select { (Ranks.code eq RankNames.OWNER) or (Ranks.code eq RankNames.S_ADMIN) or (Ranks.code eq RankNames.ADMIN) or (Ranks.code eq RankNames.MODERATOR) }
             .orderBy(Users.id, SortOrder.DESC)
             .limit(100)
             .map {

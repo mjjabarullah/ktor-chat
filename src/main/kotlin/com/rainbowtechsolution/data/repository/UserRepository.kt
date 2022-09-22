@@ -34,6 +34,14 @@ interface UserRepository {
 
     suspend fun getRecentUsers(domainId: Int): List<User>
 
+    suspend fun getMutedUsers(domainId: Int): List<User>
+
+    suspend fun getKickedUsers(domainId: Int): List<User>
+
+    suspend fun getBannedUsers(domainId: Int): List<User>
+
+    suspend fun getStaffUsers(domainId: Int): List<User>
+
     suspend fun searchUserByName(domainId: Int, query: String): List<User>
 
     suspend fun updatePointsAndLevel(id: Long, points: Int, level: Int)

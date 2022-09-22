@@ -241,9 +241,10 @@ export function guestRegisterHtml() {
                         </div>
                         <div x-show="errors.password" x-text="errors.password" class="error-text"></div>
                     </div>
-                    <div class="text-center"> 
-                        <button type="submit" class="w-36 btn btn-skin text-center">Register</button>
-                    </div>  
+                     <div class="text-center flex gap-2 justify-center mt-2">
+                        <button type="button" @click="closeSmallModal" class="px-2 btn-action bg-red-500">Close</button>
+                        <button type="submit" class="px-2 btn-action bg-green-500">Register</button>          
+                    </div>
                 </form>
             </div>
         </div>`
@@ -700,11 +701,14 @@ export function roomModalLoadingHtml() {
 
 export function roomModalHtml() {
     return `
-        <div class="text-skin-on-primary h-full">
+        <div x-data="rooms" class="text-skin-on-primary h-full">
             <div class="px-4 py-1 flex justify-between items-center bg-skin-hover/90">
                 <p class="text-md font-bold ">Room List</p>
                 <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
             </div> 
+            <div x-show="loading" class="w-full flex items-center justify-center">
+                <img class="w-full px-24" src="/images/defaults/loader.gif"/>
+            </div>
             <div class="p-[10px]">
                 <ul class="h-full">
                     <template x-for="rm in rooms" :key="rm.id">
@@ -742,7 +746,7 @@ export function newsModalHtml() {
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <template x-if="permission.writeNews">
-                        <button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                        <button @click="writeNewsDialog" class="flex-none mx-auto my-2 btn-sm btn-action bg-green-500"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
                     </template>
@@ -795,10 +799,12 @@ export function newsModalHtml() {
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
                                         </div>
-                                         <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
-                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
-                                        </label>
+                                        <template x-if="!user.isGuest"> 
+                                            <label class="h-10">
+                                                <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                                type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                            </label>
+                                        </template>
                                         <ul x-show="showComments">
                                             <template x-for="comment in post.comments" :key="comment.id">
                                                 <li class="comment-wrap" >
@@ -870,7 +876,7 @@ export function adminshipModalHtml() {
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
                     <template x-if="user.canSeeAdminship">
-                        <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                        <button @click="writeAdminshipDialog" class="flex-none mx-auto my-2 btn-sm btn-action bg-green-500"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
                     </template>
@@ -997,8 +1003,8 @@ export function globalFeedModalHtml() {
             </div>
             <div class="p-[10px] flex-1 relative">
                 <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
-                    <template x-if="rank.code !== 'guest'">
-                        <button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-skin"> 
+                    <template x-if="!user.isGuest">
+                        <button @click="writeGlobalFeedDialog" class="flex-none mx-auto my-2 btn-sm btn-action bg-green-500"> 
                             <i class="fa-solid fa-pen-to-square"></i>&nbsp;&nbsp;Add New 
                         </button> 
                     </template>
@@ -1051,10 +1057,12 @@ export function globalFeedModalHtml() {
                                                 <p class="text-[12px]" x-text="post.commentsCount"></p> 
                                             </div>
                                         </div>
-                                         <label class="h-10">
-                                            <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
-                                            type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
-                                        </label>
+                                        <template x-show="!user.isGuest"> 
+                                            <label class="h-10">
+                                                <input x-ref="input" @keyup.enter="writeComment(post.id)" class="input-text" 
+                                                type="text" placeholder="Type your comment here.." autocomplete="off" required maxlength="300">
+                                            </label>
+                                        </template>
                                         <ul x-show="showComments">
                                             <template x-for="comment in post.comments" :key="comment.id">
                                                 <li class="comment-wrap" >
@@ -1138,9 +1146,11 @@ export function renderReportChatMessage(message, id, targetId, roomId, type) {
                     </div>
                 </div>
            </div>
-        </li> 
-        <button @click="takeAction(${id}, ${targetId},${roomId}, '${type}')" class="btn btn-skin text-center">Take Action</button>
-        <button @click="noAction(${id}, '${type}')" class="btn btn-disabled text-center ml-2">No Action</button>
+        </li>
+        <div class="flex gap-2 justify-center">
+            <button @click="takeAction(${id}, ${targetId},${roomId}, '${type}')" class="btn-action bg-green-500">Take Action</button>          
+            <button @click="noAction(${id}, '${type}')" class="btn-action bg-red-500">No Action</button>          
+        </div>
     </div> </div>`
 }
 
@@ -1187,10 +1197,10 @@ export function reportDialogHtml(id, type) {
     return `
         <div x-data="{ id: ${id}, type: '${type}' }" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
-            <div class="inline-flex items-center"> 
-                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
-                <p class="ml-2 text-md font-bold ">Report This Content</p>
-            </div>
+                <div class="inline-flex items-center"> 
+                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+                    <p class="ml-2 text-md font-bold ">Report This Content</p>
+                </div>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div x-data="report" class="p-4">
@@ -1199,9 +1209,12 @@ export function reportDialogHtml(id, type) {
                      <div class="flex gap-2 items-center text-[13px] font-bold">
                         <i @click="selectedReason = reason" class="cursor-pointer text-[15px]" :class="selectedReason === reason? 'fa-solid fa-circle-check text-green-500':'fa-regular fa-circle' "></i>
                         <p x-text="reason"></p>
-                    </div>
+                     </div>
                 </template>
-                <button @click="report(id, type)" class="w-36 btn btn-skin text-center mt-2">Report<button>
+                <div class="flex gap-2 justify-center mt-2">
+                    <button @click="report(id, type)" class="btn-action bg-green-500">Report</button>          
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                </div>
             </div>
         </div>
     `
@@ -1306,10 +1319,81 @@ export function searchModalHtml() {
                              placeholder="Search by username" autocomplete="off" required maxlength="40">
                         </label>
                     </div>
+                    <div x-show="loading" class="w-full flex items-center justify-center">
+                        <img class="w-full px-24" src="/images/defaults/loader.gif"/>
+                    </div>
                     <ul>
                         <template x-for="sUser in searchedUsers" :key="sUser.id">
                             <template x-if="sUser.name">
-                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 shadow-sm shadow-black/10 px-2 !py-2" >
+                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
+                                   <div class="flex flex-col w-full">
+                                       <div class="flex items-center justify-between"> 
+                                           <div class="flex items-center gap-2">
+                                               <img class="avatar flex-none cursor-pointer" :src="sUser.avatar" alt="">
+                                               <p class="username clip" :class="sUser.nameColor, sUser.nameFont" x-text="sUser.name"></p>
+                                           </div>
+                                       </div> 
+                                   </div>
+                                </li>
+                           </template>
+                        </template>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.empty">
+                                    <li class="pvt-user-wrap">
+                                       <div class="flex flex-col w-full text-gray-600 gap-2 items-center ">
+                                            <img class="w-[40px]" src="/images/defaults/search.webp" alt="">
+                                            <p class="text-[12px] font-bold" >No User Found</p>
+                                        </div>
+                                   </li>
+                            </template>
+                        </template>
+                   </ul>               
+               </div>
+           </div>
+       </div>
+    `
+}
+
+export function manageUsersModalHtml() {
+    return `
+        <div x-data="manageUsers" class="flex flex-col text-skin-on-primary h-full w-full text-center">
+            <div class="sticky px-4 py-1 flex justify-between items-center bg-skin-hover/90 flex-none">
+                <p class="text-md font-bold ">Manage Users</p>
+                <i @click="closeFullModal" class="fas fa-times-circle top-0 right-[5px] text-2xl cursor-pointer"></i>
+            </div>
+            <div class="p-[10px] flex-1 relative text-black">
+                <div class="h-full absolute inset-0 overflow-y-auto scrollbar px-2">
+                    <div class="h-10 my-4">
+                        <label class="h-full">
+                            <input @input.debounce.1000ms="searchUser" x-model="query" class="input-text" type="text"
+                             placeholder="Search by username" autocomplete="off" required maxlength="40">
+                        </label>
+                    </div>
+                    <div class="flex text-[12px] font-bold text-center px-4 flex-wrap items-center justify-center gap-y-2">
+                        <p class="mx-1 inline-flex items-center justify-center gap-2">
+                            <i @click="getMutedUsers" class="cursor-pointer text-[15px] orange" :class="selected === 'muted'? 'fa-solid fa-circle-check':'fa-regular fa-circle' "></i>
+                            <span class="b-orange p-1 text-white rounded">Muted</span> 
+                        </p>
+                       <p class="mx-1 inline-flex items-center justify-center gap-2">
+                            <i @click="getKickedUsers" class="cursor-pointer text-[15px] orange-1" :class="selected === 'kicked'? 'fa-solid fa-circle-check':'fa-regular fa-circle' "></i>
+                            <span class="b-orange-1 p-1 text-white rounded">Kicked</span> 
+                        </p>
+                       <p class="mx-1 inline-flex items-center justify-center gap-2">
+                            <i @click="getBannedUsers" class="cursor-pointer text-[15px] red-1" :class="selected === 'banned'? 'fa-solid fa-circle-check':'fa-regular fa-circle' "></i>
+                            <span class="b-red-1 p-1 text-white rounded">Banned</span> 
+                        </p>
+                       <p class="mx-1 inline-flex items-center justify-center gap-2">
+                            <i @click="getStaffUsers" class="cursor-pointer text-[15px] green-1" :class="selected === 'staff'? 'fa-solid fa-circle-check':'fa-regular fa-circle' "></i>
+                            <span class="b-green-1 p-1 text-white rounded">Admin/Mod</span> 
+                        </p>                       
+                    </div>
+                    <div x-show="loading" class="w-full flex items-center justify-center">
+                        <img class="w-full px-24" src="/images/defaults/loader.gif"/>
+                    </div>
+                    <ul>
+                        <template x-for="sUser in searchedUsers" :key="sUser.id">
+                            <template x-if="sUser.name">
+                                <li @click="getUserProfile(sUser.id)" class="card-wrap border border-gray-200 rounded shadow-sm shadow-black/10 px-2 !py-2" >
                                    <div class="flex flex-col w-full">
                                        <div class="flex items-center justify-between"> 
                                            <div class="flex items-center gap-2">
@@ -1355,6 +1439,9 @@ export function investigationModalHtml() {
                     </div>
                     <div class="flex my-4 justify-center">
                         <button @click="investigateAll" class="btn-action bg-green-500">Investigate All</button>         
+                    </div>
+                    <div x-show="loading" class="w-full flex items-center justify-center">
+                        <img class="w-full px-24" src="/images/defaults/loader.gif"/>
                     </div>
                     <ul>
                         <template x-for="sUser in searchedUsers" :key="sUser.id">

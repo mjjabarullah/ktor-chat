@@ -18,8 +18,6 @@ window.mobile = window.matchMedia('(max-width: 640px)')
 window.tablet = window.matchMedia('(min-width: 768px)')
 window.desktop = window.matchMedia('(min-width: 1024px)')
 
-const isGuest = rank.code === RankCode.GUEST
-
 document.addEventListener('alpine:init', () => {
 
     Alpine.data('chat', () => {
@@ -42,7 +40,6 @@ document.addEventListener('alpine:init', () => {
             bgColors: bgColors,
             avatars: avatars,
             emoTab: 0,
-            rooms: [],
             roomUsers: [],
             blockedUsers: [],
             onlineUsers: [],
@@ -110,7 +107,7 @@ document.addEventListener('alpine:init', () => {
                     setTimeout(() => {
                         this.showLoader = false
                         this.showMessages = true
-                        if (isGuest) this.showSmallModal(fn.guestDialogHtml())
+                        if (this.user.isGuest) this.showSmallModal(fn.guestDialogHtml())
                         else this.$refs.mainInput.focus()
                     }, 1e3)
                 }
@@ -141,6 +138,7 @@ document.addEventListener('alpine:init', () => {
                 this.user.textBold = `${this.user.textBold}`
                 this.user.canSeeInfo = rank.code === RankCode.OWNER || rank.code === RankCode.S_ADMIN || rank.code === RankCode.ADMIN
                 this.user.canSeeAdminship = this.user.canSeeInfo || rank.code === RankCode.MODERATOR
+                this.user.isGuest = rank.code === RankCode.GUEST
                 this.setSounds()
                 this.setStatusColor()
                 this.setGenderColor()
@@ -282,7 +280,7 @@ document.addEventListener('alpine:init', () => {
                 this.showMessages = true
                 this.$refs.mainInput.focus()
                 localStorage.setItem("isUGCShowed", "true")
-                if (isGuest) this.showSmallModal(fn.guestDialogHtml())
+                if (this.user.isGuest) this.showSmallModal(fn.guestDialogHtml())
             },
             /**
              *
@@ -422,7 +420,7 @@ document.addEventListener('alpine:init', () => {
                 this.closeSmallModal()
             },
             changePasswordDialog() {
-                if (isGuest) {
+                if (this.user.isGuest) {
                     this.showAlertMsg(Errors.GUEST_DOESNT_HAVE_PASSWORD, Css.ERROR)
                     return
                 }
@@ -910,6 +908,7 @@ document.addEventListener('alpine:init', () => {
                     user.interval = null
                     this.pvtUsers.unshift(user)
                     this.showUserProfile = false
+                    this.$nextTick(() => fn.dragElement(document.getElementById(`draggable-${user.id}`), user.id))
                 })
                 this.setPvtNotifiCount()
             },
@@ -1119,14 +1118,6 @@ document.addEventListener('alpine:init', () => {
             /**
              * Rooms
              * */
-            openRoomsModal() {
-                if (mobile.matches) this.showLeft = false
-                this.showFullModal(fn.roomModalLoadingHtml())
-                axios.get(`/${domain.id}/rooms`).then(res => {
-                    this.rooms = res.data
-                    this.showFullModal(fn.roomModalHtml())
-                })
-            },
             getRoomUsers() {
                 axios.get(`/${domain.id}/rooms/${room.id}/users?limit=${domain.offlineLimit}`).then(res => {
                     this.roomUsers = res.data
@@ -1138,7 +1129,10 @@ document.addEventListener('alpine:init', () => {
                     })
                 })
             },
-
+            openRoomsModal() {
+                if (mobile.matches) this.showLeft = false
+                this.showFullModal(fn.roomModalHtml())
+            },
             /**
              * Reports
              * */
@@ -1199,7 +1193,7 @@ document.addEventListener('alpine:init', () => {
              * Announcement
              * */
             getNews() {
-                if (rank.code !== RankCode.GUEST) axios.get(`/${domain.id}/news`).then(res => this.news = res.data)
+                axios.get(`/${domain.id}/news`).then(res => this.news = res.data)
             },
             openNewsModal() {
                 if (mobile.matches) this.showLeft = false
@@ -1255,7 +1249,7 @@ document.addEventListener('alpine:init', () => {
             * Global Feed
             * */
             getGlobalFeed() {
-                if (rank.code !== RankCode.GUEST) axios.get(`/${domain.id}/global-feed`).then(res => this.globalFeed = res.data)
+                axios.get(`/${domain.id}/global-feed`).then(res => this.globalFeed = res.data)
             },
             openGlobalFeedModal() {
                 if (mobile.matches) this.showLeft = false
@@ -1267,7 +1261,7 @@ document.addEventListener('alpine:init', () => {
                     this.showAlertMsg(Errors.YOU_ARE_MUTED, Css.ERROR)
                     return
                 }
-                if (rank.code === RankCode.GUEST) {
+                if (this.user.isGuest) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1289,12 +1283,13 @@ document.addEventListener('alpine:init', () => {
                 this.showDropDown = false
                 this.showFullModal(fn.searchModalHtml())
             },
-            /*
-            * Search
-            * */
             openInvestigationModal() {
                 this.showDropDown = false
                 this.showFullModal(fn.investigationModalHtml())
+            },
+            openManageUsersModal() {
+                this.showDropDown = false
+                this.showFullModal(fn.manageUsersModalHtml())
             },
             /**
              * Actions
@@ -1624,7 +1619,7 @@ document.addEventListener('alpine:init', () => {
             },
             writeGlobalFeed() {
                 const input = this.$refs.input
-                if (rank.code === RankCode.GUEST) {
+                if (this.user.isGuest) {
                     this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
                     return
                 }
@@ -1644,10 +1639,24 @@ document.addEventListener('alpine:init', () => {
         }
     })
 
+    Alpine.data('rooms', () => {
+        return {
+            rooms: [],
+            loading: true,
+            init() {
+                axios.get(`/${domain.id}/rooms`).then(res => {
+                    this.rooms = res.data
+                    this.loading = false
+                })
+            }
+        }
+    })
+
     Alpine.data('search', () => {
         return {
             searchedUsers: [],
             query: Defaults.EMPTY_STRING,
+            loading: false,
             init() {
                 this.$watch('query', value => {
                     if (value === Defaults.EMPTY_STRING) this.searchedUsers = []
@@ -1655,10 +1664,117 @@ document.addEventListener('alpine:init', () => {
             },
             searchUser() {
                 if (this.query === Defaults.EMPTY_STRING) return
+                this.loading = true
                 axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
                     if (res.data.length > 0) this.searchedUsers = res.data
                     else this.searchedUsers = [{empty: 'empty'}]
-                }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
+                    this.loading = false
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+            }
+        }
+    })
+
+    Alpine.data('manageUsers', () => {
+        return {
+            selected: Defaults.EMPTY_STRING,
+            searchedUsers: [],
+            query: Defaults.EMPTY_STRING,
+            loading: false,
+            init() {
+                this.$watch('query', value => {
+                    if (value === Defaults.EMPTY_STRING && this.selected === Defaults.EMPTY_STRING) this.searchedUsers = this.recentUsers
+                })
+                this.getRecentUsers()
+            },
+            getRecentUsers() {
+                axios.get(`/${domain.id}/users/recent`).then(res => {
+                    this.searchedUsers = res.data
+                    this.recentUsers = res.data
+                })
+            },
+            searchUser() {
+                if (this.query === Defaults.EMPTY_STRING) return
+                this.loading = true
+                axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
+                    this.selected = Defaults.EMPTY_STRING
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+            },
+            getMutedUsers() {
+                if (this.selected === 'muted') {
+                    this.selected = Defaults.EMPTY_STRING
+                    return
+                }
+                this.query = Defaults.EMPTY_STRING
+                this.selected = 'muted'
+                this.loading = true
+                axios.get(`/${domain.id}/users/muted`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+            },
+            getBannedUsers() {
+                if (this.selected === 'banned') {
+                    this.selected = Defaults.EMPTY_STRING
+                    return
+                }
+                this.query = Defaults.EMPTY_STRING
+                this.selected = 'banned'
+                this.loading = true
+                axios.get(`/${domain.id}/users/banned`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+            },
+            getKickedUsers() {
+                if (this.selected === 'kicked') {
+                    this.selected = Defaults.EMPTY_STRING
+                    return
+                }
+                this.query = Defaults.EMPTY_STRING
+                this.selected = 'kicked'
+                this.loading = true
+                axios.get(`/${domain.id}/users/kicked`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
+            },
+            getStaffUsers() {
+                if (this.selected === 'staff') {
+                    this.selected = Defaults.EMPTY_STRING
+                    return
+                }
+                this.query = Defaults.EMPTY_STRING
+                this.selected = 'staff'
+                this.loading = true
+                axios.get(`/${domain.id}/users/staff`).then(res => {
+                    if (res.data.length > 0) this.searchedUsers = res.data
+                    else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
+                }).catch(e => {
+                    this.loading = false
+                    this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR)
+                })
             }
         }
     })
@@ -1671,6 +1787,7 @@ document.addEventListener('alpine:init', () => {
             query: Defaults.EMPTY_STRING,
             tab: 0,
             victim: null,
+            loading: false,
             init() {
                 this.$watch('query', value => {
                     if (value === Defaults.EMPTY_STRING) this.searchedUsers = this.recentUsers
@@ -1685,9 +1802,11 @@ document.addEventListener('alpine:init', () => {
             },
             searchUser() {
                 if (this.query === Defaults.EMPTY_STRING) return
+                this.loading = true
                 axios.get(`/${domain.id}/users?search=${this.query}`).then(res => {
                     if (res.data.length > 0) this.searchedUsers = res.data
                     else this.searchedUsers = [{empty: 'empty'}]
+                    this.loading = false
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
             investigate(user) {
@@ -1775,6 +1894,10 @@ document.addEventListener('alpine:init', () => {
                 }).catch(e => this.showAlertMsg(fn.getErrorMsg(e), Css.ERROR))
             },
             writeComment(postId) {
+                if (this.user.isGuest) {
+                    this.showAlertMsg(Errors.PERMISSION_DENIED, Css.ERROR)
+                    return
+                }
                 const post = this.getPost(postId)
                 const formData = new FormData()
                 const content = this.$refs.input.value

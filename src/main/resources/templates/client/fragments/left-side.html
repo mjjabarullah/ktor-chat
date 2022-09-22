@@ -29,7 +29,7 @@
                         </div>
                     </div>
                 </li>
-                <li th:if="${rank.code != 'guest'}" class="pt-[10px] px-1">
+                <li class="pt-[10px] px-1">
                     <div @click="openGlobalFeedModal" class="menu-wrap">
                         <div class="menu border-blue-600">
                             <div class="flex items-center ">
@@ -41,7 +41,8 @@
                         </div>
                     </div>
                 </li>
-                <li th:if="${asPermission}" class="pt-[10px] px-1">
+                <li th:if="${rank.code == 'owner' || rank.code=='super admin' || rank.code=='admin' || rank.code =='moderator'}"
+                    class="pt-[10px] px-1">
                     <div @click="openAdminshipModal" class="menu-wrap">
                         <div class="menu border-yellow-600">
                             <div class="flex items-center ">
@@ -53,7 +54,7 @@
                         </div>
                     </div>
                 </li>
-                <li th:if="${rank.code != 'guest'}" class="pt-[10px] px-1">
+                <li  class="pt-[10px] px-1">
                     <div @click="openTopPointsModal" class="menu-wrap">
                         <div class="menu border-cyan-600">
                             <div class="flex items-center ">

@@ -203,6 +203,50 @@ fun Route.adminRotes(
                         }
                     }
 
+                    get("/muted") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val users = userRepository.getMutedUsers(domainId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
+                    get("/kicked") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val users = userRepository.getKickedUsers(domainId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
+                    get("/banned") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val users = userRepository.getBannedUsers(domainId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
+                    get("/staff") {
+                        try {
+                            val domainId = call.parameters["domainId"]!!.toInt()
+                            val users = userRepository.getStaffUsers(domainId)
+                            call.respond(HttpStatusCode.OK, users)
+                        } catch (e: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+                            e.printStackTrace()
+                        }
+                    }
+
                     get("/investigate") {
                         try {
                             val domainId = call.parameters["domainId"]!!.toInt()

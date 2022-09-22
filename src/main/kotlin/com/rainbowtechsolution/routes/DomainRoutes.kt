@@ -53,11 +53,8 @@ fun Route.domainRoutes(
                     }
                     val room = roomRepository.findRoomById(roomId!!) ?: throw RoomNotFoundException()
                     val permission = permissionRepository.findPermissionByRank(rank.id!!) ?: throw Exception()
-                    val asPermission =
-                        rank.code == RankNames.OWNER || rank.code == RankNames.S_ADMIN || rank.code == RankNames.ADMIN || rank.code == RankNames.MODERATOR
                     val model = mapOf(
-                        "domain" to domain, "room" to room, "rank" to rank, "user" to user, "permission" to permission,
-                        "asPermission" to asPermission
+                        "domain" to domain, "room" to room, "rank" to rank, "user" to user, "permission" to permission
                     )
                     if (user.kicked > 0) {
                         call.respondTemplate("client/kicked", model)
