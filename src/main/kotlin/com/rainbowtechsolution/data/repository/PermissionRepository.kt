@@ -1,7 +1,6 @@
 package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.model.Permission
-import com.rainbowtechsolution.data.model.Rank
 
 interface PermissionRepository {
 

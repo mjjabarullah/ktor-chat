@@ -2,9 +2,7 @@ package com.rainbowtechsolution
 
 import com.rainbowtechsolution.data.database.configureDatabase
 import com.rainbowtechsolution.plugins.*
-import io.ktor.network.tls.certificates.*
 import io.ktor.server.application.*
-import java.io.File
 
 fun main(args: Array<String>): Unit =
     io.ktor.server.netty.EngineMain.main(args)

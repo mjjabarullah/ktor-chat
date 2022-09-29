@@ -2,7 +2,6 @@ package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.entity.Gender
 import com.rainbowtechsolution.data.entity.Status
-import com.rainbowtechsolution.data.model.PvtMessage
 import com.rainbowtechsolution.data.model.User
 import com.rainbowtechsolution.data.model.UserRes
 
@@ -52,7 +51,7 @@ interface UserRepository {
 
     suspend fun updateRank(id: Long, rankId: Int)
 
-    suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?)
+    suspend fun customizeName(id: Long, nameColor: String, nameFont: String)
 
     suspend fun updatePassword(id: Long, password: String)
 
@@ -66,7 +65,7 @@ interface UserRepository {
 
     suspend fun updateDob(id: Long, dob: String?)
 
-    suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?)
+    suspend fun customizeText(id: Long, textBold: Boolean, textColor: String, textFont: String)
 
     suspend fun changeSounds(id: Long, sounds: String)
 

@@ -2,17 +2,14 @@ package com.rainbowtechsolution.controller
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.rainbowtechsolution.data.entity.PvtMessages
 import com.rainbowtechsolution.data.entity.Rooms
 import com.rainbowtechsolution.data.entity.Status
 import com.rainbowtechsolution.data.entity.Users
-import com.rainbowtechsolution.data.repository.RoomRepository
 import com.rainbowtechsolution.data.mappers.toRoomModel
 import com.rainbowtechsolution.data.model.Room
+import com.rainbowtechsolution.data.repository.RoomRepository
 import com.rainbowtechsolution.utils.dbQuery
-import javassist.expr.Expr
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 
 class RoomController : RoomRepository {

@@ -39,6 +39,8 @@ class UserController : UserRepository {
             it[Users.rankId] = rankId
             it[nameColor] = ChatDefaults.COLOR
             it[textColor] = ChatDefaults.COLOR
+            it[textFont] = ChatDefaults.FONT
+            it[nameFont] = ChatDefaults.FONT
             it[ip] = user.ip
             it[deviceId] = user.deviceId
             it[timezone] = user.timezone
@@ -216,7 +218,9 @@ class UserController : UserRepository {
     override suspend fun getStaffUsers(domainId: Int): List<User> = dbQuery {
         Users
             .innerJoin(Ranks)
-            .select { (Ranks.code eq RankNames.OWNER) or (Ranks.code eq RankNames.S_ADMIN) or (Ranks.code eq RankNames.ADMIN) or (Ranks.code eq RankNames.MODERATOR) }
+            .select {
+                (Ranks.code eq RankNames.OWNER) or (Ranks.code eq RankNames.S_ADMIN) or (Ranks.code eq RankNames.ADMIN) or (Ranks.code eq RankNames.MODERATOR)
+            }
             .orderBy(Users.id, SortOrder.DESC)
             .limit(100)
             .map {
@@ -264,7 +268,7 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun customizeName(id: Long, nameColor: String?, nameFont: String?): Unit = dbQuery {
+    override suspend fun customizeName(id: Long, nameColor: String, nameFont: String): Unit = dbQuery {
         userCache.invalidate(id)
         Users.update({ Users.id eq id }) {
             it[Users.nameColor] = nameColor
@@ -313,7 +317,7 @@ class UserController : UserRepository {
         }
     }
 
-    override suspend fun customizeText(id: Long, textBold: Boolean, textColor: String?, textFont: String?): Unit =
+    override suspend fun customizeText(id: Long, textBold: Boolean, textColor: String, textFont: String): Unit =
         dbQuery {
             userCache.invalidate(id)
             Users.update({ Users.id eq id }) {

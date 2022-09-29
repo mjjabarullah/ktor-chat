@@ -16,9 +16,7 @@ import kotlinx.coroutines.channels.consumeEach
 
 
 fun Route.wsRoutes(
-    wsRepository: WsRepository,
-    userRepository: UserRepository,
-    roomRepository: RoomRepository,
+    wsRepository: WsRepository, userRepository: UserRepository, roomRepository: RoomRepository,
     permissionRepository: PermissionRepository
 ) {
 

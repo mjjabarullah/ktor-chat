@@ -35,15 +35,15 @@
                                         <template x-for="message in pvtUser.messages" :key="message.id">
                                             <li :id="'pvt-chat-'+message.id" class="chat-wrap">
                                                 <div class="flex py-1 px-2 w-full"
-                                                     :class="message.sender.id !== userId ? 'flex-row-reverse' : ''">
+                                                     :class="message.sender.id === userId ? 'flex-row-reverse' : ''">
                                                     <img @click="getUserProfile(message.sender.id)"
                                                          class="avatar flex-none cursor-pointer"
                                                          :class="message.sender.gender === 'Male' ? 'male' : 'female'"
                                                          :src="message.sender.avatar">
                                                     <div class="flex flex-col mt-1 max-w-[80%]"
-                                                         :class="message.sender.id !== userId ? 'mr-2 ' : 'ml-2'">
+                                                         :class="message.sender.id === userId ? 'mr-2 ' : 'ml-2'">
                                                         <div class="flex-1 rounded-b-md px-2 py-1 flex flex-col"
-                                                             :class="message.sender.id !== userId ? 'rounded-tl-md b-zinc-3' : 'rounded-tr-md bg-skin-primary'">
+                                                             :class="message.sender.id === userId ? 'rounded-tl-md b-zinc-3' : 'rounded-tr-md bg-skin-primary'">
                                                             <template x-if="message.audio">
                                                                 <audio preload="auto" controls class="w-[250px]"
                                                                        controlslist="nodownload noplaybackrate">
@@ -59,9 +59,9 @@
                                                                x-html="message.content"></p>
                                                         </div>
                                                         <div class="flex items-center gap-2 mt-1"
-                                                             :class="message.sender.id !== userId ? 'justify-end' : 'justify-start'">
+                                                             :class="message.sender.id === userId ? 'justify-end' : 'justify-start'">
                                                             <p class="date" x-text="message.createdAt"></p>
-                                                            <template x-if="message.sender.id !== userId">
+                                                            <template x-if="message.sender.id === userId">
                                                                 <i @click="reportPvtChat(message.id)"
                                                                    class="fa-solid fa-font-awesome icon-sm"></i>
                                                             </template>

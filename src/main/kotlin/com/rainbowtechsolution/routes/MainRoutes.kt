@@ -13,7 +13,6 @@ fun Route.mainRoutes(
 
     route("/") {
         get() {
-
             call.respondTemplate("index")
         }
     }

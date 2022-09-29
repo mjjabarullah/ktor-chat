@@ -9,7 +9,10 @@ import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.model.ChatSession
 import com.rainbowtechsolution.data.model.Seen
 import com.rainbowtechsolution.data.model.User
-import com.rainbowtechsolution.data.repository.*
+import com.rainbowtechsolution.data.repository.DomainRepository
+import com.rainbowtechsolution.data.repository.PostRepository
+import com.rainbowtechsolution.data.repository.RankRepository
+import com.rainbowtechsolution.data.repository.UserRepository
 import com.rainbowtechsolution.exceptions.DomainNotFoundException
 import com.rainbowtechsolution.exceptions.UserAlreadyFoundException
 import com.rainbowtechsolution.exceptions.UserNotFoundException

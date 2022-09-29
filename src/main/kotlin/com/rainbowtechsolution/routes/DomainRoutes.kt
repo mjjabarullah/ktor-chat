@@ -30,7 +30,7 @@ fun Route.domainRoutes(
     domains: List<String>, roomRepository: RoomRepository, userRepository: UserRepository,
     messageRepository: MessageRepository, domainRepository: DomainRepository, rankRepository: RankRepository,
     permissionRepository: PermissionRepository, reportRepository: ReportRepository, postRepository: PostRepository,
-    notificationRepository: NotificationRepository
+    notificationRepository: NotificationRepository, storyRepository: StoryRepository
 ) {
 
     if (domains.isEmpty()) return
@@ -156,7 +156,9 @@ fun Route.domainRoutes(
                 }
 
                 route("/users") {
-                    userRoute(userRepository, rankRepository, permissionRepository, notificationRepository)
+                    userRoute(
+                        userRepository, rankRepository, permissionRepository, notificationRepository, storyRepository
+                    )
                 }
 
                 route("/rooms") {
@@ -285,7 +287,7 @@ fun Route.domainRoutes(
 
 fun Route.userRoute(
     userRepository: UserRepository, rankRepository: RankRepository, permissionRepository: PermissionRepository,
-    notificationRepository: NotificationRepository
+    notificationRepository: NotificationRepository, storyRepository: StoryRepository
 ) {
 
     get("/{userId}") {
@@ -353,6 +355,10 @@ fun Route.userRoute(
                 call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
             }
         }
+    }
+
+    route("/stories") {
+        userStoryRoute(storyRepository)
     }
 
     get("/check-mute") {
@@ -439,7 +445,7 @@ fun Route.userRoute(
                         val renderFormat = if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
                         val imageName = "${getUUID()}.$renderFormat"
                         filePath += imageName
-                        part.saveImage(filePath, renderFormat)
+                        part.saveFile(filePath, renderFormat)
                     }
                     else -> Unit
                 }
@@ -494,8 +500,8 @@ fun Route.userRoute(
     put("/customize-name") {
         try {
             val userId = call.sessions.get<ChatSession>()?.id!!
-            val nameColor = call.receiveParameters()["nameColor"]
-            val font = call.receiveParameters()["nameFont"]
+            val nameColor = call.receiveParameters()["nameColor"].toString()
+            val font = call.receiveParameters()["nameFont"].toString()
             userRepository.customizeName(userId, nameColor, font)
             val user = userRepository.findUserById(userId)
             WsController.updateMember(user!!)
@@ -596,8 +602,8 @@ fun Route.userRoute(
             val userId = call.sessions.get<ChatSession>()?.id!!
             val params = call.receiveParameters()
             val isTextBold = params["textBold"].toBoolean()
-            val textColor = params["textColor"]
-            val textFont = params["textFont"]
+            val textColor = params["textColor"].toString()
+            val textFont = params["textFont"].toString()
             userRepository.customizeText(userId, isTextBold, textColor, textFont)
             val user = userRepository.findUserById(userId)
             WsController.updateMember(user!!)
@@ -630,6 +636,87 @@ fun Route.userRoute(
         } catch (e: Exception) {
             e.printStackTrace()
             call.respond(HttpStatusCode.InternalServerError, "Something went wrong.")
+        }
+    }
+}
+
+fun Route.userStoryRoute(storyRepository: StoryRepository) {
+    get {
+        try {
+            val userId = call.sessions.get<ChatSession>()?.id!!
+            val domainId = call.parameters["domainId"]?.toInt()!!
+            val stories = storyRepository.getStories(userId, domainId)
+            call.respond(HttpStatusCode.OK, stories)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    post("/create") {
+        val parts = call.receiveMultipart()
+        val userId = call.sessions.get<ChatSession>()?.id!!
+        val domainId = call.parameters["domainId"]?.toInt()!!
+        var filePath = ""
+        var content = ""
+        var type = StoryType.Image
+        try {
+            val imageStoryDir = File(ChatDefaults.STORY_IMAGE_FOLDER)
+            val videoStoryDir = File(ChatDefaults.STORY_VIDEOS_FOLDER)
+            if (!imageStoryDir.mkdirs() && !videoStoryDir.mkdirs() && !imageStoryDir.exists() && !imageStoryDir.exists()) {
+                throw IOException("Failed to create directory ${imageStoryDir.absolutePath} or ${videoStoryDir.absolutePath}")
+            }
+            parts.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> content = part.value
+                    is PartData.FileItem -> {
+                        val name = part.originalFileName as String
+                        when (val extension = name.substring(name.lastIndexOf(".") + 1, name.length)) {
+                            ImageType.GIF -> {
+                                filePath += "${ChatDefaults.STORY_IMAGE_FOLDER}${getUUID()}.$extension"
+                                part.saveFile(filePath, extension)
+                            }
+                            VideoType.MP4 -> {
+                                type = StoryType.Video
+                                filePath += "${ChatDefaults.STORY_VIDEOS_FOLDER}${getUUID()}.$extension"
+                                part.saveFile(filePath, extension)
+                            }
+                            else -> {
+                                filePath += "${ChatDefaults.STORY_IMAGE_FOLDER}${getUUID()}.$extension"
+                                part.saveFile(filePath, extension)
+                            }
+                        }
+                    }
+                    else -> Unit
+                }
+            }
+            storyRepository.createStory(
+                Story(link = filePath, content = content, user = User(userId), domainId = domainId, type = type)
+            )
+            call.respond(HttpStatusCode.OK)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+        }
+    }
+
+    route("/{storyId}") {
+        post("/seen") {
+            try {
+                val userId = call.sessions.get<ChatSession>()?.id!!
+                val storyId = call.parameters["storyId"]?.toInt()!!
+                storyRepository.seenStory(userId, storyId)
+                call.respond(HttpStatusCode.OK)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+            }
+        }
+        delete {
+            try {
+                val storyId = call.parameters["storyId"]?.toInt()!!
+                storyRepository.deleteStory(storyId)
+                call.respond(HttpStatusCode.OK)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, Errors.SOMETHING_WENT_WRONG)
+            }
         }
     }
 }
@@ -693,7 +780,7 @@ fun Route.roomRoute(
                                 if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
                             val imageName = "${getUUID()}.$renderFormat"
                             filePath += imageName
-                            part.saveImage(filePath, renderFormat)
+                            part.saveFile(filePath, renderFormat)
                         }
                         else -> Unit
                     }
@@ -881,7 +968,7 @@ fun Route.pvtRoute(messageRepository: MessageRepository) {
                             if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
                         val imageName = "${getUUID()}.$renderFormat"
                         filePath += imageName
-                        part.saveImage(filePath, renderFormat)
+                        part.saveFile(filePath, renderFormat)
                     }
                     else -> Unit
                 }
@@ -968,7 +1055,7 @@ fun Route.postRoute(
                         val renderFormat = if (extension == ImageType.GIF) ImageType.GIF else ImageType.WEBP
                         val imageName = "${getUUID()}.$renderFormat"
                         filePath += imageName
-                        part.saveImage(filePath, renderFormat)
+                        part.saveFile(filePath, renderFormat)
                     }
                     else -> Unit
                 }

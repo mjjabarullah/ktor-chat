@@ -1,0 +1,29 @@
+<div class="p-2 flex items-center gap-2" th:if="${rank.code !='guest'}">
+    <div class="label"><i class="fa-solid fa-icons mr-1"></i><span>Stories <span
+           x-show ="storyUsers.length>0" x-text="'('+storyUsers.length+')'"></span></span>
+    </div>
+    <p @click="getStories" x-show="storyUsers.length==0" class="tag">View</p>
+</div>
+<div x-show="storyUsers.length>0" class="relative p-4 h-[110px] max-h-[115px] w-full" th:if="${rank.code !='guest'}">
+    <div class="absolute inset-0 overflow-x-auto scrollbar-hidden p-2 whitespace-nowrap w-full">
+        <a class="inline-flex flex-col text-center justify-center gap-1 mx-2 relative">
+            <img class="w-[72px] h-[72px] rounded-full" src="/images/avatars/user.webp" alt="">
+            <p class="text-[12px] text-black">Create Story</p>
+            <span @click="createStoryDialog"
+                  class="cursor-pointer absolute bottom-4 right-1 h-[28px] w-[28px] rounded-full bg-white text-[20px]"><i
+                    class="fa-solid fa-circle-plus text-skin-primary"></i></span>
+        </a>
+        <template x-for="sUser in storyUsers" :key="sUser.id">
+            <a @click="openStory(sUser.id)"
+               class="inline-flex flex-col text-center justify-center gap-1 mx-2 cursor-pointer">
+                <img class="p-1 w-16 h-16 rounded-full ring-[4px]"
+                     :class="[sUser.gender=='Male'?'ring-sky-500':'ring-pink-500', sUser.seen?'opacity-50':'']"
+                     :src="sUser.avatar">
+                <p class="text-[12px] text-black font-bold" :class="[sUser.seen?'opacity-50':'']"
+                   x-text="sUser.name"></p>
+            </a>
+        </template>
+    </div>
+</div>
+
+

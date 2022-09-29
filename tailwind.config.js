@@ -10,6 +10,7 @@ function withOpacity(variableName) {
 module.exports = {
     content: [
         "./src/**/*.{html,js}",
+        "./dev/**/*.{js}"
     ],
     theme: {
         extend: {
@@ -49,23 +50,23 @@ module.exports = {
                 },
             },
             fontFamily: {
-                'lato': ['Lato', 'Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'signika': ['Signika','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'grandstander': ['Grandstander','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'comic': ['Comic Neue','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'orbitron': ['Orbitron','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'quicksand': ['Quicksand','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'lemonada': ['Lemonada','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'grenze': ['Grenze Gotisch','cursive'],
-                'kalam': ['Kalam','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'merienda': ['Merienda','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'amita': ['Amita','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'averia': ['Averia Libre','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'turret': ['Turret Road','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'sansita': ['Sansita','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'comfortaa': ['Comfortaa','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'charm': ['Charm','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
-                'lobster': ['Lobster Two','Helvetica Neue', 'Arial', 'Helvetica', 'sans-serif'],
+                'lato': ['Lato', 'sans-serif'],
+                'signika': ['Signika', 'sans-serif'],
+                'grandstander': ['Grandstander', 'cursive'],
+                'comic': ['Comic Neue', 'cursive'],
+                'orbitron': ['Orbitron', 'sans-serif'],
+                'quicksand': ['Quicksand', 'sans-serif'],
+                'lemonada': ['Lemonada', 'sans-serif'],
+                'grenze': ['Grenze Gotisch', 'cursive'],
+                'kalam': ['kalam', 'cursive'],
+                'merienda': ['Merienda', 'cursive'],
+                'amita': ['Amita', 'cursive'],
+                'averia': ['Averia Libre', 'cursive'],
+                'turret': ['Turret Road', 'cursive'],
+                'sansita': ['Sansita', 'sans-serif'],
+                'comfortaa': ['Comfortaa', 'cursive'],
+                'charm': ['Charm', 'cursive'],
+                'lobster': ['Lobster Two', 'cursive'],
             }
         },
     },

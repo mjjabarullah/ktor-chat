@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val ktor: String by project
+val ktor_version: String by project
 val kotlin: String by project
 val logback: String by project
 val msql: String by project
@@ -15,8 +15,8 @@ val caffine: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.7.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.0"
+    kotlin("jvm") version "1.7.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.10"
 }
 
 group = "com.rainbowtechsolution"
@@ -35,24 +35,24 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.ktor:ktor-server-core-jvm:$ktor")
-    implementation("io.ktor:ktor-server-websockets-jvm:$ktor")
-    implementation("io.ktor:ktor-server-auth:$ktor")
-    implementation("io.ktor:ktor-server-double-receive:$ktor")
-    implementation("io.ktor:ktor-server-caching-headers:$ktor")
-    implementation("io.ktor:ktor-server-thymeleaf-jvm:$ktor")
-    implementation("io.ktor:ktor-server-resources:$ktor")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor")
-    implementation("io.ktor:ktor-server-call-logging-jvm:$ktor")
-    implementation("io.ktor:ktor-serialization-jackson:$ktor")
-    implementation("io.ktor:ktor-server-compression:$ktor")
-    implementation("io.ktor:ktor-server-status-pages:$ktor")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor")
-    implementation("io.ktor:ktor-server-sessions-jvm:$ktor")
-    implementation("io.ktor:ktor-network-tls-certificates-jvm:$ktor")
+    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-double-receive:$ktor_version")
+    implementation("io.ktor:ktor-server-caching-headers:$ktor_version")
+    implementation("io.ktor:ktor-server-thymeleaf-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-resources:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
+    implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
+    implementation("io.ktor:ktor-server-compression:$ktor_version")
+    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-sessions-jvm:$ktor_version")
+    implementation("io.ktor:ktor-network-tls-certificates-jvm:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin")
     //mysql
     implementation("org.jetbrains.exposed:exposed-core:$msql")

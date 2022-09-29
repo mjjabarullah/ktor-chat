@@ -3,11 +3,7 @@ package com.rainbowtechsolution.utils
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.rainbowtechsolution.common.Commands
-import com.rainbowtechsolution.common.ImageType
-import com.rainbowtechsolution.common.RankNames
-import com.rainbowtechsolution.common.Validation
-import com.rainbowtechsolution.data.entity.Comments
+import com.rainbowtechsolution.common.*
 import com.rainbowtechsolution.data.entity.MessageType
 import com.rainbowtechsolution.data.model.Message
 import com.rainbowtechsolution.data.model.Permission
@@ -39,21 +35,22 @@ inline fun <reified T> T.encodeToString(): String =
 
 inline fun <reified T> String.decodeFromString(): T = jacksonObjectMapper().readValue(this)
 
-suspend fun PartData.FileItem.saveImage(path: String, renderFormat: String) {
-    if (renderFormat == ImageType.GIF) {
-        val fileBytes = streamProvider().readBytes()
-        File(path).writeBytes(fileBytes)
-        return
-    }
-    withContext(Dispatchers.IO) {
-        ByteArrayInputStream(streamProvider().readBytes()).also { input ->
-            val bufferedImage = ImageIO.read(input)
-            ByteArrayOutputStream().also { output ->
-                ImageIO.write(bufferedImage, renderFormat, output)
-                File(path).writeBytes(output.toByteArray())
-                output.close()
+suspend fun PartData.FileItem.saveFile(path: String, renderFormat: String) {
+    when (renderFormat) {
+        ImageType.GIF, VideoType.MP4 -> {
+            val fileBytes = streamProvider().readBytes()
+            File(path).writeBytes(fileBytes)
+        }
+        else -> withContext(Dispatchers.IO) {
+            ByteArrayInputStream(streamProvider().readBytes()).also { input ->
+                val bufferedImage = ImageIO.read(input)
+                ByteArrayOutputStream().also { output ->
+                    ImageIO.write(bufferedImage, ImageType.WEBP, output)
+                    File(path).writeBytes(output.toByteArray())
+                    output.close()
+                }
+                input.close()
             }
-            input.close()
         }
     }
 }

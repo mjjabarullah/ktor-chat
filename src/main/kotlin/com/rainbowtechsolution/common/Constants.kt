@@ -50,7 +50,10 @@ object ChatDefaults {
     const val PRIVATE_AUDIO_UPLOAD_FOLDER = "uploads/private/audios/"
     const val POST_IMAGE_UPLOAD_FOLDER = "uploads/post/images/"
     const val AVATAR_FOLDER = "uploads/avatars/"
+    const val STORY_IMAGE_FOLDER = "uploads/stories/images/"
+    const val STORY_VIDEOS_FOLDER = "uploads/stories/videos/"
     const val COLOR = "black"
+    const val FONT = "lato"
     const val POST_PER_PAGE = 10L
     const val LEVEL_INCREASE = 100
 
@@ -97,13 +100,17 @@ object Errors {
     const val NAME_BAD_CHARACTERS = "Name should not contain special characters."
 }
 
-object Commands{
+object Commands {
     const val WC = "/wc"
     const val ME = "/me"
     const val CLEAR = "/clear"
 }
 
 object ImageType {
-    const val GIF ="gif"
-    const val WEBP ="webp"
+    const val GIF = "gif"
+    const val WEBP = "webp"
+}
+
+object VideoType  {
+    const val MP4 = "mp4"
 }

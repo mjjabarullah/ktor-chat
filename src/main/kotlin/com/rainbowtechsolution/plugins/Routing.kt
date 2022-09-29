@@ -21,6 +21,7 @@ fun Application.configureRouting() {
     val reportRepository by inject<ReportRepository>()
     val postRepository by inject<PostRepository>()
     val notificationRepository by inject<NotificationRepository>()
+    val storyRepository by inject<StoryRepository>()
 
     install(Resources)
 
@@ -36,7 +37,7 @@ fun Application.configureRouting() {
 
         domainRoutes(
             domains, roomRepository, userRepository, messageRepository, domainRepository, rankRepository,
-            permissionRepository, reportRepository, postRepository, notificationRepository
+            permissionRepository, reportRepository, postRepository, notificationRepository, storyRepository
         )
 
         mainRoutes(roomRepository, userRepository)

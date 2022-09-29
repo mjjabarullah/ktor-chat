@@ -14,6 +14,11 @@ export const bgColors = ['b-red', 'b-red-1', 'b-red-2', 'b-red-3', 'b-orange', '
 export const avatars = ['/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp', '/images/avatars/guest.webp', '/images/avatars/user.webp',]
 
 /**
+ * Fonts
+ * */
+export const Fonts = ['lato', 'signika', 'grandstander', 'comic', 'orbitron', 'quicksand', 'lemonada', 'grenze', 'kalam', 'merienda', 'amita', 'averia', 'turret', 'sansita', 'comfortaa', 'charm', 'lobster']
+
+/**
  * Message type
  * */
 export const MessageType = {
@@ -128,7 +133,9 @@ export const Success = {
     USER_UNKICKED: '%USER% unkicked',
     USER_BANNED: '%USER% banned',
     USER_UNBANNED: '%USER% unbanned',
-    USER_DELETED: '%USER% account deleted'
+    USER_DELETED: '%USER% account deleted',
+    STORY_CREATED: 'Story created',
+    STORY_DELETED: 'Story deleted'
 }
 
 /**
@@ -140,6 +147,7 @@ export const Errors = {
     PERMISSION_DENIED: 'Permission denied',
     SOMETHING_WENT_WRONG: 'Something went wrong',
     INVALID_FILE_FORMAT: 'Invalid file format',
+    ONLY_MP4_ALLOWED: 'Mp4 format only allowed',
     GUEST_DOESNT_HAVE_PASSWORD: 'Guest does not have password',
     PASSWORD_MUST_HAVE: 'Must have at least 8 characters',
     YOU_ARE_MUTED: 'You are muted',
@@ -177,7 +185,8 @@ export const Defaults = {
     FUNC_TYPE: 'function',
     MAX_RECORDING_TIME: 180,
     MIN_RECORDING_TIME: 10,
-    MIN_PASS_LENGTH: 8
+    MIN_PASS_LENGTH: 8,
+    timing: [2, 5, 10, 15, 30, 60, 24 * 60, 2 * 24 * 60, 3 * 24 * 60, 4 * 24 * 60, 5 * 24 * 60, 6 * 24 * 60, 7 * 24 * 60, 14 * 24 * 60, 30 * 24 * 60]
 }
 
 /**
@@ -191,6 +200,15 @@ export const RankCode = {
     VIP: 'vip',
     USER: 'user',
     GUEST: 'guest',
+}
+
+/**
+ * Rank code
+ * */
+export const Story = {
+    IMAGE:'Image',
+    VIDEO:'Video',
+    IMAGE_TIME: 5
 }
 
 

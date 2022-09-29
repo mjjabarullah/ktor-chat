@@ -1,6 +1,5 @@
 package com.rainbowtechsolution.data.repository
 
-import com.rainbowtechsolution.data.entity.Ranks
 import com.rainbowtechsolution.data.model.Rank
 
 interface RankRepository {

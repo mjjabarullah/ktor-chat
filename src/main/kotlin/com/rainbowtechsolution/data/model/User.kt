@@ -46,6 +46,7 @@ data class User(
     var kickMsg: String? = null,
     var banMsg: String? = null,
     var createdAt: String? = null,
+    var stories: List<Story> = emptyList(),
     @JsonIgnore
     var socket: WebSocketSession? = null
 ) {

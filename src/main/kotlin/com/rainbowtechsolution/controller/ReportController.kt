@@ -2,13 +2,14 @@ package com.rainbowtechsolution.controller
 
 import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.entity.Reports
-import com.rainbowtechsolution.data.entity.Rooms
 import com.rainbowtechsolution.data.entity.Users
-import com.rainbowtechsolution.data.repository.ReportRepository
 import com.rainbowtechsolution.data.mappers.toReportModel
 import com.rainbowtechsolution.data.model.Report
+import com.rainbowtechsolution.data.repository.ReportRepository
 import com.rainbowtechsolution.utils.dbQuery
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
 import java.time.LocalDateTime
 
 class ReportController : ReportRepository {

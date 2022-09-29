@@ -1,5 +1,42 @@
-import {Defaults, Errors, ReactType} from './constant'
+import {Defaults, Errors, Fonts, ReactType} from './constant'
 import {emojis} from './emojis'
+
+export function createStoryHtml() {
+    return `
+        <div x-data="stories" class="text-gray-700 text-center">
+            <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
+                <p class="text-md font-bold ">Create Story</p>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+            </div> 
+            <div class="p-4">
+                <div class="mb-4">
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="content" type="text" maxlength="150" placeholder="Write something..." ></textarea>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex justify-center gap-2 items-center text-skin-hover text-[13px] font-bold"> 
+                        <p class="flex items-center py-1 px-4 hover:bg-skin-primary/10 rounded" @click="$refs.imageInput.click()">
+                            <img  src="/images/defaults/picture.webp" class="w-6 h-6 mr-1" alt="">Upload Image
+                        </p>
+                        <p class="flex items-center py-1 px-4 hover:bg-skin-primary/10 rounded" @click="$refs.videoInput.click()">
+                            <img  src="/images/defaults/video.webp" class="w-6 h-6 mr-1" alt="">Upload Video 
+                        </p>
+                    </div> 
+                    <p class="text-[10px] mt-1">(All image format and .mp4 video supported)</p>
+                </div>              
+                <div class="mb-4 flex flex-col">
+                   <template x-if="image"><img :src="image" class="w-[50%] mx-auto" alt=""></template>
+                   <template x-if="video"><video class="w-[80%] aspect-video mx-auto"><source :src="video"></video></template>
+                   <input x-ref="imageInput" @change="addImage($el)" type="file" class="hidden" accept="image/*">
+                   <input x-ref="videoInput" @change="addVideo($el)" type="file" class="hidden" accept="video/mp4">
+                </div>
+                <div class="flex gap-2 justify-center">
+                    <button @click="closeSmallModal" class="btn-action bg-red-500">Cancel</button>          
+                    <button @click.once="createStory()" class="btn-action bg-green-500"><i class="fa-solid fa-paper-plane mr-2"></i>Create</button> 
+                </div>
+            </div>
+        </div>
+    `
+}
 
 export function renderWelcomeMessage() {
     const topic = room.topic.replace(/%ROOM%/g, room.name)
@@ -120,8 +157,8 @@ export function pvtEmojisHtml() {
 }
 
 export function appendEmojis(content) {
-    if (content === '') return content
-    let result = ''
+    if (content === Defaults.EMPTY_STRING) return content
+    let result = Defaults.EMPTY_STRING
     const words = content.split(' ')
     words.forEach(word => {
         if (word.startsWith(':')) {
@@ -322,6 +359,8 @@ export function changeNameHtml() {
 }
 
 export function customizeNameHtml() {
+    let options = Defaults.EMPTY_STRING
+    Fonts.forEach(font => options += `<option value="${font}">${font}</option>`)
     return `
         <div x-data="customize" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
@@ -329,31 +368,11 @@ export function customizeNameHtml() {
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
-                <template x-if="user.nameFont"> 
-                    <p class="w-full font-bold clip" :class="[nameFont, nameColor]" x-text="user.name"></p>
-                </template>
+                <p x-show="user.nameFont" class="w-full font-bold clip" :class="[nameFont, nameColor]" x-text="user.name"></p>
                 <template x-if="permission.nameFont"> 
                     <div class="w-full h-10 mb-4">
-                    <select x-model="nameFont" class="input-text">
-                        <option value="">Select Font</option>
-                        <option value="signika">Signika</option>
-                        <option value="grandstander">Grandstander</option>
-                        <option value="comic">Comic</option>
-                        <option value="orbitron">Orbitron</option>
-                        <option value="quicksand">Quicksand</option>
-                        <option value="lemonada">Lemonada</option>
-                        <option value="grenze">Grenze</option>
-                        <option value="kalam">Kalam</option>
-                        <option value="merienda">Merienda</option>
-                        <option value="amita">Amita</option>
-                        <option value="averia">Averia</option>
-                        <option value="turret">Turret</option>
-                        <option value="sansita">Sansita</option>
-                        <option value="comfortaa">Comfortaa</option>
-                        <option value="charm">Charm</option>
-                        <option value="lobste">Lobster</option>
-                    </select>
-                </div>
+                        <select x-model="nameFont" class="input-text capitalize">${options}</select>
+                    </div>
                 </template>
                  <template x-if="permission.nameColor"> 
                     <div class="w-full mb-4 grid grid-cols-7 space-y-1 space-x-1 max-h-[150px] overflow-y-auto scrollbar">
@@ -402,12 +421,11 @@ export function changeAboutHtml() {
         <div x-data="{about:user.about}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
                 <p class="text-md font-bold ">Change About Me</p>
-                <i @click="closeAboutDialog" class="fas fa-times-circle text-2xl cursor-pointer"></i>
+                <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div> 
             <div class="p-4">
                 <div class="mb-4">
-                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="about" 
-                        type="text" maxlength="150" name="about" autofocus></textarea>
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="about" type="text" maxlength="150" ></textarea>
                 </div>
                  <div class="flex gap-2 justify-center">
                     <button @click="changeAbout(about)" class="btn-action bg-green-500">Change</button>          
@@ -514,6 +532,8 @@ export function changeDobHtml() {
 }
 
 export function customizeTextHtml() {
+    let options = Defaults.EMPTY_STRING
+    Fonts.forEach(font => options += `<option value="${font}">${font}</option>`)
     return `
         <div x-data="customize" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
@@ -521,29 +541,9 @@ export function customizeTextHtml() {
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
             </div>
             <div class="p-4">
-                <template x-if="textFont"> 
-                    <p class="w-full clip" :class="[textFont, textColor, textBold=='true' ? 'font-bold' : 'font-normal' ]">Sample Text</p>
-                </template>    
+                <p x-show="textFont" class="w-full clip" :class="[textFont, textColor, textBold=='true' ? 'font-bold' : 'font-normal' ]">Sample Text</p>
                 <div class="w-full h-10 mb-4">
-                    <select x-model="textFont" class="input-text">
-                        <option>Select Font</option>
-                        <option value="signika">Signika</option>
-                        <option value="grandstander">Grandstander</option>
-                        <option value="comic">Comic</option>
-                        <option value="orbitron">Orbitron</option>
-                        <option value="quicksand">Quicksand</option>
-                        <option value="lemonada">Lemonada</option>
-                        <option value="grenze">Grenze</option>
-                        <option value="kalam">Kalam</option>
-                        <option value="merienda">Merienda</option>
-                        <option value="amita">Amita</option>
-                        <option value="averia">Averia</option>
-                        <option value="turret">Turret</option>
-                        <option value="sansita">Sansita</option>
-                        <option value="comfortaa">Comfortaa</option>
-                        <option value="charm">Charm</option>
-                        <option value="lobster">Lobster</option>
-                    </select>
+                    <select x-model="textFont" class="input-text capitalize">${options}</select>
                 </div>
                 <p class="text-left font-bold text-[12px]">Text Bold</p>
                 <div class="w-full h-10 mb-2">
@@ -578,21 +578,19 @@ export function messageModalHtml() {
             </div> 
             <div class="p-[10px]">
                 <ul class="h-full ">
-                    <template x-if="pvtUsers.length>0" >
-                        <template x-for="pvtUser in pvtUsers" :key="pvtUser.id">
-                            <li @click="openPvtDialog(pvtUser.id)" class="pvt-user-wrap">
-                               <div class="w-full gap-2">
-                                    <div class="flex h-full w-full items-center">
-                                        <img class="avatar flex-none mx-1" :src="pvtUser.avatar">
-                                        <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
-                                            <p class="ellipsis username clip" :class="[pvtUser.nameColor, pvtUser.nameFont]" x-text="pvtUser.name">
-                                            <p class="flex items-center clip ellipsis text-gray-500 text-[12px]" x-text="getPvtMessage(pvtUser)"></p>
-                                        </div>
-                                       <p x-show="pvtUser.unReadCount>0" class="count-md" x-text="pvtUser.unReadCount"></p>
+                    <template x-for="pvtUser in pvtUsers" :key="pvtUser.id">
+                        <li @click="openPvtDialog(pvtUser.id)" class="pvt-user-wrap">
+                           <div class="w-full gap-2">
+                                <div class="flex h-full w-full items-center">
+                                    <img class="avatar flex-none mx-1" :src="pvtUser.avatar">
+                                    <div class="flex-1 px-1 whitespace-nowrap overflow-hidden flex flex-col justify-center">
+                                        <p class="ellipsis username clip" :class="[pvtUser.nameColor, pvtUser.nameFont]" x-text="pvtUser.name">
+                                        <p class="flex items-center clip ellipsis text-gray-500 text-[12px]" x-text="getPvtMessage(pvtUser)"></p>
                                     </div>
+                                   <p x-show="pvtUser.unReadCount>0" class="count-md" x-text="pvtUser.unReadCount"></p>
                                 </div>
-                            </li> 
-                        </template>
+                            </div>
+                        </li>
                     </template>
                     <template x-if="pvtUsers.length === 0"> 
                         <li class="pvt-user-wrap">
@@ -1540,11 +1538,15 @@ export function removeReaction(post, reactType) {
 }
 
 export function muteDialogHtml() {
+    let options = Defaults.EMPTY_STRING
+    Defaults.timing.forEach(time => {
+        options += ` <option value="${time}">${getTiming(time)}</option>`
+    })
     return `
-        <div x-data="actions" class="text-gray-700 text-center">
+        <div x-data="{reason: '',selectedTime: 5}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
-                <i class="fa-regular fa-hand text-red-500 text-2xl"></i>  
+                <i class="fa-solid fa-hand text-red-500 text-2xl"></i>  
                 <p class="ml-2 text-md font-bold " x-text="'Mute '+u.user.name"></p>
             </div>
                 <i @click="closeSmallModal" class="fas fa-times-circle text-2xl cursor-pointer"></i>
@@ -1552,27 +1554,11 @@ export function muteDialogHtml() {
             <div class="p-4">
                 <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
                 <div class="w-full mb-4 h-10"> 
-                    <select x-model="selectedTime" class="input-text h-full">
-                        <option value="2">2 minutes</option>
-                        <option value="5">5 minutes</option>
-                        <option value="10">10 minutes</option>
-                        <option value="15">15 minutes</option>
-                        <option value="30">30 minutes</option>
-                        <option value="60">1 hour</option>
-                        <option value="1440">1 day</option>
-                        <option value="2880">2 days</option>
-                        <option value="4320">3 days</option>
-                        <option value="5760">4 days</option>
-                        <option value="7200">5 days</option>
-                        <option value="8640">6 days</option>
-                        <option value="10080">7 days</option>
-                        <option value="20160">14 days</option>
-                        <option value="43200">30 days</option>
-                    </select>
+                    <select x-model="selectedTime" class="input-text h-full">${options}</select>
                 </div>
                 <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
                 <div class="mb-4"> 
-                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150"></textarea>
                 </div>
                 <div class="flex gap-2 justify-center">
                     <button @click="mute(selectedTime, reason)" class="btn-action bg-green-500">Mute</button>          
@@ -1584,8 +1570,12 @@ export function muteDialogHtml() {
 }
 
 export function kickDialogHtml() {
+    let options = Defaults.EMPTY_STRING
+    Defaults.timing.forEach(time => {
+        options += ` <option value="${time}">${getTiming(time)}</option>`
+    })
     return `
-        <div x-data="actions" class="text-gray-700 text-center">
+        <div x-data="{reason: '',selectedTime: 5}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
                 <i class="fa-solid fa-user-slash text-red-500 text-2xl"></i>  
@@ -1596,23 +1586,7 @@ export function kickDialogHtml() {
             <div class="p-4">
                 <p class="text-[13px] text-start leading-[14px] font-bold">Duration</p>
                 <div class="w-full mb-4 h-10"> 
-                    <select x-model="selectedTime" class="input-text h-full">
-                        <option value="2">2 minutes</option>
-                        <option value="5">5 minutes</option>
-                        <option value="10">10 minutes</option>
-                        <option value="15">15 minutes</option>
-                        <option value="30">30 minutes</option>
-                        <option value="60">1 hour</option>
-                        <option value="1440">1 day</option>
-                        <option value="2880">2 days</option>
-                        <option value="4320">3 days</option>
-                        <option value="5760">4 days</option>
-                        <option value="7200">5 days</option>
-                        <option value="8640">6 days</option>
-                        <option value="10080">7 days</option>
-                        <option value="20160">14 days</option>
-                        <option value="43200">30 days</option>
-                    </select>
+                    <select x-model="selectedTime" class="input-text h-full">${options}</select>
                 </div>
                 <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
                 <div class="mb-4"> 
@@ -1627,9 +1601,18 @@ export function kickDialogHtml() {
     `
 }
 
+function getTiming(time) {
+    let result = Defaults.EMPTY_STRING
+    let hour = time / 60
+    let day = time / (60 * 24)
+    hour < 1 ? result = `${time} minutes` : hour === 1 ? result = `${hour} hour` : (hour > 1 && hour < 24) ? result = `${hour} hours` :
+        day === 1 ? result = `${day} day` : day > 1 ? result = `${day} days` : result
+    return result
+}
+
 export function banDialogHtml() {
     return `
-        <div x-data="actions" class="text-gray-700 text-center">
+        <div x-data="{reason: ''}" class="text-gray-700 text-center">
             <div class="px-4 py-1 flex justify-between items-center border-b border-gray-200">
             <div class="inline-flex items-center"> 
                 <i class="fa-solid fa-ban text-red-500 text-2xl"></i>  
@@ -1640,7 +1623,7 @@ export function banDialogHtml() {
             <div class="p-4">
                 <p class="text-[13px] text-start leading-[14px] font-bold">Reason<span class="text-gray-500"> (optional)</span></p>
                 <div class="mb-4"> 
-                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" name="about"></textarea>
+                    <textarea @keyup="textArea($el, 60)" class="text-area" x-model="reason" type="text" maxlength="150" ></textarea>
                 </div>
                 <div class="flex gap-2 justify-center">
                     <button @click="ban(reason)" class="btn-action bg-green-500">Ban</button>          

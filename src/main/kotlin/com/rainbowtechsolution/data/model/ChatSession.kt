@@ -1,7 +1,6 @@
 package com.rainbowtechsolution.data.model
 
 import io.ktor.server.auth.*
-import io.ktor.server.websocket.*
 import kotlinx.serialization.Serializable
 
 @Serializable

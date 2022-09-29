@@ -7,7 +7,6 @@ import com.rainbowtechsolution.common.Errors
 import com.rainbowtechsolution.common.RankNames
 import com.rainbowtechsolution.controller.WsController
 import com.rainbowtechsolution.data.entity.MessageType
-import com.rainbowtechsolution.data.entity.PostType
 import com.rainbowtechsolution.data.entity.ReportType
 import com.rainbowtechsolution.data.model.*
 import com.rainbowtechsolution.data.repository.*
@@ -18,7 +17,6 @@ import com.rainbowtechsolution.exceptions.ValidationException
 import com.rainbowtechsolution.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.server.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,7 +26,6 @@ import io.ktor.server.sessions.*
 import kotlinx.coroutines.async
 import java.io.File
 import java.io.IOException
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -311,7 +308,7 @@ fun Route.adminRotes(
                                 parts.forEachPart { part ->
                                     when (part) {
                                         is PartData.FileItem -> {
-                                            part.saveImage(filePath, renderFormat)
+                                            part.saveFile(filePath, renderFormat)
                                         }
                                         else -> Unit
                                     }

@@ -1,17 +1,12 @@
 package com.rainbowtechsolution.controller
 
-import com.rainbowtechsolution.data.entity.*
-import com.rainbowtechsolution.data.entity.Seen
-import com.rainbowtechsolution.data.repository.SeenRepository
-import com.rainbowtechsolution.data.model.*
+import com.rainbowtechsolution.data.entity.Notifications
+import com.rainbowtechsolution.data.model.Notification
+import com.rainbowtechsolution.data.model.NotificationRes
 import com.rainbowtechsolution.data.repository.NotificationRepository
-import com.rainbowtechsolution.data.repository.PostReactRepository
-import com.rainbowtechsolution.data.repository.PostRepository
-import com.rainbowtechsolution.utils.capitalize
 import com.rainbowtechsolution.utils.dbQuery
 import com.rainbowtechsolution.utils.format
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 
 class NotificationController : NotificationRepository {

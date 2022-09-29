@@ -1,4 +1,3 @@
-<!--suppress HtmlUnknownAttribute -->
 <div x-show="showLeft" class="left-side-wrap"
      x-transition:enter="transition ease-in-out duration-50"
      x-transition:enter-start="opacity-0 transform scale-x-0 -translate-x-1/2"
@@ -9,9 +8,7 @@
      xmlns:x-transition="http://www.w3.org/1999/xhtml">
     <div class="p-[10px] flex-1 relative h-full w-full">
         <div class="h-full absolute inset-0 overflow-y-auto scrollbar">
-            <div class="">
-
-            </div>
+            <div th:replace="client/fragments/stories.html"></div>
             <ul class="pb-4">
                 <li class="pt-[10px] px-1">
                     <div @click="openRoomsModal" class="menu-wrap">
@@ -59,7 +56,7 @@
                         </div>
                     </div>
                 </li>
-                <li  class="pt-[10px] px-1">
+                <li class="pt-[10px] px-1">
                     <div @click="openTopPointsModal" class="menu-wrap">
                         <div class="menu border-cyan-600">
                             <div class="flex items-center ">

@@ -1,7 +1,6 @@
 package com.rainbowtechsolution.data.repository
 
 import com.rainbowtechsolution.data.model.Domain
-import com.rainbowtechsolution.data.model.Room
 
 interface DomainRepository {
 

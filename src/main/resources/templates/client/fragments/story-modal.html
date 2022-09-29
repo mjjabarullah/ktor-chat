@@ -1,0 +1,36 @@
+<div x-cloak x-show="showStoryModal" x-transition
+     class="z-[200] absolute inset-0 h-full w-full items-center bg-black/95 lg:px-20">
+    <div class="flex flex-col h-full">
+        <div class="w-full lg:px-20 px-1 mt-2 h-[3px] flex gap-1">
+            <template x-for="story in currentStoryUser.stories" :key="story.id">
+                <div class="w-full bg-white/50 rounded h-full">
+                    <div class="bg-white rounded h-full" :style="`width:${story.progress}%`"></div>
+                </div>
+            </template>
+        </div>
+        <div class="flex justify-between items-center text-white px-2">
+            <div class="flex flex-col w-full mt-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 ">
+                        <img class="p-1 w-10 h-10 rounded-full ring-[2px] ring-white" :src="currentStoryUser.avatar">
+                        <div class="text-start">
+                            <p class="username" x-text="currentStoryUser.name"></p>
+                            <p class="text-[10px] italic font-light whitespace-pre" x-text="currentStory.createdAt"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <i @click="closeStoryModal" class="fas fa-times-circle text-2xl cursor-pointer "></i>
+        </div>
+        <div @click="previousOrNext($event)" class="flex items-center justify-center flex-1 relative">
+            <div class="absolute inset-0 h-full w-full lg:pb-4 pb-1 px-1 pt-1 flex items-center">
+                <video x-show="currentStory.type=='Video'" x-ref="storyVideo" class="h-full w-full"
+                       webkit-playsinline playsinline preload="auto" autoplay :src="currentStory.link"></video>
+                <img x-show="currentStory.type=='Image'" class="w-full object-contain m-auto max-h-[90%]"
+                     :src="currentStory.link">
+            </div>
+            <p class="text-white absolute bottom-4 left-0 right-0 bg-transparent py-1 text-[13px] font-bold text-center"
+               x-text="currentStory.content"></p>
+        </div>
+    </div>
+</div>

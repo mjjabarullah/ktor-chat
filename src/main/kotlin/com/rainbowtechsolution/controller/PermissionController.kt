@@ -1,9 +1,9 @@
 package com.rainbowtechsolution.controller
 
 import com.rainbowtechsolution.data.entity.Permissions
-import com.rainbowtechsolution.data.repository.PermissionRepository
 import com.rainbowtechsolution.data.mappers.toPermissionModel
 import com.rainbowtechsolution.data.model.Permission
+import com.rainbowtechsolution.data.repository.PermissionRepository
 import com.rainbowtechsolution.utils.dbQuery
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
